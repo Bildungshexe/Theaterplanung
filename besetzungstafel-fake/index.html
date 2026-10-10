@@ -208,6 +208,50 @@ th.num{text-align:right}
 .wishes{font-size:13px;color:var(--mute)}
 .wishes b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.printonly{display:none}
+
+/* Druck: Seite 1 Tafel, Seite 2 Szenen-Matrix, A4 quer */
+@page{size:A4 landscape;margin:8mm}
+@media print{
+  :root,:root[data-theme="dark"],:root:not([data-theme="light"]){
+    --paper:#fff; --sheet:#fff; --ink:#1c2331; --mute:#4a5263; --line:#b9c0cc;
+    --tape:#f1c218; --tape-edge:#c99c00; --tape-ink:#1f1a08;
+    --accent:#2b4b8c; --accent-soft:#dbe4f6; --warn:#b0421c; --ok:#2d7a4e; color-scheme:light}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none!important}
+  html,body{background:#fff}
+  body{padding:0;font-size:11pt}
+  .wrap{display:block;max-width:none}
+  .noprint,.wishpanel,.side,.status,#printBtn,#h-liste,#dblBox,.panel .bar .tools,.panel>.hint,.panel .note,.chip .x,.slot .ring{display:none!important}
+  section[aria-labelledby="h-liste"]{display:none!important}
+  .printonly{display:block}
+  header.top{margin:0 0 2mm}
+  header.top h1{font-size:18pt}
+  .eyebrow{font-size:10pt}
+  .main{display:block}
+  .panel{border:0;padding:0!important;background:#fff}
+  .panel .bar{margin:0 0 2mm}
+  .boardwrap{overflow:visible;border:1px solid var(--line);border-radius:0;width:236mm;margin:0 auto}
+  section[aria-labelledby="h-tafel"] .bar{display:none}
+  section[aria-labelledby="h-tafel"]{break-after:page;page-break-after:always}
+  .board{min-width:0;width:100%}
+  .chip{font-size:9.5pt}
+  section[aria-labelledby="h-mx"]{break-before:page;page-break-before:always}
+  section[aria-labelledby="h-mx"] .bar{display:block;margin:0 0 1mm}
+  #h-mx{font-size:16pt;margin:0}
+  section[aria-labelledby="h-mx"] .tablewrap{max-height:none!important;overflow:visible!important}
+  .mx{min-width:0;width:100%;font-size:11pt;line-height:1.15}
+  .mx thead th{position:static;font-size:10pt}
+  .mx thead th small{font-size:8pt}
+  .mx th,.mx td{padding:.15mm 1mm}
+  .mx td.c{min-width:0}
+  .mx td.r b{font-size:11pt}
+  .mx td.r .sub{display:none}
+  .mx td.who{font-size:11pt}
+  .mx tr.grp td{padding:.3mm 1mm 0;font-size:8.5pt;line-height:1.05}
+  .mk{min-width:9mm;height:4.1mm;font-size:9.5pt}
+  .mk.txt{font-size:8.5pt}
+  .mx tr{break-inside:avoid}
+}
 </style>
 
 <div class="wrap">
@@ -215,11 +259,13 @@ th.num{text-align:right}
     <div>
       <div class="eyebrow">Theatergruppe · FAKE. Der Widerspenstigen Zähmung · Fassung 5</div>
       <h1>Besetzungstafel</h1>
+      <div class="printonly eyebrow" id="printDate"></div>
     </div>
     <div class="status">
       <span class="pill" id="stCast">0 von 24 Rollen besetzt</span>
       <span class="pill" id="stEns">0 im Ensemble</span>
       <span class="pill save" id="saveState">Wird geladen …</span>
+      <button class="btn primary" id="printBtn" type="button" title="Tafel und Szenen-Matrix im Querformat drucken">Drucken</button>
     </div>
   </header>
 
@@ -294,7 +340,7 @@ th.num{text-align:right}
       </div>
       <div class="boardwrap"><div class="board" id="board"><img src="konstellation.jpg" alt="Figurenkonstellation von FAKE, Fassung 5, mit allen 24 Rollen"></div></div>
 
-      <div style="margin-top:14px">
+      <div style="margin-top:14px" id="dblBox">
         <h2 style="font-size:18px">Notfall-Doppelrollen</h2>
         <p class="hint">Laut Anhang sind keine Doppelrollen nötig: 24 Rollen für 24 Darstellende. Fällt jemand aus, lassen sich diese Paare ohne Szenen-Überschneidung zusammenlegen. Kessler liegt im Finale gefesselt auf der Bühne und kann deshalb nicht gedoppelt werden.</p>
         <div class="dbl" id="dbl"></div>
@@ -628,6 +674,9 @@ function renderMatrix(conflictRoles){
 function setMx(v){ mxView=v; $("mxRoles").setAttribute("aria-pressed",v==="roles"); $("mxActors").setAttribute("aria-pressed",v==="actors"); render(); }
 $("mxRoles").addEventListener("click",()=>setMx("roles"));
 $("mxActors").addEventListener("click",()=>setMx("actors"));
+function preparePrint(){ selected=null; render(); const d=new Date(); $("printDate").textContent="Stand: "+d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+window.addEventListener("beforeprint",preparePrint);
+$("printBtn").addEventListener("click",()=>{ preparePrint(); window.print(); });
 
 /* ---------- Verschieben ---------- */
 function drop(actor, from, target){
