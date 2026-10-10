@@ -1,0 +1,1054 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Besetzungstafel FAKE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap">
+<style>
+/* Layout: links die Ensemble-Maske mit den Kacheln, rechts die feste Rollentafel; darunter die Besetzungsliste. */
+:root{
+  --paper:#e9ecf1; --sheet:#f8f9fb; --ink:#1c2331; --mute:#576073; --line:#c6ccd7;
+  --tape:#f1c218; --tape-edge:#c99c00; --tape-ink:#1f1a08;
+  --accent:#2b4b8c; --accent-soft:#dbe4f6;
+  --warn:#b0421c; --warn-soft:#f7e2d9; --ok:#2d7a4e; --ok-soft:#dcefe3;
+  --shadow:0 1px 2px rgba(28,35,49,.12),0 6px 18px -8px rgba(28,35,49,.35);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-tape:"Permanent Marker","Comic Sans MS","Segoe Print",cursive;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11141b; --sheet:#1a1f29; --ink:#e6e9ef; --mute:#9aa3b4; --line:#2e3644;
+  --tape:#e7b911; --tape-edge:#a57f00; --tape-ink:#1b1606;
+  --accent:#93b1f5; --accent-soft:#22304f;
+  --warn:#f08a62; --warn-soft:#3a2219; --ok:#7fcf9c; --ok-soft:#173326;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 20px -8px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11141b; --sheet:#1a1f29; --ink:#e6e9ef; --mute:#9aa3b4; --line:#2e3644;
+  --tape:#e7b911; --tape-edge:#a57f00; --tape-ink:#1b1606;
+  --accent:#93b1f5; --accent-soft:#22304f;
+  --warn:#f08a62; --warn-soft:#3a2219; --ok:#7fcf9c; --ok-soft:#173326;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 20px -8px rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--paper)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:18px 40px}
+.wrap{max-width:1500px;margin:0 auto;display:grid;gap:18px}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 24px}
+.eyebrow{font-family:var(--f-display);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:13px;color:var(--mute)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4vw,44px);line-height:1;margin:2px 0 0;text-wrap:balance}
+.status{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font-family:var(--f-display);font-weight:600;font-size:14px;letter-spacing:.03em;padding:4px 10px;border-radius:999px;background:var(--sheet);border:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.save{color:var(--mute)}
+.pill.save.ok{color:var(--ok)}
+.pill.save.warn{color:var(--warn)}
+select.pill{cursor:pointer}
+
+.main{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.panel h2{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:.02em;margin:0 0 2px;text-wrap:balance}
+.panel .hint{color:var(--mute);font-size:13.5px;margin:0 0 10px}
+.side{display:grid;gap:14px}
+@media (max-width:980px) and (min-width:640px){.side{grid-template-columns:1fr 1fr}}
+
+/* Maske */
+form.add{display:flex;gap:8px}
+form.add input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--paper)}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 12px;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+.btn.small{padding:3px 9px;font-size:13px;font-weight:500}
+.btn.danger{color:var(--warn)}
+.btn:hover{filter:brightness(1.06)}
+.linkbtn{background:none;border:none;padding:0;color:var(--accent);cursor:pointer;font-size:13.5px;text-decoration:underline;text-underline-offset:2px}
+.bulk{margin-top:8px;display:grid;gap:6px}
+.bulk textarea{width:100%;min-height:110px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--paper);resize:vertical}
+.roster{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;max-height:260px;overflow:auto}
+.roster li{display:flex;gap:6px;align-items:center}
+.roster input{flex:1;min-width:0;border:1px solid transparent;background:transparent;border-radius:5px;padding:3px 6px}
+.roster input:hover,.roster input:focus{border-color:var(--line);background:var(--paper)}
+.roster .n{font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.confirm{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--warn)}
+
+/* Kacheln */
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:64px;padding:10px;border:2px dashed var(--line);border-radius:9px;align-content:flex-start;transition:background .15s,border-color .15s}
+.pool.over{border-color:var(--accent);background:var(--accent-soft)}
+.pool .empty{color:var(--mute);font-size:13.5px;margin:auto;text-align:center}
+.tile{font-family:var(--f-tape);color:var(--tape-ink);background:var(--tape);border:none;border-bottom:2px solid var(--tape-edge);
+  border-radius:2px;padding:5px 10px 4px;font-size:16px;line-height:1.1;cursor:grab;touch-action:none;user-select:none;
+  box-shadow:var(--shadow);position:relative;white-space:nowrap;
+  clip-path:polygon(0 4%,3% 0,97% 2%,100% 0,99% 96%,100% 100%,2% 98%,0 100%)}
+.pool .tile:nth-child(3n){transform:rotate(-1.2deg)}
+.pool .tile:nth-child(3n+1){transform:rotate(.8deg)}
+.tile .cnt{font-family:var(--f-body);font-size:11px;font-weight:600;margin-left:6px;opacity:.75}
+.tile.placed{opacity:.62}
+.tile.sel{outline:3px solid var(--accent);outline-offset:2px}
+.tile:active{cursor:grabbing}
+.ghost{position:fixed;left:0;top:0;pointer-events:none;z-index:1000;transform:rotate(-3deg) scale(1.08);opacity:.95}
+.dragging-src{opacity:.3}
+
+/* Tafel */
+.boardwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--sheet);box-shadow:var(--shadow)}
+.board{position:relative;min-width:980px;aspect-ratio:297/210;container-type:inline-size;background:#fff}
+.board img{position:absolute;inset:0;width:100%;height:100%;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.slot{position:absolute;border:0;padding:0;background:transparent;border-radius:1cqw;cursor:pointer}
+.slot.over{background:rgba(43,75,140,.16);outline:2.5px solid var(--accent);outline-offset:1px}
+.slot.target .ring{position:absolute;inset:0;border-radius:inherit;outline:2px dashed var(--accent);outline-offset:1px;opacity:.55}
+.chip{position:absolute;display:flex;align-items:center;justify-content:center;gap:.35cqw;font-family:var(--f-tape);color:var(--tape-ink);
+  background:var(--tape);border-bottom:.18cqw solid var(--tape-edge);font-size:clamp(11px,1.12cqw,17px);line-height:1;padding:0 .4cqw;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);cursor:grab;touch-action:none;user-select:none;border-radius:2px;overflow:hidden;z-index:3;
+  clip-path:polygon(0 6%,3% 0,97% 3%,100% 0,99% 94%,100% 100%,2% 97%,0 100%)}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.chip.sel{outline:.25cqw solid var(--accent)}
+.chip.conflict{background:#f6a07e;border-bottom-color:#b0421c}
+.chip .x{font-family:var(--f-body);font-weight:700;font-size:.8em;opacity:0;border:0;background:none;color:inherit;cursor:pointer;padding:0 .1cqw;flex:none}
+.chip:hover .x,.chip:focus-within .x{opacity:.7}
+
+/* Notfall-Doppelrollen */
+.dbl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.dcard{border:1px solid var(--line);border-radius:8px;padding:9px 11px;display:grid;gap:6px;align-content:start;background:var(--paper)}
+.dcard.same{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok-soft)}
+.dcard .rn{font-family:var(--f-display);font-weight:700;font-size:17px;line-height:1.1}
+.dcard .rw{font-size:12.5px;color:var(--mute)}
+.dcard .who{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+.dcard .who b{font-family:var(--f-tape);font-weight:400;background:var(--tape);color:var(--tape-ink);padding:1px 7px;border-radius:2px}
+.dcard .who i{color:var(--mute)}
+
+/* Szenen-Matrix */
+.mx{border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:900px}
+.mx th,.mx td{border-bottom:1px solid var(--line);padding:4px 5px}
+.mx thead th{position:sticky;top:0;background:var(--sheet);z-index:1;text-transform:none;letter-spacing:0;text-align:center;font-size:12.5px;line-height:1.15;vertical-align:bottom;border-bottom:1.5px solid var(--ink)}
+.mx thead th.l{text-align:left}
+.mx thead th small{display:block;font-family:var(--f-body);font-weight:400;font-size:11px;color:var(--mute)}
+.mx td.c{text-align:center;padding:3px 2px;min-width:40px}
+.mx td.r{white-space:nowrap}
+.mx td.r b{font-family:var(--f-display);font-size:15.5px;font-weight:700}
+.mx td.r .sub{display:block;font-size:12px;color:var(--mute)}
+.mx td.who{font-family:var(--f-tape);font-size:14px;white-space:nowrap}
+.mx td.who.empty{font-family:var(--f-body);color:var(--mute);font-size:12.5px}
+.mx tr.grp td{background:var(--paper);font-family:var(--f-display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12.5px;color:var(--mute);padding-top:8px}
+.mk{display:inline-grid;place-items:center;min-width:32px;height:22px;border-radius:4px;background:var(--accent-soft);color:var(--accent);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;padding:0 3px}
+.mk.big{background:var(--accent);color:var(--sheet)}
+.mk.bad{background:var(--warn);color:var(--sheet)}
+.mk.txt{font-size:11px;white-space:nowrap}
+.mx tfoot td{font-weight:600;color:var(--mute);text-align:center;font-variant-numeric:tabular-nums;border-top:1.5px solid var(--ink)}
+.mx tfoot td.l{text-align:left}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:var(--paper);padding:4px 10px;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--sheet);font-weight:600}
+
+/* Besetzungsliste */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{font-family:var(--f-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:13px;color:var(--mute);text-align:left;border-bottom:1.5px solid var(--ink);padding:6px 8px}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+th.num{text-align:right}
+.flag{display:inline-block;font-size:12.5px;font-weight:600;padding:1px 8px;border-radius:999px;margin:1px 4px 1px 0}
+.flag.warn{background:var(--warn-soft);color:var(--warn)}
+.flag.ok{background:var(--ok-soft);color:var(--ok)}
+.flag.mute{background:var(--paper);color:var(--mute);border:1px solid var(--line)}
+.openroles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.openroles span{font-size:13px;border:1px dashed var(--line);border-radius:5px;padding:2px 8px;color:var(--mute)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.bar .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.note{font-size:13px;color:var(--mute);margin-top:10px}
+.copyout{width:100%;min-height:120px;margin-top:8px;font-size:13px;border:1px solid var(--line);border-radius:7px;background:var(--paper);padding:8px}
+
+/* Wünsche & Vorschläge */
+.wishpanel{display:grid;gap:14px}
+.steps{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.steps2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:14px}
+@media (max-width:1100px){.steps2{grid-template-columns:minmax(0,1fr)}}
+.step{border:1px solid var(--line);border-radius:9px;padding:12px;background:var(--paper);min-width:0}
+.step h3{font-family:var(--f-display);font-weight:700;font-size:18px;margin:0 0 4px;letter-spacing:.02em}
+.step .num{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;margin-right:6px;vertical-align:1px}
+.dropzone{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:2px dashed var(--line);border-radius:9px;padding:12px;background:var(--sheet)}
+.dropzone.over{border-color:var(--accent);background:var(--accent-soft)}
+.filebtn{position:relative;overflow:hidden;display:inline-block}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.fmap{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);padding:10px;display:grid;gap:8px;min-width:0}
+.fmap .fh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.fmap .fh b{font-family:var(--f-display);font-size:16px}
+.prev{overflow-x:auto}
+.prev table{font-size:13px}
+.prev th{text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:12.5px;padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:bottom}
+.prev th select{display:block;margin-top:3px;font-size:12.5px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;background:var(--paper);max-width:150px}
+.prev th select.on{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.prev td{padding:3px 6px;font-size:13px;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.checkrow{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:10px}
+.fixlist{display:grid;gap:6px;margin-top:8px}
+.fixlist .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.fixlist select{padding:3px 6px;border:1px solid var(--line);border-radius:5px;background:var(--sheet)}
+.msg{font-size:14px;margin-top:8px}
+.msg.ok{color:var(--ok)} .msg.warn{color:var(--warn)}
+.demand td{font-size:13.5px}
+.demand td.nm{white-space:normal}
+.vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}
+.vcard{border:1px solid var(--line);border-radius:9px;background:var(--sheet);padding:12px;display:grid;gap:8px;align-content:start;min-width:0}
+.vcard.cur{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.vcard h4{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0}
+.vcard p{margin:0;font-size:13.5px;color:var(--mute)}
+.dist{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--paper);border:1px solid var(--line)}
+.dist i{display:block;height:100%}
+.d1{background:var(--ok)} .d2{background:#6fae86} .d3{background:#b8d6c2} .d0{background:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:0}
+.legend .l1::before{background:var(--ok)} .legend .l2::before{background:#6fae86} .legend .l3::before{background:#b8d6c2} .legend .l0::before{background:var(--warn)}
+.vdetail{max-height:320px;overflow:auto;border-top:1px solid var(--line);padding-top:6px}
+.vdetail table{font-size:13px}
+.vdetail td{padding:3px 6px}
+.vdetail td.wc{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--mute)}
+.rk{display:inline-grid;place-items:center;min-width:1.35em;height:1.35em;border-radius:50%;font-family:var(--f-body);font-style:normal;font-weight:700;font-size:.72em;line-height:1;flex:none;padding:0 .15em}
+.rk.r1{background:var(--ok);color:var(--sheet)} .rk.r2{background:#6fae86;color:#10261a} .rk.r3{background:#b8d6c2;color:#10261a} .rk.r0{background:var(--warn);color:var(--sheet)}
+.chip .rk{font-size:.78em}
+.wishes{font-size:13px;color:var(--mute)}
+.wishes b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Theatergruppe · FAKE. Der Widerspenstigen Zähmung · Fassung 5</div>
+      <h1>Besetzungstafel</h1>
+    </div>
+    <div class="status">
+      <span class="pill" id="stCast">0 von 24 Rollen besetzt</span>
+      <span class="pill" id="stEns">0 im Ensemble</span>
+      <span class="pill save" id="saveState">Wird geladen …</span>
+    </div>
+  </header>
+
+
+  <section class="panel wishpanel" aria-labelledby="h-wish">
+    <div class="bar">
+      <h2 id="h-wish">Wünsche &amp; Vorschläge</h2>
+      <div class="tools"><span class="hint" id="wishSummary" style="margin:0">Noch keine Wünsche eingelesen.</span>
+        <button class="linkbtn" id="wishToggle" type="button">Bereich einklappen</button></div>
+    </div>
+    <div id="wishBody" class="steps">
+      <div class="step">
+        <h3><span class="num">1</span>Excel-Tabellen einlesen</h3>
+        <p class="hint">Beide Tabellen auf einmal wählen oder nacheinander hineinziehen (.xlsx, .xls, .ods oder .csv). Jede Zeile ist eine Person. Über jeder Spalte steht, wofür sie gelesen wird; das lässt sich umstellen. Stehen Zweit- und Drittwunsch in einer Zelle, mit Komma oder Schrägstrich getrennt, wird beides erkannt.</p>
+        <div class="dropzone" id="dropzone">
+          <span class="btn primary filebtn">Dateien wählen<input type="file" id="fileIn" accept=".xlsx,.xls,.ods,.csv" multiple aria-label="Excel-Dateien mit Wünschen wählen"></span>
+          <span class="hint" style="margin:0">oder hierher ziehen</span>
+        </div>
+        <div id="fileMaps"></div>
+        <label class="checkrow"><input type="checkbox" id="takeNames" checked> Vornamen aus den Tabellen ins Ensemble übernehmen, wenn sie dort noch fehlen</label>
+        <div id="roleFix"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="importGo" type="button" disabled>Wünsche übernehmen</button><button class="btn" id="importClear" type="button" hidden>Dateien verwerfen</button></div>
+        <div class="msg" id="importMsg" aria-live="polite"></div>
+      </div>
+      <div class="steps2">
+        <div class="step">
+          <h3><span class="num">2</span>Überschneidungen und Konflikte</h3>
+          <p class="hint">Welche Rolle wie oft gewünscht wird. Mehrere Hauptwünsche auf einer Rolle sind eine Überschneidung; Rollen ohne Wunsch müssen trotzdem besetzt werden.</p>
+          <div id="demandBox"></div>
+        </div>
+        <div class="step">
+          <h3><span class="num">3</span>Besetzungsvorschläge</h3>
+          <p class="hint">Die Tafel rechnet mehrere Versionen aus, die die Wünsche möglichst gut erfüllen. Jede Person bekommt höchstens eine Rolle; bei mehr Personen als Rollen bleiben welche ohne Rolle.</p>
+          <label class="checkrow" style="margin-top:0"><input type="checkbox" id="keepCast" checked> Schon gesetzte Kacheln auf der Tafel festhalten</label>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn primary" id="calcBtn" type="button">Vorschläge berechnen</button><button class="btn" id="undoBtn" type="button" hidden>Vorherige Tafel wiederherstellen</button></div>
+          <div id="versions"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="main">
+    <aside class="side">
+      <section class="panel" aria-labelledby="h-maske">
+        <h2 id="h-maske">Ensemble eintragen</h2>
+        <p class="hint">Name eingeben und eintragen. Jede Person erscheint unten als Kachel.</p>
+        <form class="add" id="addForm" autocomplete="off">
+          <input id="newName" placeholder="Vor- und Nachname" aria-label="Name der Schauspielerin oder des Schauspielers">
+          <button class="btn primary" type="submit">Eintragen</button>
+        </form>
+        <button class="linkbtn" id="bulkToggle" type="button" style="margin-top:8px">Mehrere Namen auf einmal einfügen</button>
+        <div class="bulk" id="bulkBox" hidden>
+          <textarea id="bulkText" placeholder="Ein Name pro Zeile"></textarea>
+          <div><button class="btn" id="bulkAdd" type="button">Alle eintragen</button></div>
+        </div>
+        <ul class="roster" id="roster"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="h-pool">
+        <h2 id="h-pool">Kacheln</h2>
+        <p class="hint">Auf eine Rolle ziehen. Eine Kachel kann auch eine zweite Rolle bekommen. Zum Entfernen eine besetzte Rolle hierher zurückziehen.</p>
+        <div class="pool" id="pool" data-drop="pool" aria-label="Ensemble-Kacheln"></div>
+      </section>
+    </aside>
+
+    <section class="panel" aria-labelledby="h-tafel" style="padding:12px">
+      <div class="bar">
+        <h2 id="h-tafel">Die Rollen</h2>
+        <div class="tools">
+          <span class="hint" style="margin:0">Besetzte Kacheln lassen sich direkt von Rolle zu Rolle schieben; auf einer besetzten Rolle tauschen sie.</span>
+        </div>
+      </div>
+      <div class="boardwrap"><div class="board" id="board"><img src="konstellation.jpg" alt="Figurenkonstellation von FAKE, Fassung 5, mit allen 24 Rollen"></div></div>
+
+      <div style="margin-top:14px">
+        <h2 style="font-size:18px">Notfall-Doppelrollen</h2>
+        <p class="hint">Laut Anhang sind keine Doppelrollen nötig: 24 Rollen für 24 Darstellende. Fällt jemand aus, lassen sich diese Paare ohne Szenen-Überschneidung zusammenlegen. Kessler liegt im Finale gefesselt auf der Bühne und kann deshalb nicht gedoppelt werden.</p>
+        <div class="dbl" id="dbl"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-mx">
+    <div class="bar">
+      <h2 id="h-mx">Szenen-Matrix</h2>
+      <div class="tools">
+        <span class="seg" role="group" aria-label="Ansicht der Matrix"><button type="button" id="mxRoles" aria-pressed="true">Nach Rollen</button><button type="button" id="mxActors" aria-pressed="false">Nach Ensemble</button></span>
+      </div>
+    </div>
+    <p class="hint" id="mxHint"></p>
+    <div class="tablewrap" style="max-height:640px;overflow:auto"><table class="mx" id="mx"></table></div>
+    <p class="note">Die Zahl im Feld ist die Wortzahl der Rolle in dieser Szene (eigene Auszählung des Textbuchs; die Summen weichen um bis zu 6 Wörter vom Anhang ab). Dunkel: über 100 Wörter. Rot: eine Person hat zwei Rollen in derselben Szene. Stumme Auftritte sind nicht erfasst.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-liste">
+    <div class="bar">
+      <h2 id="h-liste">Besetzungsliste</h2>
+      <div class="tools">
+        <button class="btn small" id="copyBtn" type="button">Liste als Text kopieren</button>
+        <span id="resetArea"><button class="btn small danger" id="resetBtn" type="button">Alle Rollen leeren</button></span>
+      </div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Ensemble</th><th>Rollen</th><th class="num">Wörter</th><th>Wünsche</th><th>Hinweise</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div id="openRolesBox"></div>
+    <textarea class="copyout" id="copyOut" hidden readonly aria-label="Besetzungsliste als Text"></textarea>
+    <p class="note">Wortzahlen aus dem Anhang von Fassung 5 (nur gesprochene Wörter). Szenen-Konflikte werden nach den Sprechanteilen geprüft: Wer zwei Rollen in derselben Szene hat, wird markiert. Stehen zwei Rollen einer Person in direkt aufeinanderfolgenden Szenen, erscheint ein Hinweis zum Umziehen. Stumme Auftritte sind nicht erfasst.</p>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+"use strict";
+const MMW = 297, MMH = 210;
+// Szenen in Spielfolge mit Ort (laut Anhang Fassung 5)
+const SC = [
+  ["Vorspiel","Vor","Rampe · Kupferkanne"],["I.1","I.1","Wahlkampfzentrale"],["I.2","I.2","Rampe · Tiefgarage"],["E1","E1","Rampe · Einschub 1"],
+  ["II.1","II.1","Wahlkampfzentrale"],["III.1","III.1","Fernsehstudio"],["III.2","III.2","Rampe"],["E2","E2","Rampe · Einschub 2"],
+  ["IV.1","IV.1","Hütte"],["IV.2","IV.2","Hütte"],["E3","E3","Rampe · Einschub 3"],["IV.3","IV.3","Wahlkampfzentrale"],
+  ["V.1","V.1","Rampe"],["V.2","V.2","Rampe"],["V.3","V.3","Fernsehstudio · Finale"],["Nachspiel","Nach","Rampe · Kupferkanne"]
+];
+const SIDX = Object.fromEntries(SC.map((s,i)=>[s[0],i]));
+// key: [Name, Wörter (Anhang), {Szene: Wörter (eigene Zählung)}, Tafelposition cx,cy,w,h (mm), Typ, Gruppe, Hinweis]
+const R = {
+  konstanze:["Konstanze Brandl",786,{"I.1":188,"II.1":115,"III.1":93,"IV.3":194,"V.3":195},134.9,63.9,40,12,"stark","Familie Brandl & Rathaus"],
+  katharina:["Katharina Brandl",957,{"I.1":228,"II.1":85,"III.1":51,"IV.1":132,"IV.2":68,"V.1":196,"V.3":196},134.9,105.9,40,12,"stark","Familie Brandl & Rathaus"],
+  bianca:   ["Bianca Brandl",825,{"I.1":94,"II.1":115,"III.1":62,"III.2":168,"IV.3":201,"V.3":183},81.9,97.9,40,12,"stark","Familie Brandl & Rathaus"],
+  henny:    ["Henny Ortmann",378,{"I.1":101,"I.2":59,"II.1":37,"III.1":47,"IV.3":82,"V.3":52},81.9,63.9,40,12,"mittel","Familie Brandl & Rathaus"],
+  sommer:   ["Nora Sommer",154,{"I.1":19,"III.1":65,"V.3":70},81.9,120.9,40,12,"klein","Familie Brandl & Rathaus"],
+  huber:    ["Frau Huber",151,{"III.1":56,"V.3":94},183.8,49.9,40,12,"klein","Familie Brandl & Rathaus"],
+  luca:     ["Luca Benz",367,{"I.1":60,"II.1":52,"III.2":142,"IV.3":64,"V.3":49},23.8,97.9,40,12,"mittel","Echtzeit","für einen Jungen geschrieben, auch als Lucia möglich"],
+  tara:     ["Tara Nowak",379,{"I.1":56,"II.1":52,"III.2":122,"IV.3":75,"V.3":73},23.9,130,40,12,"mittel","Echtzeit"],
+  josie:    ["Josie",155,{"I.1":40,"III.2":52,"IV.3":47,"V.3":16},23.8,162,40,12,"klein","Echtzeit"],
+  vera:     ["Prof. Vera Benz",362,{"V.1":213,"V.3":149},23.9,63.9,40,12,"mittel","Echtzeit"],
+  petri:    ["Mia Petri",950,{"I.2":117,"II.1":195,"III.1":73,"IV.1":126,"IV.2":183,"V.1":156,"V.2":49,"V.3":51},134.9,157.9,40,12,"stark","Petri und ihre Leute"],
+  greta:    ["Greta Mühl",348,{"I.2":117,"III.1":31,"IV.1":33,"IV.2":64,"V.1":74,"V.3":29},91.8,186,40,12,"mittel","Petri und ihre Leute"],
+  resi:     ["Resi Kurz",349,{"IV.1":195,"IV.2":106,"V.3":48},177.8,186,40,12,"mittel","Petri und ihre Leute"],
+  gremm:    ["Gloria Gremm",845,{"I.1":150,"I.2":108,"II.1":55,"III.1":13,"IV.3":267,"V.2":63,"V.3":189},231.8,63.9,40,12,"stark","Spiegelwerk"],
+  kessler:  ["Kessler",155,{"I.2":36,"IV.2":77,"V.3":42},275.9,63.9,40,12,"klein","Spiegelwerk","im Finale gefesselt auf der Bühne"],
+  baronin:  ["Die Baronin",448,{"Vorspiel":108,"E1":83,"E2":72,"E3":46,"V.2":107,"Nachspiel":32},231.8,102,40,12,"mittel","Spiegelwerk"],
+  pixel:    ["Pixel",164,{"Vorspiel":19,"E1":25,"E2":35,"E3":31,"V.2":54},275.8,102,40,12,"klein","Spiegelwerk"],
+  christine:["Christine Schlau",875,{"Vorspiel":136,"E1":148,"III.1":16,"E2":126,"E3":140,"V.2":117,"V.3":98,"Nachspiel":88},231.8,141.9,40,12,"stark","Spiegelwerk"],
+  basti:    ["Basti",344,{"Vorspiel":41,"E1":58,"E2":101,"E3":13,"V.2":64,"V.3":21,"Nachspiel":40},275.9,141.9,40,12,"mittel","Spiegelwerk","für einen Jungen geschrieben, auch als Bastienne möglich"],
+  witt:     ["Dr. Wilma Witt",361,{"III.1":149,"IV.3":98,"V.3":114},81.9,33.9,40,12,"mittel","Außerdem"],
+  rieger:   ["Ines Rieger",370,{"I.1":79,"III.1":148,"V.3":143},149.9,33.9,40,12,"mittel","Außerdem"],
+  ferner:   ["Kommissarin Ferner",173,{"IV.3":121,"V.3":52},265.9,33.9,40,12,"klein","Außerdem"],
+  stylistin:["Die Stylistin",156,{"III.1":77,"IV.2":79},221.9,186,40,12,"klein","Außerdem"],
+  wirtin:   ["Die Wirtin",154,{"Vorspiel":85,"Nachspiel":68},275.8,186,40,12,"klein","Außerdem"]
+};
+const ORDER = Object.keys(R);
+const BOARD = ORDER;
+const TOTAL = ORDER.length; // 24 Rollen
+const MAXW = 957; // größte Rolle (Katharina) für die Gewichtung der Vorschläge
+// Zusammenlegungen laut Anhang, falls jemand ausfällt
+const DOUBLES = [["wirtin","huber"],["pixel","sommer"],["stylistin","ferner"]];
+const STORE_DOC = "besetzung/fake-fassung5", STORE_LOCAL = "besetzungstafel-fake5-v1";
+
+let state = {actors:[], cast:{}, wishes:{}, roleMap:{}};
+let saveMode = "loading"; // db | local | none
+let db = null, docRef = null, lastWritten = "", writing = false, pendingWrite = false, saveTimer = null, dragging = false;
+let selected = null; // {actor, from}
+let mxView = "roles";
+
+const $ = id=>document.getElementById(id);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid = ()=>"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const actorById = id=>state.actors.find(a=>a.id===id);
+const words = k=>R[k][1];
+const scenes = k=>Object.keys(R[k][2]).sort((x,y)=>SIDX[x]-SIDX[y]);
+const sceneName = s=>s==="Vorspiel"||s==="Nachspiel"?s:(/^E\d$/.test(s)?"Einschub "+s[1]:s);
+const rolesOf = id=>ORDER.filter(k=>state.cast[k]===id);
+
+/* ---------- Speichern ---------- */
+function setSave(txt,cls){const el=$("saveState");el.textContent=txt;el.className="pill save"+(cls?" "+cls:"");}
+function snapshotData(){return {actors:state.actors.map(a=>({id:a.id,name:a.name})),cast:{...state.cast},wishes:JSON.parse(JSON.stringify(state.wishes)),roleMap:{...state.roleMap}};}
+function normData(d){return JSON.stringify({actors:(d.actors||[]).map(a=>({id:a.id,name:a.name})),cast:d.cast||{},wishes:d.wishes||{},roleMap:d.roleMap||{}});}
+function changed(){
+  render();
+  if(saveMode==="db"){setSave("Ungespeicherte Änderung …");clearTimeout(saveTimer);saveTimer=setTimeout(flush,600);}
+  else if(saveMode==="local"){try{localStorage.setItem(STORE_LOCAL,JSON.stringify(snapshotData()));setSave("In diesem Browser gespeichert","warn");}catch(e){setSave("Nicht gespeichert","warn");}}
+}
+async function flush(){
+  if(!docRef) return;
+  if(writing){pendingWrite=true;return;}
+  const body=snapshotData(); const js=normData(body);
+  if(js===lastWritten){setSave("Gespeichert","ok");return;}
+  writing=true; setSave("Wird gespeichert …");
+  try{ await docRef.set(body); lastWritten=js; setSave("Gespeichert","ok"); }
+  catch(e){
+    if(e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,800+Math.random()*700));try{await docRef.set(body);lastWritten=js;setSave("Gespeichert","ok");}catch(e2){setSave("Speichern fehlgeschlagen – später erneut ändern","warn");}}
+    else if(e&&e.code==="invalid_argument"){setSave("Nur lesen – keine Schreibrechte","warn");}
+    else setSave("Speichern fehlgeschlagen","warn");
+  }
+  writing=false;
+  if(pendingWrite){pendingWrite=false;flush();}
+}
+function applyRemote(d){
+  if(!d) return;
+  state.actors=Array.isArray(d.actors)?d.actors.filter(a=>a&&a.id&&typeof a.name==="string").map(a=>({id:String(a.id),name:a.name})):[];
+  state.cast={}; const ids=new Set(state.actors.map(a=>a.id));
+  if(d.cast&&typeof d.cast==="object") for(const k in d.cast){ if(R[k]&&ids.has(d.cast[k])) state.cast[k]=d.cast[k]; }
+  state.wishes={};
+  if(d.wishes&&typeof d.wishes==="object") for(const id in d.wishes){ if(ids.has(id)&&Array.isArray(d.wishes[id])) state.wishes[id]=d.wishes[id].slice(0,3).map(k=>R[k]?k:null); }
+  state.roleMap={};
+  if(d.roleMap&&typeof d.roleMap==="object") for(const t in d.roleMap){ const v=d.roleMap[t]; if(v==="none"||R[v]) state.roleMap[t]=v; }
+  renderRoster(); render(); renderWishes();
+}
+async function init(){
+  render(); renderRoster(); renderDemand();
+  let api=null;
+  try{ api = window.claude && window.claude.use ? await window.claude.use("db") : null; }catch(e){ api=null; }
+  if(api){
+    db=api; docRef=db.doc(STORE_DOC); saveMode="db"; let first=true;
+    docRef.onSnapshot(snap=>{
+      if(snap.metadata&&snap.metadata.hasPendingWrites) return;
+      const d=snap.exists?snap.data():null;
+      const js=d?normData(d):"";
+      if(first){ first=false; if(d){applyRemote(d); lastWritten=normData(snapshotData());} setSave(d?"Gespeichert":"Bereit · noch leer","ok"); return; }
+      if(js && js!==lastWritten && !dragging && !writing){ applyRemote(d); lastWritten=normData(snapshotData()); }
+    }, err=>{ setSave("Verbindung getrennt – Änderungen bleiben nur bis zum Neuladen","warn"); saveMode="none"; });
+  } else {
+    saveMode="local";
+    try{ const raw=localStorage.getItem(STORE_LOCAL); if(raw) applyRemote(JSON.parse(raw)); setSave("In diesem Browser gespeichert","warn"); }
+    catch(e){ saveMode="none"; setSave("Nicht gespeichert","warn"); }
+  }
+}
+
+/* ---------- Ensemble-Maske ---------- */
+function addNames(list){
+  const have=new Set(state.actors.map(a=>a.name.trim().toLowerCase()));
+  let n=0;
+  for(let raw of list){ const name=raw.replace(/\s+/g," ").trim(); if(!name||have.has(name.toLowerCase())) continue; state.actors.push({id:uid(),name}); have.add(name.toLowerCase()); n++; }
+  if(n){ renderRoster(); changed(); }
+  return n;
+}
+$("addForm").addEventListener("submit",e=>{e.preventDefault();const v=$("newName").value;if(addNames([v])){$("newName").value="";}$("newName").focus();});
+$("bulkToggle").addEventListener("click",()=>{const b=$("bulkBox");b.hidden=!b.hidden;if(!b.hidden)$("bulkText").focus();});
+$("bulkAdd").addEventListener("click",()=>{addNames($("bulkText").value.split(/\n|;/));$("bulkText").value="";$("bulkBox").hidden=true;});
+
+let confirmDel=null;
+function renderRoster(){
+  const ul=$("roster"); ul.innerHTML="";
+  state.actors.forEach(a=>{
+    const li=document.createElement("li");
+    if(confirmDel===a.id){
+      li.innerHTML=`<span class="confirm">${esc(a.name)} entfernen?</span><button class="btn small danger" data-yes>Entfernen</button><button class="btn small" data-no>Behalten</button>`;
+      li.querySelector("[data-yes]").onclick=()=>{state.actors=state.actors.filter(x=>x.id!==a.id);delete state.wishes[a.id];for(const k in state.cast)if(state.cast[k]===a.id)delete state.cast[k];confirmDel=null;renderRoster();changed();};
+      li.querySelector("[data-no]").onclick=()=>{confirmDel=null;renderRoster();};
+    } else {
+      const inp=document.createElement("input"); inp.value=a.name; inp.id="name-"+a.id; inp.setAttribute("aria-label","Name ändern");
+      inp.addEventListener("change",()=>{const v=inp.value.replace(/\s+/g," ").trim(); if(v){a.name=v;changed();} else inp.value=a.name;});
+      inp.addEventListener("keydown",e=>{if(e.key==="Enter")inp.blur();});
+      const n=document.createElement("span"); n.className="n"; const c=rolesOf(a.id).length; n.textContent=c?c+(c>1?" Rollen":" Rolle"):"frei";
+      const del=document.createElement("button"); del.className="btn small danger"; del.type="button"; del.textContent="×"; del.title="Aus dem Ensemble entfernen"; del.setAttribute("aria-label",a.name+" entfernen");
+      del.onclick=()=>{confirmDel=a.id;renderRoster();};
+      li.append(inp,n,del);
+    }
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- Render ---------- */
+function conflictsFor(id){
+  const rs=rolesOf(id); const out=[];
+  for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++){
+    const a=scenes(rs[i]),b=scenes(rs[j]); const both=a.filter(s=>b.includes(s));
+    if(both.length) out.push({a:rs[i],b:rs[j],scenes:both});
+  }
+  return out;
+}
+function quickChanges(id){ // zwei Rollen in direkt aufeinanderfolgenden Szenen
+  const rs=rolesOf(id); const out=[];
+  for(let i=0;i<rs.length;i++)for(let j=0;j<rs.length;j++){ if(i===j) continue;
+    scenes(rs[i]).forEach(s=>{ const nx=SC[SIDX[s]+1]; if(nx&&R[rs[j]][2][nx[0]]&&!R[rs[i]][2][nx[0]]&&!R[rs[j]][2][s]) out.push({from:rs[i],to:rs[j],a:s,b:nx[0]}); }); }
+  return out;
+}
+function tile(actor, from, cls){
+  const el=document.createElement("button"); el.type="button"; el.className=(cls||"tile");
+  el.dataset.actor=actor.id; el.dataset.from=from||"";
+  return el;
+}
+function render(){
+  // Kopf
+  const filled=ORDER.filter(k=>state.cast[k]).length;
+  $("stCast").textContent=`${filled} von ${TOTAL} Rollen besetzt`;
+  $("stEns").textContent=`${state.actors.length} im Ensemble`;
+
+  // Kacheln
+  const pool=$("pool"); pool.innerHTML="";
+  if(!state.actors.length){ pool.innerHTML='<p class="empty">Noch niemand eingetragen.<br>Oben einen Namen eingeben.</p>'; }
+  const sorted=[...state.actors].sort((a,b)=>(rolesOf(a.id).length>0)-(rolesOf(b.id).length>0)||a.name.localeCompare(b.name,"de"));
+  sorted.forEach(a=>{
+    const c=rolesOf(a.id).length;
+    const t=tile(a,"","tile"+(c?" placed":"")+(selected&&selected.actor===a.id&&!selected.from?" sel":""));
+    t.innerHTML=esc(a.name)+(c?`<span class="cnt">${c}×</span>`:"");
+    t.title=c?a.name+": "+rolesOf(a.id).map(k=>R[k][0]).join(", "):a.name+": noch ohne Rolle";
+    pool.appendChild(t);
+  });
+
+  // Tafel
+  const board=$("board");
+  board.querySelectorAll(".slot,.chip").forEach(n=>n.remove());
+  const conflictRoles=new Set();
+  state.actors.forEach(a=>conflictsFor(a.id).forEach(c=>{conflictRoles.add(c.a);conflictRoles.add(c.b);}));
+  BOARD.forEach(k=>{
+    const [name,,,cx,cy,w,h]=R[k];
+    const s=document.createElement("button"); s.type="button"; s.className="slot"+(selected?" target":"");
+    s.dataset.drop="role:"+k; s.setAttribute("aria-label","Rolle "+name+(state.cast[k]?", besetzt mit "+actorById(state.cast[k]).name:", frei"));
+    Object.assign(s.style,{left:((cx-w/2-1)/MMW*100)+"%",top:((cy-h/2-1)/MMH*100)+"%",width:((w+2)/MMW*100)+"%",height:((h+2)/MMH*100)+"%"});
+    s.innerHTML='<span class="ring"></span>';
+    board.appendChild(s);
+    const id=state.cast[k];
+    if(id){
+      const a=actorById(id);
+      const ch=tile(a,k,"chip"+(conflictRoles.has(k)?" conflict":"")+(selected&&selected.from===k?" sel":""));
+      const top=cy+0.1, hh=5.6, ww=w-2.5;
+      Object.assign(ch.style,{left:((cx-ww/2)/MMW*100)+"%",top:(top/MMH*100)+"%",width:(ww/MMW*100)+"%",height:(hh/MMH*100)+"%"});
+      ch.dataset.drop="role:"+k;
+      ch.innerHTML=`${rankBadge(a.id,k)}<span>${esc(a.name)}</span><span class="x" role="button" aria-label="Rolle freigeben" data-clear="${k}">×</span>`;
+      ch.title=a.name+" als "+name+(conflictRoles.has(k)?" – Szenen-Konflikt":"");
+      board.appendChild(ch);
+    }
+  });
+
+  // Notfall-Doppelrollen
+  const dbl=$("dbl"); dbl.innerHTML="";
+  DOUBLES.forEach(([x,y])=>{
+    const ax=state.cast[x]?actorById(state.cast[x]):null, ay=state.cast[y]?actorById(state.cast[y]):null;
+    const clash=scenes(x).filter(s=>scenes(y).includes(s));
+    const same=ax&&ay&&ax.id===ay.id;
+    const d=document.createElement("div"); d.className="dcard"+(same?" same":"");
+    let who=`<span>${esc(R[x][0])}: ${ax?`<b>${esc(ax.name)}</b>`:"<i>offen</i>"}</span><span>${esc(R[y][0])}: ${ay?`<b>${esc(ay.name)}</b>`:"<i>offen</i>"}</span>`;
+    let act="";
+    if(same) act='<span class="flag ok">zusammengelegt</span>';
+    else if(ax&&!ay) act=`<button class="btn small" type="button" data-merge="${x}:${y}">${esc(ax.name)} spielt auch ${esc(R[y][0])}</button>`;
+    else if(ay&&!ax) act=`<button class="btn small" type="button" data-merge="${y}:${x}">${esc(ay.name)} spielt auch ${esc(R[x][0])}</button>`;
+    d.innerHTML=`<span class="rn">${esc(R[x][0])} + ${esc(R[y][0])}</span>
+      <span class="rw">${scenes(x).map(sceneName).join(", ")} · ${scenes(y).map(sceneName).join(", ")} · zusammen ${words(x)+words(y)} Wörter</span>
+      <span class="who">${who}</span>
+      <div>${clash.length?`<span class="flag warn">Überschneidung in ${clash.join(", ")}</span>`:'<span class="flag mute">keine gemeinsame Szene</span>'}${act}</div>`;
+    dbl.appendChild(d);
+  });
+  dbl.querySelectorAll("[data-merge]").forEach(b=>b.addEventListener("click",ev=>{ev.stopPropagation();const [f,t]=b.dataset.merge.split(":");state.cast[t]=state.cast[f];changed();}));
+
+  renderMatrix(conflictRoles);
+
+  // Liste
+  const tb=$("tbody"); tb.innerHTML="";
+  const rows=[...state.actors].map(a=>{const rs=rolesOf(a.id);return {a,rs,w:rs.reduce((s,k)=>s+words(k),0),c:conflictsFor(a.id)};})
+    .sort((x,y)=>(y.rs.length>0)-(x.rs.length>0)||y.w-x.w||x.a.name.localeCompare(y.a.name,"de"));
+  if(!rows.length){tb.innerHTML='<tr><td colspan="5" style="color:var(--mute)">Sobald das Ensemble eingetragen ist, erscheint hier für jede Person die Besetzung mit Wortzahl.</td></tr>';}
+  rows.forEach(r=>{
+    const tr=document.createElement("tr");
+    const roleTxt=r.rs.length?r.rs.map(k=>R[k][0]).join(" · "):"—";
+    let flags="";
+    if(!r.rs.length) flags+='<span class="flag mute">ohne Rolle</span>';
+    r.c.forEach(c=>flags+=`<span class="flag warn">${c.scenes.map(sceneName).join(", ")}: ${esc(R[c.a][0])} + ${esc(R[c.b][0])}</span>`);
+    quickChanges(r.a.id).forEach(q=>flags+=`<span class="flag mute">Umziehen: ${esc(sceneName(q.a))} ${esc(R[q.from][0])} → ${esc(sceneName(q.b))} ${esc(R[q.to][0])}</span>`);
+    r.rs.forEach(k=>{ if(R[k][9]&&(k!=="kessler"||r.rs.length>1)) flags+=`<span class="flag mute">${esc(R[k][0])}: ${esc(R[k][9])}</span>`; });
+    if(r.rs.length&&!r.c.length) flags+='<span class="flag ok">passt</span>';
+    tr.innerHTML=`<td><b>${esc(r.a.name)}</b></td><td>${esc(roleTxt)}</td><td class="num">${r.rs.length?r.w:""}</td><td class="wishes">${wishText(r.a.id)}</td><td>${flags}</td>`;
+    tb.appendChild(tr);
+  });
+  const open=ORDER.filter(k=>!state.cast[k]);
+  $("openRolesBox").innerHTML=open.length?`<div class="openroles"><b style="font-size:13.5px;margin-right:4px">Noch offen (${open.length}):</b>${open.map(k=>`<span>${esc(R[k][0])}</span>`).join("")}</div>`:'<p class="note" style="color:var(--ok)">Alle Rollen sind besetzt.</p>';
+
+  renderWishSummary(); renderVersions();
+  // Roster-Zähler aktualisieren ohne Eingaben zu stören
+  document.querySelectorAll("#roster li").forEach((li,i)=>{const a=state.actors[i];const n=li.querySelector(".n");if(a&&n){const c=rolesOf(a.id).length;n.textContent=c?c+(c>1?" Rollen":" Rolle"):"frei";}});
+}
+
+/* ---------- Szenen-Matrix ---------- */
+function shortName(k){ const p=R[k][0].split(" "); return /^(Die|Frau|Prof\.|Dr\.|Kommissarin)$/.test(p[0])?p[p.length-1]:p[0]; }
+function mk(w,bad,label){ return `<span class="mk${bad?" bad":w>100?" big":""}${label?" txt":""}" title="${label?esc(label)+" · ":""}ca. ${w} Wörter">${label?esc(label):w}</span>`; }
+function renderMatrix(conflictRoles){
+  const t=$("mx");
+  const head=`<thead><tr><th class="l">${mxView==="roles"?"Rolle":"Ensemble"}</th><th class="l">${mxView==="roles"?"Besetzung":"Rollen"}</th>${SC.map(s=>`<th title="${esc(sceneName(s[0])+" · "+s[2])}">${esc(s[1])}<small>${esc(s[2].split(" · ")[0].replace("Wahlkampfzentrale","Zentrale").replace("Fernsehstudio","Studio"))}</small></th>`).join("")}<th class="num">Wörter</th></tr></thead>`;
+  let body="", cnt=SC.map(()=>new Set());
+  if(mxView==="roles"){
+    $("mxHint").textContent="Welche Rolle in welcher Szene spricht. Rechts daneben steht, wer sie spielt.";
+    let grp="";
+    ORDER.forEach(k=>{
+      if(R[k][8]!==grp){ grp=R[k][8]; body+=`<tr class="grp"><td colspan="${SC.length+3}">${esc(grp)}</td></tr>`; }
+      const id=state.cast[k], a=id?actorById(id):null;
+      const cells=SC.map((s,i)=>{ const w=R[k][2][s[0]]; if(!w) return '<td class="c"></td>'; cnt[i].add(id||k);
+        const bad=a&&conflictRoles.has(k)&&rolesOf(a.id).some(o=>o!==k&&R[o][2][s[0]]); return `<td class="c">${mk(w,bad)}</td>`; }).join("");
+      body+=`<tr><td class="r"><b>${esc(R[k][0])}</b>${R[k][9]?`<span class="sub">${esc(R[k][9])}</span>`:""}</td><td class="who${a?"":" empty"}">${a?esc(a.name):"offen"}</td>${cells}<td class="num">${words(k)}</td></tr>`;
+    });
+  } else {
+    $("mxHint").textContent="Wer in welcher Szene auf der Bühne spricht – hilfreich für den Probenplan. Nur Personen mit Rolle.";
+    const rows=state.actors.map(a=>({a,rs:rolesOf(a.id)})).filter(r=>r.rs.length).sort((x,y)=>x.a.name.localeCompare(y.a.name,"de"));
+    if(!rows.length) body=`<tr><td colspan="${SC.length+3}" style="color:var(--mute)">Noch keine Rolle besetzt.</td></tr>`;
+    rows.forEach(r=>{
+      const cells=SC.map((s,i)=>{ const here=r.rs.filter(k=>R[k][2][s[0]]); if(!here.length) return '<td class="c"></td>'; cnt[i].add(r.a.id);
+        const w=here.reduce((t,k)=>t+R[k][2][s[0]],0); const lab=r.rs.length>1?here.map(shortName).join(" + "):"";
+        return `<td class="c">${mk(w,here.length>1,lab)}</td>`; }).join("");
+      body+=`<tr><td class="r"><b>${esc(r.a.name)}</b></td><td class="r">${esc(r.rs.map(k=>R[k][0]).join(" · "))}</td>${cells}<td class="num">${r.rs.reduce((t,k)=>t+words(k),0)}</td></tr>`;
+    });
+  }
+  const foot=`<tfoot><tr><td class="l" colspan="2">${mxView==="roles"?"Sprechende Rollen":"Personen auf der Bühne"}</td>${cnt.map(c=>`<td>${c.size||""}</td>`).join("")}<td></td></tr></tfoot>`;
+  t.innerHTML=head+"<tbody>"+body+"</tbody>"+foot;
+}
+function setMx(v){ mxView=v; $("mxRoles").setAttribute("aria-pressed",v==="roles"); $("mxActors").setAttribute("aria-pressed",v==="actors"); render(); }
+$("mxRoles").addEventListener("click",()=>setMx("roles"));
+$("mxActors").addEventListener("click",()=>setMx("actors"));
+
+/* ---------- Verschieben ---------- */
+function drop(actor, from, target){
+  if(!target) return false;
+  if(target==="pool"){ if(from){ delete state.cast[from]; return true; } return false; }
+  const k=target.slice(5); if(!R[k]||from===k) return false;
+  const occ=state.cast[k];
+  state.cast[k]=actor;
+  if(from){ if(occ && occ!==actor) state.cast[from]=occ; else delete state.cast[from]; }
+  return true;
+}
+function dropTargetAt(x,y){const el=document.elementFromPoint(x,y);const t=el&&el.closest("[data-drop]");return t?t:null;}
+
+let drag=null;
+document.addEventListener("pointerdown",e=>{
+  if(e.button!==0) return;
+  if(e.target.closest("[data-clear]")) return;
+  const t=e.target.closest(".tile[data-actor],.chip[data-actor]"); if(!t) return;
+  drag={el:t,actor:t.dataset.actor,from:t.dataset.from||"",x0:e.clientX,y0:e.clientY,ghost:null,over:null,pid:e.pointerId};
+});
+document.addEventListener("pointermove",e=>{
+  if(!drag||e.pointerId!==drag.pid) return;
+  if(!drag.ghost){
+    if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<6) return;
+    dragging=true; selected=null;
+    const g=document.createElement("div"); g.className="tile ghost"; g.textContent=actorById(drag.actor).name; document.body.appendChild(g);
+    drag.ghost=g; drag.el.classList.add("dragging-src");
+    document.querySelectorAll(".slot").forEach(s=>s.classList.add("target"));
+  }
+  e.preventDefault();
+  drag.ghost.style.left=(e.clientX-drag.ghost.offsetWidth/2)+"px"; drag.ghost.style.top=(e.clientY-drag.ghost.offsetHeight/2)+"px";
+  const tg=dropTargetAt(e.clientX,e.clientY);
+  if(tg!==drag.over){ if(drag.over) drag.over.classList.remove("over"); drag.over=tg; if(tg) tg.classList.add("over"); }
+  const edge=60; if(e.clientY<edge) window.scrollBy(0,-12); else if(e.clientY>innerHeight-edge) window.scrollBy(0,12);
+},{passive:false});
+function endDrag(e){
+  if(!drag||e.pointerId!==drag.pid) return;
+  const d=drag; drag=null;
+  if(d.ghost){
+    d.ghost.remove(); if(d.over) d.over.classList.remove("over");
+    const tg=dropTargetAt(e.clientX,e.clientY);
+    dragging=false;
+    if(e.type==="pointerup" && tg && drop(d.actor,d.from,tg.dataset.drop)) changed(); else render();
+    suppressClick=true; setTimeout(()=>suppressClick=false,0);
+  }
+}
+let suppressClick=false;
+document.addEventListener("pointerup",endDrag);
+document.addEventListener("pointercancel",endDrag);
+
+// Antippen statt Ziehen: Kachel wählen, dann Rolle antippen
+document.addEventListener("click",e=>{
+  if(suppressClick) return;
+  const clr=e.target.closest("[data-clear]");
+  if(clr){ delete state.cast[clr.dataset.clear]; selected=null; changed(); return; }
+  const t=e.target.closest(".tile[data-actor],.chip[data-actor]");
+  if(t){ const same=selected&&selected.actor===t.dataset.actor&&selected.from===(t.dataset.from||"");
+    if(selected && !same && t.dataset.from){ if(drop(selected.actor,selected.from,"role:"+t.dataset.from)){selected=null;changed();return;} }
+    selected=same?null:{actor:t.dataset.actor,from:t.dataset.from||""}; render(); return; }
+  const z=e.target.closest("[data-drop]");
+  if(z&&selected){ const ok=drop(selected.actor,selected.from,z.dataset.drop); selected=null; if(ok) changed(); else render(); }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&selected){selected=null;render();}
+});
+
+/* ---------- Werkzeuge ---------- */
+function onReset(){
+  const area=$("resetArea");
+  area.innerHTML='<span class="confirm">Alle Rollen leeren? Das Ensemble bleibt.</span> <button class="btn small danger" id="rsYes" type="button">Leeren</button> <button class="btn small" id="rsNo" type="button">Abbrechen</button>';
+  function restore(){area.innerHTML='<button class="btn small danger" id="resetBtn" type="button">Alle Rollen leeren</button>';$("resetBtn").addEventListener("click",onReset);}
+  $("rsYes").onclick=()=>{state.cast={};restore();changed();};
+  $("rsNo").onclick=restore;
+}
+$("resetBtn").addEventListener("click",onReset);
+$("copyBtn").addEventListener("click",()=>{
+  const lines=["Besetzung FAKE. Der Widerspenstigen Zähmung (Fassung 5)",""];
+  ORDER.forEach(k=>{const a=state.cast[k]?actorById(state.cast[k]).name:"— offen —";lines.push(R[k][0]+": "+a);});
+  const txt=lines.join("\n"); const out=$("copyOut");
+  const done=()=>{$("copyBtn").textContent="Kopiert";setTimeout(()=>$("copyBtn").textContent="Liste als Text kopieren",1600);};
+  try{ navigator.clipboard.writeText(txt).then(done,()=>{out.hidden=false;out.value=txt;out.select();}); }
+  catch(err){ out.hidden=false; out.value=txt; out.select(); }
+});
+
+/* ---------- Wünsche: Hilfen ---------- */
+function rankOf(id,k){ const w=state.wishes[id]; if(!w) return -1; const i=w.indexOf(k); return i<0?0:i+1; } // -1 = keine Wünsche
+function rankBadge(id,k){
+  const r=rankOf(id,k); if(r<0) return "";
+  return r?`<i class="rk r${r}" title="${r}. Wunsch">${r}</i>`:`<i class="rk r0" title="nicht gewünscht">–</i>`;
+}
+function wishText(id){
+  const w=state.wishes[id]; if(!w||!w.some(Boolean)) return "—";
+  return w.map((k,i)=>k?(state.cast[k]===id?`<b>${i+1} ${esc(R[k][0])}</b>`:`${i+1} ${esc(R[k][0])}`):"").filter(Boolean).join(" · ");
+}
+function wishActors(){ return state.actors.filter(a=>state.wishes[a.id]&&state.wishes[a.id].some(Boolean)); }
+function renderWishSummary(){
+  const n=wishActors().length; const el=$("wishSummary"); if(!el) return;
+  if(!n){ el.textContent="Noch keine Wünsche eingelesen."; return; }
+  let r=[0,0,0,0]; wishActors().forEach(a=>{ const rs=rolesOf(a.id); const best=rs.map(k=>rankOf(a.id,k)).filter(x=>x>0).sort()[0]; r[best||0]++; });
+  el.textContent=`${n} Personen mit Wünschen · auf der Tafel erfüllt: ${r[1]}× Hauptwunsch, ${r[2]}× Zweit-, ${r[3]}× Drittwunsch, ${r[0]}× keiner`;
+}
+
+/* ---------- Rollennamen erkennen ---------- */
+const normT=s=>String(s==null?"":s).toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]+/g," ").trim();
+const ALIAS={
+  konstanze:["konstanze","konstanze brandl","ob","oberbuergermeisterin","buergermeisterin","mutter brandl","baptista"],
+  katharina:["katharina","katharina brandl","kathi","kati","kate","kaethe","kat"],
+  bianca:["bianca","bianca brandl"],
+  henny:["henny","ortmann","henny ortmann","wahlkampfmanagerin","wahlkampfchefin","hortensio"],
+  sommer:["nora","sommer","nora sommer","pressesprecherin"],
+  huber:["huber","frau huber","personenschutz","personenschuetzerin","bodyguard"],
+  luca:["luca","lucia","luca benz","faktenchecker","faktencheckerin","lucentio"],
+  tara:["tara","nowak","tara nowak","meme profi","memes"],
+  josie:["josie","kurierin","fahrradkurierin"],
+  vera:["vera","vera benz","prof vera benz","prof benz","professorin","forensikerin","ki forensikerin"],
+  petri:["petri","mia","mia petri","petruchio","fixerin"],
+  greta:["greta","muehl","greta muehl","fahrerin","grumio"],
+  resi:["resi","resi kurz","huettenwirtin"],
+  gremm:["gremm","gloria","gloria gremm","investorin","chefin spiegelwerk"],
+  kessler:["kessler","sicherheitschefin","sicherheit"],
+  baronin:["baronin","die baronin","barbara","von ronn","barbara von ronn","kreativchefin"],
+  pixel:["pixel","technikerin"],
+  christine:["christine","schlau","christine schlau","double","heizungsbauerin","christopher sly","sly"],
+  basti:["basti","bastienne","praktikant","praktikantin"],
+  witt:["witt","wilma","wilma witt","dr witt","herausforderin"],
+  rieger:["rieger","ines","ines rieger","moderatorin","tv moderatorin"],
+  ferner:["ferner","kommissarin","kommissarin ferner","lka"],
+  stylistin:["stylistin","die stylistin","maske","visagistin"],
+  wirtin:["wirtin","die wirtin","kupferkanne"]
+};
+const ALIST=[]; for(const k in ALIAS) ALIAS[k].forEach(a=>ALIST.push([a,k])); ALIST.sort((x,y)=>y[0].length-x[0].length);
+function resolveRole(text){
+  const n=normT(text); if(!n) return null;
+  if(state.roleMap[n]) return state.roleMap[n]==="none"?null:state.roleMap[n];
+  let hit=null;
+  for(const [a,k] of ALIST){ if((" "+n+" ").includes(" "+a+" ")){ hit=k; break; } }
+  if(!hit) return undefined; // nicht erkannt
+  return hit;
+}
+function splitWish(v){
+  const parts=String(v==null?"":v).split(/\s*(?:\/|;|,|\+|\bund\b|\boder\b|\n|&)\s*/i).map(x=>x.trim()).filter(Boolean);
+  const out=[]; parts.forEach(p=>{ if(/^\(?\d+\s*(jahre|j\.?)?\)?$/i.test(p)&&out.length) out[out.length-1]+=" "+p; else out.push(p); });
+  return out;
+}
+
+/* ---------- Dateien lesen ---------- */
+let files=[]; // {name, sheets:[{name, header:[], rows:[[]], map:[]}], sheetIdx}
+const COLTYPES=[["","nicht lesen"],["name","Name"],["vorname","Vorname"],["w1","Hauptwunsch"],["w2","Zweitwunsch"],["w3","Drittwunsch"]];
+function guessCol(h, fname){
+  const n=normT(h);
+  if(/vorname|rufname/.test(n)) return "vorname";
+  if(/nachname|familienname|klasse|datum|zeit|mail/.test(n)) return "";
+  if(/zweit|2 wunsch|wunsch 2|^2$/.test(n)) return "w2";
+  if(/dritt|3 wunsch|wunsch 3|^3$/.test(n)) return "w3";
+  if(/haupt|erst|1 wunsch|wunsch 1|^1$|lieblings/.test(n)) return "w1";
+  if(/name|schueler|person|spieler/.test(n)) return "name";
+  if(/wunsch|rolle|figur/.test(n)) return "wish";
+  return "";
+}
+function setupSheet(sh, fname){
+  const fn=normT(fname);
+  let map=sh.header.map(h=>guessCol(h,fname));
+  // allgemeine Wunschspalten der Reihe nach verteilen
+  const used=new Set(map.filter(x=>/^w\d$/.test(x)));
+  let order=["w1","w2","w3"];
+  if(/zweit|dritt|2|3/.test(fn) && !/haupt/.test(fn)) order=["w2","w3","w1"];
+  map=map.map(x=>{ if(x!=="wish") return x; const nx=order.find(o=>!used.has(o)); if(nx){used.add(nx);return nx;} return ""; });
+  if(!map.includes("name")&&!map.includes("vorname")){ const i=map.findIndex(x=>x===""); if(i>=0) map[i]="name"; }
+  sh.map=map;
+}
+function sheetFromAOA(name,aoa){
+  aoa=aoa.map(r=>(r||[]).map(c=>c==null?"":String(c).trim()));
+  let hi=aoa.findIndex(r=>r.filter(Boolean).length>=2); if(hi<0) hi=0;
+  if(hi>10) hi=0;
+  const header=aoa[hi]||[]; const width=Math.max(header.length,...aoa.map(r=>r.length));
+  const head=[]; for(let i=0;i<width;i++) head.push(header[i]||("Spalte "+(i+1)));
+  const rows=aoa.slice(hi+1).filter(r=>r.some(Boolean)).map(r=>{const x=[];for(let i=0;i<width;i++)x.push(r[i]||"");return x;});
+  return {name,header:head,rows,map:[]};
+}
+async function readFile(f){
+  const buf=await f.arrayBuffer();
+  let sheets=[];
+  if(window.XLSX){
+    const wb=XLSX.read(buf,{type:"array"});
+    wb.SheetNames.forEach(sn=>{ const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:"",raw:false,blankrows:false}); const sh=sheetFromAOA(sn,aoa); if(sh.rows.length) sheets.push(sh); });
+  } else if(/\.csv$/i.test(f.name)){
+    const txt=new TextDecoder("utf-8").decode(buf); const sep=(txt.split("\n")[0].match(/;/g)||[]).length>=(txt.split("\n")[0].match(/,/g)||[]).length?";":",";
+    sheets.push(sheetFromAOA("CSV",txt.split(/\r?\n/).map(l=>l.split(sep).map(c=>c.replace(/^"|"$/g,"")))));
+  } else throw new Error("Das Lesemodul für Excel ist nicht geladen. Bitte die Seite neu laden oder die Tabelle als CSV speichern.");
+  sheets.forEach(sh=>setupSheet(sh,f.name));
+  return {name:f.name,sheets,sheetIdx:0};
+}
+async function addFiles(list){
+  const msg=$("importMsg"); msg.className="msg"; msg.textContent="Wird gelesen …";
+  for(const f of list){
+    try{ const r=await readFile(f); if(!r.sheets.length) throw new Error("keine Daten gefunden"); files=files.filter(x=>x.name!==r.name); files.push(r); }
+    catch(e){ msg.className="msg warn"; msg.textContent=`${f.name}: ${e.message||"konnte nicht gelesen werden"}`; renderFiles(); return; }
+  }
+  msg.textContent=""; renderFiles();
+}
+$("fileIn").addEventListener("change",e=>{ addFiles([...e.target.files]); e.target.value=""; });
+const dz=$("dropzone");
+["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("over");}));
+["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("over");}));
+dz.addEventListener("drop",e=>{ if(e.dataTransfer&&e.dataTransfer.files.length) addFiles([...e.dataTransfer.files]); });
+$("importClear").addEventListener("click",()=>{files=[];renderFiles();$("importMsg").textContent="";});
+
+function firstName(row,map){
+  const vi=map.indexOf("vorname"); if(vi>=0&&row[vi]) return row[vi].trim().split(/\s+/)[0];
+  const ni=map.indexOf("name"); if(ni<0) return "";
+  let v=row[ni].trim(); if(!v) return "";
+  if(v.includes(",")) v=v.split(",")[1].trim()||v.split(",")[0].trim(); // "Nachname, Vorname"
+  return v.split(/\s+/)[0];
+}
+function collect(){
+  // liefert {persons: Map(norm -> {name, w:[[],[],[]]}), unknown: Map(text->count), dupes:[] }
+  const persons=new Map(), unknown=new Map(), dupes=[];
+  files.forEach(f=>{
+    const sh=f.sheets[f.sheetIdx]; if(!sh) return; const seen=new Map();
+    sh.rows.forEach(row=>{
+      const fnm=firstName(row,sh.map); if(!fnm) return;
+      const key=normT(fnm); seen.set(key,(seen.get(key)||0)+1);
+      if(seen.get(key)===2) dupes.push(`${fnm} (${f.name})`);
+      if(!persons.has(key)) persons.set(key,{name:fnm.charAt(0).toUpperCase()+fnm.slice(1),w:[[],[],[]]});
+      const p=persons.get(key);
+      sh.map.forEach((t,ci)=>{
+        if(!/^w\d$/.test(t)) return; let rank=+t[1]-1;
+        splitWish(row[ci]).forEach((txt,j)=>{
+          const rr=Math.min(2,rank+j); const k=resolveRole(txt);
+          if(k===undefined){ unknown.set(txt,(unknown.get(txt)||0)+1); return; }
+          if(k) p.w[rr].push(k);
+        });
+      });
+    });
+  });
+  return {persons,unknown,dupes};
+}
+function renderFiles(){
+  const box=$("fileMaps"); box.innerHTML="";
+  files.forEach((f,fi)=>{
+    const sh=f.sheets[f.sheetIdx];
+    const d=document.createElement("div"); d.className="fmap";
+    const sel=f.sheets.length>1?`<select data-sheet="${fi}" aria-label="Tabellenblatt">${f.sheets.map((s,i)=>`<option value="${i}"${i===f.sheetIdx?" selected":""}>${esc(s.name)}</option>`).join("")}</select>`:`<span class="hint" style="margin:0">${esc(sh.name)}</span>`;
+    d.innerHTML=`<div class="fh"><b>${esc(f.name)}</b><span style="display:flex;gap:8px;align-items:center">${sel}<span class="hint" style="margin:0">${sh.rows.length} Zeilen</span><button class="btn small danger" data-rmfile="${fi}" type="button">Entfernen</button></span></div>`;
+    const pv=document.createElement("div"); pv.className="prev";
+    let html="<table><thead><tr>";
+    sh.header.forEach((h,ci)=>{ html+=`<th>${esc(h)}<select data-col="${fi}:${ci}" class="${sh.map[ci]?"on":""}" aria-label="Spalte ${esc(h)} lesen als">${COLTYPES.map(([v,l])=>`<option value="${v}"${sh.map[ci]===v?" selected":""}>${l}</option>`).join("")}</select></th>`; });
+    html+="</tr></thead><tbody>";
+    sh.rows.slice(0,4).forEach(r=>{ html+="<tr>"+r.map(c=>`<td title="${esc(c)}">${esc(c)}</td>`).join("")+"</tr>"; });
+    if(sh.rows.length>4) html+=`<tr><td colspan="${sh.header.length}" style="color:var(--mute)">… ${sh.rows.length-4} weitere Zeilen</td></tr>`;
+    pv.innerHTML=html+"</tbody></table>"; d.appendChild(pv); box.appendChild(d);
+  });
+  box.querySelectorAll("[data-col]").forEach(s=>s.addEventListener("change",()=>{const [fi,ci]=s.dataset.col.split(":").map(Number);const sh=files[fi].sheets[files[fi].sheetIdx];sh.map[ci]=s.value;renderFiles();}));
+  box.querySelectorAll("[data-sheet]").forEach(s=>s.addEventListener("change",()=>{files[+s.dataset.sheet].sheetIdx=+s.value;renderFiles();}));
+  box.querySelectorAll("[data-rmfile]").forEach(b=>b.addEventListener("click",()=>{files.splice(+b.dataset.rmfile,1);renderFiles();}));
+  $("importGo").disabled=!files.length; $("importClear").hidden=!files.length;
+  renderFix();
+}
+function roleOptions(sel){
+  return `<option value="">– bitte wählen –</option><option value="none"${sel==="none"?" selected":""}>keine Rolle / ignorieren</option>`+ORDER.map(k=>`<option value="${k}"${sel===k?" selected":""}>${esc(R[k][0])}</option>`).join("");
+}
+function renderFix(){
+  const box=$("roleFix"); if(!files.length){box.innerHTML="";return;}
+  const {unknown,persons,dupes}=collect();
+  let html=`<p class="msg">${persons.size} Personen gefunden.</p>`;
+  if(dupes.length) html+=`<p class="msg warn">Vorname mehrfach in derselben Tabelle: ${dupes.map(esc).join(", ")}. Diese Zeilen werden zusammengelegt – bitte prüfen.</p>`;
+  if(unknown.size){
+    html+=`<p class="msg warn">Diese Einträge passen zu keiner Rolle. Bitte zuordnen:</p><div class="fixlist">`;
+    [...unknown.entries()].forEach(([t,c],i)=>{ html+=`<div class="row"><span>„${esc(t)}“ <span class="hint" style="margin:0">(${c}×)</span></span><select data-fix="${esc(normT(t))}" aria-label="Rolle für ${esc(t)}">${roleOptions("")}</select></div>`; });
+    html+="</div>";
+  }
+  box.innerHTML=html;
+  box.querySelectorAll("[data-fix]").forEach(s=>s.addEventListener("change",()=>{ if(s.value){state.roleMap[s.dataset.fix]=s.value; renderFix();} }));
+}
+$("importGo").addEventListener("click",()=>{
+  const {persons,unknown}=collect(); const msg=$("importMsg");
+  const take=$("takeNames").checked; let added=0, matched=0; const missing=[], ambiguous=[];
+  const byFirst=new Map(); state.actors.forEach(a=>{const k=normT(a.name.split(/\s+/)[0]); if(!byFirst.has(k)) byFirst.set(k,[]); byFirst.get(k).push(a);});
+  persons.forEach((p,key)=>{
+    let list=byFirst.get(key)||[]; let a=null;
+    if(list.length===1) a=list[0];
+    else if(list.length>1){ ambiguous.push(p.name); a=list[0]; }
+    else if(take){ a={id:uid(),name:p.name}; state.actors.push(a); byFirst.set(key,[a]); added++; }
+    else { missing.push(p.name); return; }
+    matched++;
+    // Rang möglichst erhalten: erst auf r, sonst nächster freier Platz
+    const w2=[null,null,null]; const s2=new Set();
+    for(let r=0;r<3;r++) for(const k of p.w[r]){ if(s2.has(k)) continue; let pos=r; while(pos<3&&w2[pos]) pos++; if(pos<3){w2[pos]=k;s2.add(k);} }
+    state.wishes[a.id]=w2;
+  });
+  renderRoster(); changed(); renderWishes();
+  let t=`${matched} Personen mit Wünschen übernommen`+(added?`, davon ${added} neu im Ensemble`:"")+".";
+  if(missing.length) t+=` Nicht im Ensemble gefunden: ${missing.join(", ")}.`;
+  if(ambiguous.length) t+=` Vorname mehrfach im Ensemble, erste Person genommen: ${ambiguous.join(", ")}.`;
+  if(unknown.size) t+=` ${unknown.size} Einträge ohne Rolle wurden übersprungen.`;
+  msg.className="msg "+(missing.length||unknown.size||ambiguous.length?"warn":"ok"); msg.textContent=t;
+  versions=null; renderVersions();
+});
+
+/* ---------- Überschneidungen ---------- */
+function renderDemand(){
+  const box=$("demandBox"); const wa=wishActors();
+  if(!wa.length){ box.innerHTML='<p class="hint">Sobald Wünsche eingelesen sind, steht hier für jede Rolle, wer sie als Haupt-, Zweit- oder Drittwunsch angegeben hat.</p>'; return; }
+  const dem={}; ORDER.forEach(k=>dem[k]=[[],[],[]]);
+  wa.forEach(a=>state.wishes[a.id].forEach((k,i)=>{ if(k) dem[k][i].push(a.name.split(" ")[0]); }));
+  const rows=ORDER.map(k=>({k,d:dem[k],n1:dem[k][0].length,n:dem[k][0].length+dem[k][1].length+dem[k][2].length}))
+    .sort((x,y)=>y.n1-x.n1||y.n-x.n||ORDER.indexOf(x.k)-ORDER.indexOf(y.k));
+  const over=rows.filter(r=>r.n1>1), none=rows.filter(r=>r.n===0);
+  const noWish=state.actors.filter(a=>!state.wishes[a.id]||!state.wishes[a.id].some(Boolean));
+  const short=wa.filter(a=>state.wishes[a.id].filter(Boolean).length<3);
+  let html=`<div class="legend" style="margin-bottom:6px"><span>${over.length} Rollen mit mehreren Hauptwünschen</span><span>${none.length} Rollen ohne jeden Wunsch</span><span>${noWish.length} Personen ohne Wunsch</span></div>`;
+  html+='<div class="tablewrap" style="max-height:420px;overflow:auto"><table class="demand"><thead><tr><th>Rolle</th><th>Hauptwunsch</th><th>Zweitwunsch</th><th>Drittwunsch</th><th>Lage</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    let tag=r.n1>1?`<span class="flag warn">Überschneidung · ${r.n1}×</span>`:r.n1===1?'<span class="flag ok">eindeutig</span>':r.n?'<span class="flag mute">nur Ersatzwunsch</span>':'<span class="flag warn">kein Wunsch</span>';
+    html+=`<tr><td><b>${esc(R[r.k][0])}</b></td>${r.d.map(l=>`<td class="nm">${esc(l.join(", "))||'<span style="color:var(--mute)">–</span>'}</td>`).join("")}<td>${tag}</td></tr>`;
+  });
+  html+="</tbody></table></div>";
+  if(noWish.length) html+=`<p class="msg warn">Ohne Wunsch: ${esc(noWish.map(a=>a.name).join(", "))}</p>`;
+  if(short.length) html+=`<p class="msg">Weniger als drei Wünsche: ${esc(short.map(a=>a.name.split(" ")[0]+" ("+state.wishes[a.id].filter(Boolean).length+")").join(", "))}</p>`;
+  box.innerHTML=html;
+}
+
+/* ---------- Zuordnung (ungarische Methode) ---------- */
+function hungarianMax(score){ // score[n][m] -> assign[n] = j oder -1
+  const n=score.length, m=n?score[0].length:0, N=Math.max(n,m); if(!N) return [];
+  let mx=0; score.forEach(r=>r.forEach(v=>{if(v>mx)mx=v;}));
+  const a=[]; for(let i=0;i<N;i++){a.push([]);for(let j=0;j<N;j++) a[i].push(i<n&&j<m?mx-score[i][j]:mx);}
+  const u=new Array(N+1).fill(0),v=new Array(N+1).fill(0),p=new Array(N+1).fill(0),way=new Array(N+1).fill(0);
+  for(let i=1;i<=N;i++){ p[0]=i; let j0=0; const minv=new Array(N+1).fill(Infinity), used=new Array(N+1).fill(false);
+    do{ used[j0]=true; const i0=p[j0]; let delta=Infinity, j1=0;
+      for(let j=1;j<=N;j++) if(!used[j]){ const cur=a[i0-1][j-1]-u[i0]-v[j]; if(cur<minv[j]){minv[j]=cur;way[j]=j0;} if(minv[j]<delta){delta=minv[j];j1=j;} }
+      for(let j=0;j<=N;j++){ if(used[j]){u[p[j]]+=delta;v[j]-=delta;} else minv[j]-=delta; }
+      j0=j1; } while(p[j0]!==0);
+    do{ const j1=way[j0]; p[j0]=p[j1]; j0=j1; } while(j0);
+  }
+  const res=new Array(n).fill(-1); for(let j=1;j<=N;j++) if(p[j]>0&&p[j]<=n&&j<=m) res[p[j]-1]=j-1; return res;
+}
+function rng(seed){ let s=seed>>>0||1; return ()=>{ s^=s<<13; s>>>=0; s^=s>>17; s^=s<<5; s>>>=0; return s/4294967296; }; }
+function solve(weights, seed, noise){
+  const keep=$("keepCast").checked; const rand=rng(seed);
+  const cast={}; if(keep) for(const k in state.cast) cast[k]=state.cast[k];
+  const lockedActors=new Set(Object.values(cast));
+  const actors=state.actors.filter(a=>!lockedActors.has(a.id));
+  const roles=BOARD.filter(k=>!cast[k]);
+  const score=actors.map(a=>roles.map(k=>{ const r=rankOf(a.id,k); return (r>0?weights[r]:0)+words(k)/MAXW*3+(noise?rand()*noise:0); }));
+  const as=hungarianMax(score);
+  as.forEach((j,i)=>{ if(j>=0) cast[roles[j]]=actors[i].id; });
+  return cast;
+}
+function evaluate(cast){
+  const dist=[0,0,0,0]; const rows=[]; let lowW=0, confl=0, without=0;
+  state.actors.forEach(a=>{
+    const rs=ORDER.filter(k=>cast[k]===a.id);
+    const w=rs.reduce((s,k)=>s+words(k),0);
+    let best=0;
+    rs.forEach(k=>{const r=rankOf(a.id,k); if(r>0&&(!best||r<best)) best=r;});
+    const has=state.wishes[a.id]&&state.wishes[a.id].some(Boolean);
+    if(has) dist[best]++;
+    if(!rs.length) without++;
+    for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++) if(scenes(rs[i]).some(s=>scenes(rs[j]).includes(s))) confl++;
+    rows.push({a,rs,w,best,has});
+  });
+  const open=ORDER.filter(k=>!cast[k]).length;
+  return {dist,rows,lowW,confl,without,open};
+}
+let versions=null, undoCast=null;
+function diffCount(c1,c2){ return BOARD.filter(k=>c1[k]!==c2[k]).length; }
+function buildVersions(){
+  const W1={1:100,2:45,3:20}, W2={1:100,2:88,3:76};
+  const v1=solve(W1,1,0.001), v2=solve(W2,2,0.001);
+  let v3=null, bestD=-1;
+  const val=c=>{const e=evaluate(c);return e.dist[1]*100+e.dist[2]*45+e.dist[3]*20;}; const target=val(v1);
+  for(let s=3;s<15;s++){ const c=solve(W1,s*7919,14); const d=diffCount(c,v1)+diffCount(c,v2)*.5; if(val(c)>=target*0.93 && d>bestD){bestD=d;v3=c;} }
+  versions=[
+    {id:"A",title:"Version A · Hauptwünsche zuerst",text:"So viele Hauptwünsche wie möglich. Wer leer ausgeht, bekommt bevorzugt den Zweit-, dann den Drittwunsch.",cast:v1},
+    {id:"B",title:"Version B · Möglichst niemand leer",text:"Möglichst viele Personen bekommen überhaupt einen ihrer drei Wünsche – auch wenn dafür ein Hauptwunsch zum Zweitwunsch wird.",cast:v2},
+  ];
+  if(v3&&diffCount(v3,v1)>0) versions.push({id:"C",title:"Version C · Anders gelost",text:"Fast so viele erfüllte Wünsche wie A, aber Überschneidungen anders entschieden. „Neu losen“ würfelt eine weitere Variante.",cast:v3,reroll:true});
+  versions.forEach(v=>v.ev=evaluate(v.cast));
+}
+function rerollC(){
+  const W1={1:100,2:45,3:20}; const v1=versions[0].cast; const seed=Math.floor(Math.random()*1e9);
+  const val=c=>{const e=evaluate(c);return e.dist[1]*100+e.dist[2]*45+e.dist[3]*20;}; const target=val(v1);
+  let pick=null; for(let t=0;t<12;t++){ const c=solve(W1,seed+t*104729,16); if(val(c)>=target*0.9&&diffCount(c,v1)>0){pick=c;break;} }
+  if(!pick) return;
+  const c={id:"C",title:"Version C · Anders gelost",text:"Fast so viele erfüllte Wünsche wie A, aber Überschneidungen anders entschieden. „Neu losen“ würfelt eine weitere Variante.",cast:pick,reroll:true};
+  c.ev=evaluate(pick); const i=versions.findIndex(v=>v.id==="C"); if(i>=0) versions[i]=c; else versions.push(c);
+  renderVersions();
+}
+let openDetail=null;
+function renderVersions(){
+  const box=$("versions"); $("undoBtn").hidden=!undoCast;
+  if(!wishActors().length){ box.innerHTML='<p class="hint" style="margin-top:10px">Erst Wünsche einlesen, dann werden hier die Versionen angezeigt.</p>'; return; }
+  if(!versions){ box.innerHTML='<p class="hint" style="margin-top:10px">„Vorschläge berechnen“ drücken.</p>'; return; }
+  const total=wishActors().length;
+  let html='<div class="vcards">';
+  versions.forEach(v=>{
+    const e=v.ev; const cur=diffCount(v.cast,state.cast)===0;
+    const pc=n=>total?(n/total*100):0;
+    html+=`<div class="vcard${cur?" cur":""}"><h4>${esc(v.title)}</h4><p>${esc(v.text)}</p>
+      <div class="dist" role="img" aria-label="Erfüllte Wünsche">${[1,2,3,0].map(r=>`<i class="d${r}" style="width:${pc(e.dist[r])}%"></i>`).join("")}</div>
+      <div class="legend"><span class="l1">${e.dist[1]} Hauptwunsch</span><span class="l2">${e.dist[2]} Zweitwunsch</span><span class="l3">${e.dist[3]} Drittwunsch</span><span class="l0">${e.dist[0]} keiner</span></div>
+      <div>${e.open?`<span class="flag warn">${e.open} Rollen offen</span>`:'<span class="flag ok">alle Rollen besetzt</span>'}${e.without?`<span class="flag warn">${e.without} ohne Rolle</span>`:""}${e.confl?`<span class="flag warn">${e.confl} Szenen-Konflikte</span>`:""}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${cur?'<span class="flag ok">liegt auf der Tafel</span>':`<button class="btn primary small" data-apply="${v.id}" type="button">Auf die Tafel legen</button>`}<button class="btn small" data-detail="${v.id}" type="button">${openDetail===v.id?"Liste schließen":"Liste ansehen"}</button>${v.reroll?'<button class="btn small" data-reroll type="button">Neu losen</button>':""}</div>`;
+    if(openDetail===v.id){
+      html+='<div class="vdetail"><table><tbody>'+e.rows.slice().sort((x,y)=>(x.best||9)-(y.best||9)||x.a.name.localeCompare(y.a.name,"de")).map(r=>`<tr><td><b>${esc(r.a.name)}</b></td><td>${r.rs.map(k=>(rankOf(r.a.id,k)>=0?rankBadge(r.a.id,k)+" ":"")+esc(R[k][0])).join("<br>")||'<span style="color:var(--warn)">ohne Rolle</span>'}</td><td class="wc">${r.w?r.w+" W.":""}</td></tr>`).join("")+'</tbody></table></div>';
+    }
+    html+="</div>";
+  });
+  box.innerHTML=html+"</div>";
+  box.querySelectorAll("[data-apply]").forEach(b=>b.addEventListener("click",()=>{ const v=versions.find(x=>x.id===b.dataset.apply); undoCast={...state.cast}; state.cast={...v.cast}; changed(); renderVersions(); }));
+  box.querySelectorAll("[data-detail]").forEach(b=>b.addEventListener("click",()=>{ openDetail=openDetail===b.dataset.detail?null:b.dataset.detail; renderVersions(); }));
+  box.querySelectorAll("[data-reroll]").forEach(b=>b.addEventListener("click",rerollC));
+}
+$("calcBtn").addEventListener("click",()=>{ if(!wishActors().length){renderVersions();return;} buildVersions(); renderVersions(); });
+$("undoBtn").addEventListener("click",()=>{ if(!undoCast) return; state.cast={...undoCast}; undoCast=null; changed(); renderVersions(); });
+$("wishToggle").addEventListener("click",()=>{ const b=$("wishBody"); b.hidden=!b.hidden; $("wishToggle").textContent=b.hidden?"Bereich aufklappen":"Bereich einklappen"; });
+function renderWishes(){ renderDemand(); if(versions) versions.forEach(v=>v.ev=evaluate(v.cast)); renderVersions(); renderWishSummary(); }
+
+init();
+})();
+</script>
+
+</body></html>
