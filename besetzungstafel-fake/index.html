@@ -94,11 +94,23 @@ form.add input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);
 .boardwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--sheet);box-shadow:var(--shadow)}
 .board{position:relative;min-width:980px;aspect-ratio:297/210;container-type:inline-size;background:#fff}
 .board img{position:absolute;inset:0;width:100%;height:100%;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
-.slot{position:absolute;border:0;padding:0;background:transparent;border-radius:1cqw;cursor:pointer}
-.slot.over{background:rgba(43,75,140,.16);outline:2.5px solid var(--accent);outline-offset:1px}
-.slot.target .ring{position:absolute;inset:0;border-radius:inherit;outline:2px dashed var(--accent);outline-offset:1px;opacity:.55}
-.chip{position:absolute;display:flex;align-items:center;justify-content:center;gap:.35cqw;font-family:var(--f-tape);color:var(--tape-ink);
-  background:var(--tape);border-bottom:.18cqw solid var(--tape-edge);font-size:clamp(11px,1.12cqw,17px);line-height:1;padding:0 .4cqw;
+/* Rollenkarten über den Kästen der Konstellation: Name, Beschreibung, darunter die Besetzung */
+:root{--sz-gross:#c1121f;--sz-mittel:#1d6fb8;--sz-klein:#2a9d8f}
+.slot{position:absolute;display:flex;flex-direction:column;align-items:stretch;gap:.12cqw;padding:.25cqw .3cqw .3cqw;
+  background:#fff;color:#1c2331;border:.34cqw solid var(--sz-mittel);border-radius:.5cqw;cursor:pointer;text-align:center;z-index:2;overflow:hidden}
+.slot.gross{border-color:var(--sz-gross)} .slot.mittel{border-color:var(--sz-mittel)} .slot.klein{border-color:var(--sz-klein)}
+.slot .rn{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:700;font-size:1.22cqw;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot .rd{font-size:.88cqw;line-height:1.05;color:#4a5263;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot .free{flex:1;display:flex;align-items:center;justify-content:center;border:.12cqw dashed #b9c0cc;border-radius:.3cqw;font-size:.8cqw;color:#8a93a3;min-height:0}
+.slot .chip{position:relative;flex:1;min-height:0}
+.slot.over{outline:.3cqw solid var(--accent);outline-offset:.15cqw;background:#eef3fc}
+.slot.target .free{border-color:var(--accent);color:var(--accent)}
+.sizes{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--mute);align-items:center}
+.sizes span::before{content:"";display:inline-block;width:14px;height:10px;border:3px solid currentColor;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.sizes .g{color:var(--sz-gross)} .sizes .m{color:var(--sz-mittel)} .sizes .k{color:var(--sz-klein)}
+.sizes b{color:var(--ink);font-weight:600}
+.chip{display:flex;align-items:center;justify-content:center;gap:.35cqw;font-family:var(--f-tape);color:var(--tape-ink);
+  background:var(--tape);border-bottom:.18cqw solid var(--tape-edge);font-size:clamp(10px,1.08cqw,17px);line-height:1;padding:0 .4cqw;
   box-shadow:0 1px 2px rgba(0,0,0,.25);cursor:grab;touch-action:none;user-select:none;border-radius:2px;overflow:hidden;z-index:3;
   clip-path:polygon(0 6%,3% 0,97% 3%,100% 0,99% 94%,100% 100%,2% 97%,0 100%)}
 .chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -106,6 +118,7 @@ form.add input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);
 .chip.conflict{background:#f6a07e;border-bottom-color:#b0421c}
 .chip .x{font-family:var(--f-body);font-weight:700;font-size:.8em;opacity:0;border:0;background:none;color:inherit;cursor:pointer;padding:0 .1cqw;flex:none}
 .chip:hover .x,.chip:focus-within .x{opacity:.7}
+.mx td.r .sz{display:inline-block;width:.55em;height:.55em;border-radius:2px;margin-right:5px;vertical-align:.1em}
 
 /* Notfall-Doppelrollen */
 .dbl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
@@ -221,7 +234,8 @@ th.num{text-align:right}
   html,body{background:#fff}
   body{padding:0;font-size:11pt}
   .wrap{display:block;max-width:none}
-  .noprint,.wishpanel,.side,.status,#printBtn,#h-liste,#dblBox,.panel .bar .tools,.panel>.hint,.panel .note,.chip .x,.slot .ring{display:none!important}
+  .noprint,.wishpanel,.side,.status,#printBtn,#h-liste,#dblBox,.panel .bar .tools,.panel>.hint,.panel .note,.chip .x{display:none!important}
+  .slot .free{color:transparent}
   section[aria-labelledby="h-liste"]{display:none!important}
   .printonly{display:block}
   header.top{margin:0 0 2mm}
@@ -234,7 +248,8 @@ th.num{text-align:right}
   section[aria-labelledby="h-tafel"] .bar{display:none}
   section[aria-labelledby="h-tafel"]{break-after:page;page-break-after:always}
   .board{min-width:0;width:100%}
-  .chip{font-size:9.5pt}
+  .chip{font-size:9pt}
+  .slot .rn{font-size:9pt} .slot .rd{font-size:7pt}
   section[aria-labelledby="h-mx"]{break-before:page;page-break-before:always}
   section[aria-labelledby="h-mx"] .bar{display:block;margin:0 0 1mm}
   #h-mx{font-size:16pt;margin:0}
@@ -257,7 +272,7 @@ th.num{text-align:right}
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">Theatergruppe · FAKE. Der Widerspenstigen Zähmung · Fassung 5</div>
+      <div class="eyebrow">Theatergruppe · FAKE. Der Widerspenstigen Zähmung · Fassung 5.1</div>
       <h1>Besetzungstafel</h1>
       <div class="printonly eyebrow" id="printDate"></div>
     </div>
@@ -335,14 +350,16 @@ th.num{text-align:right}
       <div class="bar">
         <h2 id="h-tafel">Die Rollen</h2>
         <div class="tools">
-          <span class="hint" style="margin:0">Besetzte Kacheln lassen sich direkt von Rolle zu Rolle schieben; auf einer besetzten Rolle tauschen sie.</span>
+          <span class="sizes" id="sizeLegend"></span>
         </div>
       </div>
+      <p class="hint" style="margin:-2px 0 8px">Besetzte Kacheln lassen sich direkt von Rolle zu Rolle schieben; auf einer besetzten Rolle tauschen sie. Der farbige Rahmen zeigt die Rollengröße laut Anhang.</p>
+      <div class="sizes printonly" id="sizeLegendPrint" style="margin:0 0 1.5mm"></div>
       <div class="boardwrap"><div class="board" id="board"><img src="konstellation.jpg" alt="Figurenkonstellation von FAKE, Fassung 5, mit allen 24 Rollen"></div></div>
 
       <div style="margin-top:14px" id="dblBox">
         <h2 style="font-size:18px">Notfall-Doppelrollen</h2>
-        <p class="hint">Laut Anhang sind keine Doppelrollen nötig: 24 Rollen für 24 Darstellende. Fällt jemand aus, lassen sich diese Paare ohne Szenen-Überschneidung zusammenlegen. Kessler liegt im Finale gefesselt auf der Bühne und kann deshalb nicht gedoppelt werden.</p>
+        <p class="hint">Laut Anhang sind keine Doppelrollen nötig: 24 Rollen für 24 Darstellende. Fällt jemand aus, lassen sich diese beiden Paare ohne Szenen-Überschneidung zusammenlegen. Alle anderen Rollen stehen im Finale gleichzeitig auf der Bühne und lassen sich deshalb nicht doppeln.</p>
         <div class="dbl" id="dbl"></div>
       </div>
     </section>
@@ -357,7 +374,7 @@ th.num{text-align:right}
     </div>
     <p class="hint" id="mxHint"></p>
     <div class="tablewrap" style="max-height:640px;overflow:auto"><table class="mx" id="mx"></table></div>
-    <p class="note">Die Zahl im Feld ist die Wortzahl der Rolle in dieser Szene (eigene Auszählung des Textbuchs; die Summen weichen um bis zu 6 Wörter vom Anhang ab). Dunkel: über 100 Wörter. Rot: eine Person hat zwei Rollen in derselben Szene. Stumme Auftritte sind nicht erfasst.</p>
+    <p class="note">Die Zahl im Feld ist die Wortzahl der Rolle in dieser Szene (eigene Auszählung des Textbuchs; die Summen weichen um bis zu 20 Wörter vom Anhang ab). Dunkel: über 100 Wörter. Rot: eine Person hat zwei Rollen in derselben Szene. Stumme Auftritte sind nicht erfasst.</p>
   </section>
 
   <section class="panel" aria-labelledby="h-liste">
@@ -374,7 +391,7 @@ th.num{text-align:right}
     </table></div>
     <div id="openRolesBox"></div>
     <textarea class="copyout" id="copyOut" hidden readonly aria-label="Besetzungsliste als Text"></textarea>
-    <p class="note">Wortzahlen aus dem Anhang von Fassung 5 (nur gesprochene Wörter). Szenen-Konflikte werden nach den Sprechanteilen geprüft: Wer zwei Rollen in derselben Szene hat, wird markiert. Stehen zwei Rollen einer Person in direkt aufeinanderfolgenden Szenen, erscheint ein Hinweis zum Umziehen. Stumme Auftritte sind nicht erfasst.</p>
+    <p class="note">Wortzahlen aus dem Anhang von Fassung 5.1 (nur gesprochene Wörter). Szenen-Konflikte werden nach den Sprechanteilen geprüft: Wer zwei Rollen in derselben Szene hat, wird markiert. Stehen zwei Rollen einer Person in direkt aufeinanderfolgenden Szenen, erscheint ein Hinweis zum Umziehen. Stumme Auftritte sind nicht erfasst.</p>
   </section>
 </div>
 
@@ -386,44 +403,46 @@ const MMW = 297, MMH = 210;
 // Szenen in Spielfolge mit Ort (laut Anhang Fassung 5)
 const SC = [
   ["Vorspiel","Vor","Rampe · Kupferkanne"],["I.1","I.1","Wahlkampfzentrale"],["I.2","I.2","Rampe · Tiefgarage"],["E1","E1","Rampe · Einschub 1"],
-  ["II.1","II.1","Wahlkampfzentrale"],["III.1","III.1","Fernsehstudio"],["III.2","III.2","Rampe"],["E2","E2","Rampe · Einschub 2"],
-  ["IV.1","IV.1","Hütte"],["IV.2","IV.2","Hütte"],["E3","E3","Rampe · Einschub 3"],["IV.3","IV.3","Wahlkampfzentrale"],
+  ["II.1","II.1","Wahlkampfzentrale"],["III.1","III.1","Fernsehstudio"],["III.2","III.2","Rampe"],["E2","E2","Rampe · Einschub 2"],["E3","E3","Rampe · Einschub 3"],
+  ["IV.1","IV.1","Hütte"],["IV.2","IV.2","Hütte"],["E4","E4","Rampe · Einschub 4"],["IV.3","IV.3","Wahlkampfzentrale"],
   ["V.1","V.1","Rampe"],["V.2","V.2","Rampe"],["V.3","V.3","Fernsehstudio · Finale"],["Nachspiel","Nach","Rampe · Kupferkanne"]
 ];
 const SIDX = Object.fromEntries(SC.map((s,i)=>[s[0],i]));
-// key: [Name, Wörter (Anhang), {Szene: Wörter (eigene Zählung)}, Tafelposition cx,cy,w,h (mm), Typ, Gruppe, Hinweis]
+// key: [Name, Wörter (Anhang 5.1), {Szene: Wörter (eigene Zählung)}, Tafelposition cx,cy,w,h (mm), Größe laut Anhang, Gruppe, Hinweis, Beschreibung]
 const R = {
-  konstanze:["Konstanze Brandl",786,{"I.1":188,"II.1":115,"III.1":93,"IV.3":194,"V.3":195},134.9,63.9,40,12,"stark","Familie Brandl & Rathaus"],
-  katharina:["Katharina Brandl",957,{"I.1":228,"II.1":85,"III.1":51,"IV.1":132,"IV.2":68,"V.1":196,"V.3":196},134.9,105.9,40,12,"stark","Familie Brandl & Rathaus"],
-  bianca:   ["Bianca Brandl",825,{"I.1":94,"II.1":115,"III.1":62,"III.2":168,"IV.3":201,"V.3":183},81.9,97.9,40,12,"stark","Familie Brandl & Rathaus"],
-  henny:    ["Henny Ortmann",378,{"I.1":101,"I.2":59,"II.1":37,"III.1":47,"IV.3":82,"V.3":52},81.9,63.9,40,12,"mittel","Familie Brandl & Rathaus"],
-  sommer:   ["Nora Sommer",154,{"I.1":19,"III.1":65,"V.3":70},81.9,120.9,40,12,"klein","Familie Brandl & Rathaus"],
-  huber:    ["Frau Huber",151,{"III.1":56,"V.3":94},183.8,49.9,40,12,"klein","Familie Brandl & Rathaus"],
-  luca:     ["Luca Benz",367,{"I.1":60,"II.1":52,"III.2":142,"IV.3":64,"V.3":49},23.8,97.9,40,12,"mittel","Echtzeit","für einen Jungen geschrieben, auch als Lucia möglich"],
-  tara:     ["Tara Nowak",379,{"I.1":56,"II.1":52,"III.2":122,"IV.3":75,"V.3":73},23.9,130,40,12,"mittel","Echtzeit"],
-  josie:    ["Josie",155,{"I.1":40,"III.2":52,"IV.3":47,"V.3":16},23.8,162,40,12,"klein","Echtzeit"],
-  vera:     ["Prof. Vera Benz",362,{"V.1":213,"V.3":149},23.9,63.9,40,12,"mittel","Echtzeit"],
-  petri:    ["Mia Petri",950,{"I.2":117,"II.1":195,"III.1":73,"IV.1":126,"IV.2":183,"V.1":156,"V.2":49,"V.3":51},134.9,157.9,40,12,"stark","Petri und ihre Leute"],
-  greta:    ["Greta Mühl",348,{"I.2":117,"III.1":31,"IV.1":33,"IV.2":64,"V.1":74,"V.3":29},91.8,186,40,12,"mittel","Petri und ihre Leute"],
-  resi:     ["Resi Kurz",349,{"IV.1":195,"IV.2":106,"V.3":48},177.8,186,40,12,"mittel","Petri und ihre Leute"],
-  gremm:    ["Gloria Gremm",845,{"I.1":150,"I.2":108,"II.1":55,"III.1":13,"IV.3":267,"V.2":63,"V.3":189},231.8,63.9,40,12,"stark","Spiegelwerk"],
-  kessler:  ["Kessler",155,{"I.2":36,"IV.2":77,"V.3":42},275.9,63.9,40,12,"klein","Spiegelwerk","im Finale gefesselt auf der Bühne"],
-  baronin:  ["Die Baronin",448,{"Vorspiel":108,"E1":83,"E2":72,"E3":46,"V.2":107,"Nachspiel":32},231.8,102,40,12,"mittel","Spiegelwerk"],
-  pixel:    ["Pixel",164,{"Vorspiel":19,"E1":25,"E2":35,"E3":31,"V.2":54},275.8,102,40,12,"klein","Spiegelwerk"],
-  christine:["Christine Schlau",875,{"Vorspiel":136,"E1":148,"III.1":16,"E2":126,"E3":140,"V.2":117,"V.3":98,"Nachspiel":88},231.8,141.9,40,12,"stark","Spiegelwerk"],
-  basti:    ["Basti",344,{"Vorspiel":41,"E1":58,"E2":101,"E3":13,"V.2":64,"V.3":21,"Nachspiel":40},275.9,141.9,40,12,"mittel","Spiegelwerk","für einen Jungen geschrieben, auch als Bastienne möglich"],
-  witt:     ["Dr. Wilma Witt",361,{"III.1":149,"IV.3":98,"V.3":114},81.9,33.9,40,12,"mittel","Außerdem"],
-  rieger:   ["Ines Rieger",370,{"I.1":79,"III.1":148,"V.3":143},149.9,33.9,40,12,"mittel","Außerdem"],
-  ferner:   ["Kommissarin Ferner",173,{"IV.3":121,"V.3":52},265.9,33.9,40,12,"klein","Außerdem"],
-  stylistin:["Die Stylistin",156,{"III.1":77,"IV.2":79},221.9,186,40,12,"klein","Außerdem"],
-  wirtin:   ["Die Wirtin",154,{"Vorspiel":85,"Nachspiel":68},275.8,186,40,12,"klein","Außerdem"]
+  konstanze:["Konstanze Brandl",813,{"I.1":188,"II.1":115,"III.1":94,"IV.3":221,"V.3":195},134.9,63.9,40,12,"gross","Familie Brandl & Rathaus","","OB von München"],
+  katharina:["Katharina Brandl",957,{"I.1":228,"II.1":85,"III.1":51,"IV.1":132,"IV.2":77,"V.1":196,"V.3":196},134.9,105.9,40,12,"gross","Familie Brandl & Rathaus","","ältere Tochter"],
+  bianca:   ["Bianca Brandl",825,{"I.1":94,"II.1":115,"III.1":62,"III.2":168,"IV.3":201,"V.3":183},81.9,97.9,40,12,"gross","Familie Brandl & Rathaus","","jüngere Tochter"],
+  henny:    ["Henny Ortmann",395,{"I.1":101,"I.2":59,"II.1":37,"III.1":47,"IV.3":99,"V.3":52},81.9,63.9,40,12,"mittel","Familie Brandl & Rathaus","","Wahlkampfchefin"],
+  sommer:   ["Nora Sommer",338,{"I.1":19,"III.1":79,"E3":149,"V.3":87},81.9,120.9,40,12,"mittel","Familie Brandl & Rathaus","","Pressesprecherin"],
+  huber:    ["Frau Huber",354,{"III.1":80,"E3":172,"V.3":101},183.8,49.9,40,12,"mittel","Familie Brandl & Rathaus","","Personenschutz"],
+  luca:     ["Luca Benz",367,{"I.1":60,"II.1":52,"III.2":142,"IV.3":64,"V.3":49},23.8,97.9,40,12,"mittel","Echtzeit","für einen Jungen geschrieben, auch als Lucia möglich","Faktenchecker"],
+  tara:     ["Tara Nowak",385,{"I.1":56,"II.1":33,"III.2":122,"IV.3":75,"V.3":79},23.9,130,40,12,"mittel","Echtzeit","","Meme-Profi"],
+  josie:    ["Josie",155,{"I.1":40,"III.2":52,"IV.3":47,"V.3":16},23.8,162,40,12,"klein","Echtzeit","","Kurierin"],
+  vera:     ["Prof. Vera Benz",362,{"V.1":213,"V.3":149},23.9,63.9,40,12,"mittel","Echtzeit","","KI-Forensikerin"],
+  petri:    ["Mia Petri",950,{"I.2":117,"II.1":195,"III.1":73,"IV.1":126,"IV.2":175,"V.1":156,"V.2":49,"V.3":51},134.9,157.9,40,12,"gross","Petri und ihre Leute","","Krisen-PR-Fixerin"],
+  greta:    ["Greta Mühl",348,{"I.2":117,"III.1":31,"IV.1":33,"IV.2":64,"V.1":74,"V.3":29},91.8,186,40,12,"mittel","Petri und ihre Leute","","Fahrerin"],
+  resi:     ["Resi Kurz",349,{"IV.1":195,"IV.2":106,"V.3":48},177.8,186,40,12,"mittel","Petri und ihre Leute","","Hüttenwirtin"],
+  gremm:    ["Gloria Gremm",854,{"I.1":150,"I.2":108,"II.1":55,"III.1":13,"IV.3":267,"V.2":63,"V.3":198},231.8,63.9,40,12,"gross","Spiegelwerk","","Chefin"],
+  kessler:  ["Kessler",155,{"I.2":36,"IV.2":77,"V.3":42},275.9,63.9,40,12,"klein","Spiegelwerk","","Sicherheit"],
+  baronin:  ["Die Baronin",669,{"Vorspiel":108,"E1":83,"E2":117,"E4":99,"V.2":107,"V.3":123,"Nachspiel":32},231.8,102,40,12,"mittel","Spiegelwerk","","Kreativchefin"],
+  pixel:    ["Pixel",369,{"Vorspiel":33,"E1":45,"E2":62,"E4":31,"V.2":74,"V.3":123},275.8,102,40,12,"mittel","Spiegelwerk","","Technikerin"],
+  christine:["Christine Schlau",905,{"Vorspiel":136,"E1":148,"III.1":16,"E2":128,"E4":142,"V.2":117,"V.3":124,"Nachspiel":88},231.8,141.9,40,12,"gross","Spiegelwerk","","Double der OB"],
+  basti:    ["Basti",344,{"Vorspiel":41,"E1":58,"E2":101,"E4":13,"V.2":64,"V.3":21,"Nachspiel":40},275.9,141.9,40,12,"mittel","Spiegelwerk","für einen Jungen geschrieben, auch als Bastienne möglich","Praktikant"],
+  witt:     ["Dr. Wilma Witt",361,{"III.1":149,"IV.3":98,"V.3":114},81.9,33.9,40,12,"mittel","Außerdem","","Herausforderin"],
+  rieger:   ["Ines Rieger",682,{"I.1":79,"III.1":169,"IV.3":199,"V.3":233},149.9,33.9,40,12,"mittel","Außerdem","","TV-Moderatorin"],
+  ferner:   ["Kommissarin Ferner",203,{"IV.3":139,"V.3":64},265.9,33.9,40,12,"klein","Außerdem","","Kommissarin (LKA)"],
+  stylistin:["Die Stylistin",160,{"III.1":81,"IV.2":79},221.9,186,40,12,"klein","Außerdem","","Maske, Plakat"],
+  wirtin:   ["Die Wirtin",154,{"Vorspiel":85,"Nachspiel":68},275.8,186,40,12,"klein","Außerdem","","Kupferkanne"]
 };
+const EXTEND_UP = new Set(["kessler","pixel","basti"]);
+const SIZES = {gross:"große Rolle",mittel:"mittlere Rolle",klein:"kleine Rolle"};
 const ORDER = Object.keys(R);
 const BOARD = ORDER;
 const TOTAL = ORDER.length; // 24 Rollen
 const MAXW = 957; // größte Rolle (Katharina) für die Gewichtung der Vorschläge
 // Zusammenlegungen laut Anhang, falls jemand ausfällt
-const DOUBLES = [["wirtin","huber"],["pixel","sommer"],["stylistin","ferner"]];
+const DOUBLES = [["wirtin","huber"],["stylistin","ferner"]];
 const STORE_DOC = "besetzung/fake-fassung5", STORE_LOCAL = "besetzungstafel-fake5-v1";
 
 let state = {actors:[], cast:{}, wishes:{}, roleMap:{}};
@@ -570,28 +589,32 @@ function render(){
 
   // Tafel
   const board=$("board");
-  board.querySelectorAll(".slot,.chip").forEach(n=>n.remove());
+  board.querySelectorAll(".slot").forEach(n=>n.remove());
   const conflictRoles=new Set();
   state.actors.forEach(a=>conflictsFor(a.id).forEach(c=>{conflictRoles.add(c.a);conflictRoles.add(c.b);}));
   BOARD.forEach(k=>{
-    const [name,,,cx,cy,w,h]=R[k];
-    const s=document.createElement("button"); s.type="button"; s.className="slot"+(selected?" target":"");
-    s.dataset.drop="role:"+k; s.setAttribute("aria-label","Rolle "+name+(state.cast[k]?", besetzt mit "+actorById(state.cast[k]).name:", frei"));
-    Object.assign(s.style,{left:((cx-w/2-1)/MMW*100)+"%",top:((cy-h/2-1)/MMH*100)+"%",width:((w+2)/MMW*100)+"%",height:((h+2)/MMH*100)+"%"});
-    s.innerHTML='<span class="ring"></span>';
-    board.appendChild(s);
+    const [name,,,cx,cy,w,h,size]=R[k]; const desc=R[k][10];
+    const s=document.createElement("div"); s.className="slot "+size+(selected?" target":""); s.tabIndex=0; s.setAttribute("role","button");
+    s.dataset.drop="role:"+k; s.setAttribute("aria-label","Rolle "+name+", "+desc+", "+SIZES[size]+(state.cast[k]?", besetzt mit "+actorById(state.cast[k]).name:", frei"));
+    // Karte deckt den Kasten im Bild ab und reicht 5 mm weiter, damit Beschreibung und Besetzung Platz haben;
+    // bei Kessler, Pixel und Basti nach oben, weil darunter Beschriftungen der Pfeile stehen
+    const up=EXTEND_UP.has(k)?5:0;
+    Object.assign(s.style,{left:((cx-w/2-0.7)/MMW*100)+"%",top:((cy-h/2-0.7-up)/MMH*100)+"%",width:((w+1.4)/MMW*100)+"%",height:((h+1.4+5)/MMH*100)+"%"});
+    s.title=name+" · "+desc+" · "+SIZES[size]+", "+words(k)+" Wörter";
+    s.innerHTML=`<span class="rn">${esc(name)}</span><span class="rd">${esc(desc)}</span>`;
     const id=state.cast[k];
     if(id){
       const a=actorById(id);
       const ch=tile(a,k,"chip"+(conflictRoles.has(k)?" conflict":"")+(selected&&selected.from===k?" sel":""));
-      const top=cy+0.1, hh=5.6, ww=w-2.5;
-      Object.assign(ch.style,{left:((cx-ww/2)/MMW*100)+"%",top:(top/MMH*100)+"%",width:(ww/MMW*100)+"%",height:(hh/MMH*100)+"%"});
       ch.dataset.drop="role:"+k;
       ch.innerHTML=`${rankBadge(a.id,k)}<span>${esc(a.name)}</span><span class="x" role="button" aria-label="Rolle freigeben" data-clear="${k}">×</span>`;
       ch.title=a.name+" als "+name+(conflictRoles.has(k)?" – Szenen-Konflikt":"");
-      board.appendChild(ch);
-    }
+      s.appendChild(ch);
+    } else s.insertAdjacentHTML("beforeend",'<span class="free">frei</span>');
+    board.appendChild(s);
   });
+  const legend=Object.keys(SIZES).map(z=>{ const ks=ORDER.filter(k=>R[k][7]===z).map(words); return `<span class="${z[0]}"><b>${SIZES[z].replace(" Rolle","")}</b>&nbsp;${Math.min(...ks)}–${Math.max(...ks)} Wörter</span>`; }).join("");
+  $("sizeLegend").innerHTML=legend; $("sizeLegendPrint").innerHTML="Rahmen = Rollengröße laut Anhang: "+legend;
 
   // Notfall-Doppelrollen
   const dbl=$("dbl"); dbl.innerHTML="";
@@ -655,7 +678,7 @@ function renderMatrix(conflictRoles){
       const id=state.cast[k], a=id?actorById(id):null;
       const cells=SC.map((s,i)=>{ const w=R[k][2][s[0]]; if(!w) return '<td class="c"></td>'; cnt[i].add(id||k);
         const bad=a&&conflictRoles.has(k)&&rolesOf(a.id).some(o=>o!==k&&R[o][2][s[0]]); return `<td class="c">${mk(w,bad)}</td>`; }).join("");
-      body+=`<tr><td class="r"><b>${esc(R[k][0])}</b>${R[k][9]?`<span class="sub">${esc(R[k][9])}</span>`:""}</td><td class="who${a?"":" empty"}">${a?esc(a.name):"offen"}</td>${cells}<td class="num">${words(k)}</td></tr>`;
+      body+=`<tr><td class="r"><i class="sz" style="background:var(--sz-${R[k][7]})" title="${SIZES[R[k][7]]}"></i><b>${esc(R[k][0])}</b>${R[k][9]?`<span class="sub">${esc(R[k][9])}</span>`:""}</td><td class="who${a?"":" empty"}">${a?esc(a.name):"offen"}</td>${cells}<td class="num">${words(k)}</td></tr>`;
     });
   } else {
     $("mxHint").textContent="Wer in welcher Szene auf der Bühne spricht – hilfreich für den Probenplan. Nur Personen mit Rolle.";
@@ -741,6 +764,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&selected){selected=null;render();}
+  if((e.key==="Enter"||e.key===" ")&&e.target.classList&&e.target.classList.contains("slot")){e.preventDefault();e.target.click();}
 });
 
 /* ---------- Werkzeuge ---------- */
@@ -753,7 +777,7 @@ function onReset(){
 }
 $("resetBtn").addEventListener("click",onReset);
 $("copyBtn").addEventListener("click",()=>{
-  const lines=["Besetzung FAKE. Der Widerspenstigen Zähmung (Fassung 5)",""];
+  const lines=["Besetzung FAKE. Der Widerspenstigen Zähmung (Fassung 5.1)",""];
   ORDER.forEach(k=>{const a=state.cast[k]?actorById(state.cast[k]).name:"— offen —";lines.push(R[k][0]+": "+a);});
   const txt=lines.join("\n"); const out=$("copyOut");
   const done=()=>{$("copyBtn").textContent="Kopiert";setTimeout(()=>$("copyBtn").textContent="Liste als Text kopieren",1600);};
