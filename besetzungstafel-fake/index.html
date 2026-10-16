@@ -409,39 +409,39 @@ const SC = [
   ["V.1","V.1","Rampe"],["V.2","V.2","Rampe"],["V.3","V.3","Fernsehstudio · Finale"],["Nachspiel","Nach","Rampe · Kupferkanne"]
 ];
 const SIDX = Object.fromEntries(SC.map((s,i)=>[s[0],i]));
-// key: [Name, Wörter (Anhang 5.1, Stand 2. Überarbeitung), {Szene: Wörter (eigene Zählung)}, Tafelposition cx,cy,w,h (mm), Größe laut Anhang, Gruppe, Hinweis, Beschreibung]
+// key: [Name, Wörter (Anhang 5.1, Stand 3. Überarbeitung), {Szene: Wörter (eigene Zählung)}, Tafelposition cx,cy,w,h (mm), Größe laut Anhang, Gruppe, Hinweis, Beschreibung]
 const R = {
-  konstanze:["Konstanze Brandl",763,{"I.1":185,"II.1":103,"III.1":82,"IV.3":229,"V.3":163},134.9,63.9,40,12,"gross","Familie Brandl & Rathaus","","OB von München"],
-  katharina:["Katharina Brandl",861,{"I.1":215,"II.1":85,"III.1":51,"IV.1":123,"IV.2":68,"V.1":173,"V.3":145},134.9,105.9,40,12,"gross","Familie Brandl & Rathaus","","ältere Tochter"],
-  bianca:   ["Bianca Brandl",734,{"I.1":83,"II.1":96,"III.1":62,"III.2":139,"IV.3":189,"V.3":163},81.9,97.9,40,12,"gross","Familie Brandl & Rathaus","","jüngere Tochter"],
-  henny:    ["Henrik Ortmann",497,{"I.1":159,"I.2":84,"II.1":46,"III.1":23,"IV.3":140,"V.3":45},81.9,63.9,40,12,"mittel","Familie Brandl & Rathaus","Männerrolle, sollte laut Anhang ein Mann bleiben","Wahlkampfmanager"],
-  sommer:   ["Nora Sommer",340,{"I.1":19,"III.1":79,"E3":149,"V.3":89},81.9,120.9,40,12,"mittel","Familie Brandl & Rathaus","","Pressesprecherin"],
-  huber:    ["Frau Huber",354,{"III.1":80,"E3":172,"V.3":101},183.8,49.9,40,12,"mittel","Familie Brandl & Rathaus","","Personenschutz"],
-  luca:     ["Luca Benz",379,{"I.1":60,"II.1":52,"III.2":142,"IV.3":64,"V.3":61},23.8,97.9,40,12,"mittel","Echtzeit","Männerrolle, auch als Lucia möglich","Faktenchecker"],
-  tara:     ["Tara Nowak",370,{"I.1":56,"II.1":37,"III.2":122,"IV.3":75,"V.3":79},23.9,130,40,12,"mittel","Echtzeit","","Meme-Profi"],
-  josie:    ["Josie",155,{"I.1":40,"III.2":52,"IV.3":47,"V.3":16},23.8,162,40,12,"klein","Echtzeit","","Kurierin"],
-  vera:     ["Prof. Vera Benz",310,{"V.1":175,"V.3":135},23.9,63.9,40,12,"mittel","Echtzeit","","KI-Forensikerin"],
-  petri:    ["Mia Petri",838,{"I.2":126,"II.1":174,"III.1":57,"IV.1":126,"IV.2":144,"V.1":131,"V.2":49,"V.3":31},134.9,157.9,40,12,"gross","Petri und ihre Leute","","Krisen-PR-Fixerin"],
-  greta:    ["Greta Mühl",318,{"I.2":87,"III.1":31,"IV.1":33,"IV.2":64,"V.1":74,"V.3":29},91.8,186,40,12,"mittel","Petri und ihre Leute","","Fahrerin"],
-  resi:     ["Resi Kurz",327,{"IV.1":173,"IV.2":106,"V.3":48},177.8,186,40,12,"mittel","Petri und ihre Leute","","Hüttenwirtin"],
-  gremm:    ["Gloria Gremm",869,{"I.1":163,"I.2":89,"II.1":64,"III.1":49,"IV.3":256,"V.2":55,"V.3":193},231.8,63.9,40,12,"gross","Spiegelwerk","","Chefin"],
-  kessler:  ["Kessler",155,{"I.2":36,"IV.2":77,"V.3":42},275.9,63.9,40,12,"klein","Spiegelwerk","","Sicherheit"],
-  baronin:  ["Die Baronin",629,{"Vorspiel":108,"E1":83,"E2":94,"E4":99,"V.2":107,"V.3":106,"Nachspiel":32},231.8,102,40,12,"mittel","Spiegelwerk","","Kreativchefin"],
+  konstanze:["Konstanze Brandl",736,{"I.1":185,"II.1":103,"III.1":82,"IV.3":186,"V.3":180},134.9,63.9,40,12,"gross","Familie Brandl & Rathaus","","OB von München"],
+  katharina:["Katharina Brandl",844,{"I.1":215,"II.1":85,"III.1":51,"IV.1":123,"IV.2":66,"V.1":174,"V.3":129},134.9,105.9,40,12,"gross","Familie Brandl & Rathaus","","ältere Tochter"],
+  bianca:   ["Bianca Brandl",693,{"I.1":83,"II.1":99,"III.1":41,"III.2":148,"IV.3":156,"V.3":163},81.9,97.9,40,12,"mittel","Familie Brandl & Rathaus","","jüngere Tochter"],
+  henny:    ["Henrik Ortmann",483,{"I.1":159,"I.2":70,"II.1":46,"III.1":23,"IV.3":140,"V.3":45},81.9,63.9,40,12,"mittel","Familie Brandl & Rathaus","Männerrolle, sollte laut Anhang ein Mann bleiben","Wahlkampfmanager"],
+  sommer:   ["Nora Sommer",328,{"I.1":19,"III.1":79,"E3":149,"V.3":77},81.9,120.9,40,12,"mittel","Familie Brandl & Rathaus","","Pressesprecherin"],
+  huber:    ["Frau Huber",335,{"III.1":80,"E3":172,"V.3":82},183.8,49.9,40,12,"mittel","Familie Brandl & Rathaus","","Personenschutz"],
+  luca:     ["Luca Benz",455,{"I.1":60,"II.1":66,"III.2":175,"IV.3":94,"V.3":60},23.8,97.9,40,12,"mittel","Echtzeit","Männerrolle, auch als Lucia möglich","Faktenchecker"],
+  tara:     ["Tara Nowak",381,{"I.1":56,"II.1":62,"III.2":122,"IV.3":75,"V.3":65},23.9,130,40,12,"mittel","Echtzeit","","Meme-Profi"],
+  josie:    ["Josie",163,{"I.1":48,"III.2":52,"IV.3":47,"V.3":16},23.8,162,40,12,"klein","Echtzeit","","Kurierin"],
+  vera:     ["Prof. Vera Benz",275,{"V.1":145,"V.3":130},23.9,63.9,40,12,"klein","Echtzeit","","KI-Forensikerin"],
+  petri:    ["Mia Petri",813,{"I.2":126,"II.1":174,"III.1":57,"IV.1":126,"IV.2":144,"V.1":124,"V.2":49,"V.3":13},134.9,157.9,40,12,"gross","Petri und ihre Leute","","Krisen-PR-Fixerin"],
+  greta:    ["Greta Mühl",306,{"I.2":87,"III.1":31,"IV.1":33,"IV.2":64,"V.1":74,"V.3":17},91.8,186,40,12,"mittel","Petri und ihre Leute","","Fahrerin"],
+  resi:     ["Resi Kurz",317,{"IV.1":173,"IV.2":106,"V.3":38},177.8,186,40,12,"mittel","Petri und ihre Leute","","Hüttenwirtin"],
+  gremm:    ["Gloria Gremm",928,{"I.1":174,"I.2":89,"II.1":63,"III.1":49,"IV.3":305,"V.2":55,"V.3":193},231.8,63.9,40,12,"gross","Spiegelwerk","","Chefin"],
+  kessler:  ["Kessler",150,{"I.2":36,"IV.2":77,"V.3":37},275.9,63.9,40,12,"klein","Spiegelwerk","","Sicherheit"],
+  baronin:  ["Die Baronin",623,{"Vorspiel":108,"E1":83,"E2":94,"E4":99,"V.2":101,"V.3":106,"Nachspiel":32},231.8,102,40,12,"mittel","Spiegelwerk","","Kreativchefin"],
   pixel:    ["Pixel",387,{"Vorspiel":33,"E1":45,"E2":62,"E4":31,"V.2":74,"V.3":141},275.8,102,40,12,"mittel","Spiegelwerk","","Technikerin"],
-  christine:["Christine Schlau",854,{"Vorspiel":108,"E1":137,"III.1":16,"E2":128,"E4":142,"V.2":117,"V.3":113,"Nachspiel":88},231.8,141.9,40,12,"gross","Spiegelwerk","","Double der OB"],
-  basti:    ["Basti",319,{"Vorspiel":41,"E1":58,"E2":87,"E4":13,"V.2":64,"V.3":21,"Nachspiel":30},275.9,141.9,40,12,"mittel","Spiegelwerk","Männerrolle, auch als Bastienne möglich","Praktikant"],
-  witt:     ["Dr. Wilma Witt",529,{"III.1":204,"IV.3":167,"V.3":158},81.9,33.9,40,12,"mittel","Außerdem","","Herausforderin"],
-  rieger:   ["Ines Rieger",520,{"I.1":68,"III.1":127,"IV.3":138,"V.3":185},149.9,33.9,40,12,"mittel","Außerdem","","TV-Moderatorin"],
-  ferner:   ["Kommissarin Ferner",209,{"IV.3":139,"V.3":70},265.9,33.9,40,12,"klein","Außerdem","","Kommissarin (LKA)"],
+  christine:["Christine Schlau",842,{"Vorspiel":108,"E1":137,"III.1":16,"E2":128,"E4":142,"V.2":124,"V.3":109,"Nachspiel":73},231.8,141.9,40,12,"gross","Spiegelwerk","","Double der OB"],
+  basti:    ["Basti",363,{"Vorspiel":41,"E1":58,"E2":87,"E4":42,"V.2":76,"V.3":24,"Nachspiel":30},275.9,141.9,40,12,"mittel","Spiegelwerk","Männerrolle, auch als Bastienne möglich","Praktikant"],
+  witt:     ["Dr. Wilma Witt",491,{"III.1":204,"IV.3":132,"V.3":155},81.9,33.9,40,12,"mittel","Außerdem","","Herausforderin"],
+  rieger:   ["Ines Rieger",499,{"I.1":68,"III.1":127,"IV.3":117,"V.3":186},149.9,33.9,40,12,"mittel","Außerdem","","TV-Moderatorin"],
+  ferner:   ["Kommissarin Ferner",183,{"IV.3":134,"V.3":49},265.9,33.9,40,12,"klein","Außerdem","","Kommissarin (LKA)"],
   stylistin:["Die Stylistin",156,{"III.1":77,"IV.2":79},221.9,186,40,12,"klein","Außerdem","","Maske, Plakat"],
-  wirtin:   ["Die Wirtin",154,{"Vorspiel":85,"Nachspiel":68},275.8,186,40,12,"klein","Außerdem","","Kupferkanne"]
+  wirtin:   ["Die Wirtin",151,{"Vorspiel":85,"Nachspiel":65},275.8,186,40,12,"klein","Außerdem","","Kupferkanne"]
 };
 const EXTEND_UP = new Set(["kessler","pixel","basti"]);
 const SIZES = {gross:"große Rolle",mittel:"mittlere Rolle",klein:"kleine Rolle"};
 const ORDER = Object.keys(R);
 const BOARD = ORDER;
 const TOTAL = ORDER.length; // 24 Rollen
-const MAXW = 869; // größte Rolle (Gremm) für die Gewichtung der Vorschläge
+const MAXW = 928; // größte Rolle (Gremm) für die Gewichtung der Vorschläge
 // Zusammenlegungen laut Anhang, falls jemand ausfällt
 const DOUBLES = [["wirtin","huber"],["stylistin","ferner"]];
 const STORE_DOC = "besetzung/fake-fassung5", STORE_LOCAL = "besetzungstafel-fake5-v1";
