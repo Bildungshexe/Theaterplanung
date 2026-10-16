@@ -281,6 +281,7 @@ th.num{text-align:right}
       <span class="pill" id="stEns">0 im Ensemble</span>
       <span class="pill save" id="saveState">Wird geladen …</span>
       <button class="btn primary" id="printBtn" type="button" title="Tafel und Szenen-Matrix im Querformat drucken">Drucken</button>
+      <span class="pill" id="printMsg" hidden aria-live="polite"></span>
     </div>
   </header>
 
@@ -699,7 +700,41 @@ $("mxRoles").addEventListener("click",()=>setMx("roles"));
 $("mxActors").addEventListener("click",()=>setMx("actors"));
 function preparePrint(){ selected=null; render(); const d=new Date(); $("printDate").textContent="Stand: "+d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}); }
 window.addEventListener("beforeprint",preparePrint);
-$("printBtn").addEventListener("click",()=>{ preparePrint(); window.print(); });
+// Das Druckfenster ist in der eingebetteten Ansicht gesperrt. Deshalb entsteht eine eigene Druckdatei
+// (Tafel + Matrix, Bild eingebettet), die sich beim Öffnen im Browser selbst druckt.
+let dlApi=null; (async()=>{ try{ dlApi=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){ dlApi=null; } })();
+function printMsg(t,cls){ const m=$("printMsg"); m.hidden=!t; m.textContent=t||""; m.className="pill"+(cls?" save "+cls:""); }
+function toDataURL(blob){ return new Promise((ok,no)=>{ const r=new FileReader(); r.onload=()=>ok(r.result); r.onerror=no; r.readAsDataURL(blob); }); }
+async function buildPrintDoc(){
+  preparePrint();
+  const doc=document.documentElement.cloneNode(true);
+  doc.querySelectorAll("script").forEach(n=>n.remove());
+  const img=doc.querySelector("#board img");
+  try{ const b=await (await fetch($("board").querySelector("img").src)).blob(); img.src=await toDataURL(b); }catch(e){}
+  const st=document.createElement("style");
+  st.textContent=`@media screen{.wishpanel,.side,.status,#dblBox,section[aria-labelledby="h-liste"],.panel .bar .tools,.panel>.hint,.panel .note,.chip .x,.slot .free{display:none!important}
+    .main{display:block!important}.printonly{display:block!important}.wrap{max-width:1150px!important}.boardwrap{overflow:visible!important}.board{min-width:0!important}
+    .druckhinweis{background:#fff6d6;border:1px solid #e3c766;border-radius:8px;padding:10px 14px;font-size:15px;margin-bottom:12px}}
+    @media print{.druckhinweis{display:none}}`;
+  doc.querySelector("head").appendChild(st);
+  const hint=document.createElement("div"); hint.className="druckhinweis";
+  hint.textContent="Druckansicht: Der Druckdialog öffnet sich gleich. Falls nicht: Strg+P (Mac: Cmd+P). Querformat ist eingestellt; bitte „Hintergrundgrafiken“ einschalten.";
+  doc.querySelector("body").prepend(hint);
+  const sc=document.createElement("script"); sc.textContent='window.addEventListener("load",function(){setTimeout(function(){window.print();},400);});';
+  doc.querySelector("body").appendChild(sc);
+  return "<!doctype html>\n"+doc.outerHTML;
+}
+$("printBtn").addEventListener("click",async()=>{
+  if(!dlApi){ preparePrint(); try{ window.print(); }catch(e){} printMsg("Falls kein Druckfenster erscheint: Seite neu laden und erneut versuchen.",""); return; }
+  printMsg("Druckdatei wird erstellt …","");
+  let html; try{ html=await buildPrintDoc(); }catch(e){ printMsg("Druckdatei konnte nicht erstellt werden","warn"); return; }
+  const d=new Date(), stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  try{ await dlApi.save({filename:"FAKE_Besetzung_Druck_"+stamp+".html",data:html}); printMsg("Gespeichert – Datei öffnen, dann druckt sie sich","ok"); }
+  catch(e){ const c=e&&e.code;
+    if(c==="declined") printMsg("");
+    else if(c==="rate_limited") printMsg("Bitte kurz warten und noch einmal drücken","warn");
+    else { printMsg("Speichern hier nicht möglich","warn"); preparePrint(); try{ window.print(); }catch(_){} } }
+});
 
 /* ---------- Verschieben ---------- */
 function drop(actor, from, target){
