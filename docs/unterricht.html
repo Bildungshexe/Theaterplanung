@@ -653,7 +653,7 @@
     var c = { id:uid('k'), stufe:stufe, klasse:'', fach:fach, fachName:SUBJ[fach].n, sel:SUBJ[fach].def.slice(), custom:[], texts:{},
               preset:SUBJ[fach].preset, groups:{ Q:50, B:30, K:20 }, weights:{},
               mode:'tap', out: +stufe >= 11 ? 'np' : 'note', total:20, half:true, keyType:'abi', knick:[50, 20],
-              indNote:[85, 70, 55, 40, 20], indNP:ABI.slice(1), timeW:'equal', hj:'02-15',
+              indNote:[85, 70, 55, 40, 20], indNP:ABI.slice(1), timeW:'single', timeWv:2, hj:'02-15',
               students:[], entries:[], per:{ p:'hjcur', from:'', to:'' }, date:todayISO() };
     applyPreset(c);
     return c;
@@ -686,7 +686,8 @@
     f.half = o.half !== false;
     f.keyType = (o.keyType === 'knick' || o.keyType === 'ind') ? o.keyType : 'abi';
     f.knick = pcts(o.knick, 2, f.knick); f.indNote = pcts(o.indNote, 5, f.indNote); f.indNP = pcts(o.indNP, 15, f.indNP);
-    f.timeW = o.timeW === 'recent' ? 'recent' : 'equal';
+    // ältere Daten (ohne timeWv): Einzelnoten statt Durchschnitt
+    f.timeW = o.timeWv === 2 && (o.timeW === 'equal' || o.timeW === 'recent') ? o.timeW : 'single';
     f.hj = /^\d{2}-\d{2}$/.test(String(o.hj)) ? o.hj : '02-15';
     f.weights = {};
     if (o.weights && typeof o.weights === 'object') for (var k in o.weights) if (known[k]) f.weights[k] = Math.max(0, num(o.weights[k], 0));
@@ -818,7 +819,7 @@
   }
   function keyName() { for (var i = 0; i < KEYS.length; i++) if (KEYS[i].id === S.keyType) return KEYS[i].n; return ''; }
   function legend() {
-    var tw = S.timeW === 'recent' ? ' Spätere Einträge zählen stärker (1., 2., 3. … Eintrag mit Gewicht 1, 2, 3 …).' : ' Alle Einträge im Zeitraum zählen gleich.';
+    var tw = S.timeW === 'single' ? ' Jeder Eintrag ergibt eine eigene Note mit Datum (kein Durchschnitt über mehrere Einträge).' : S.timeW === 'recent' ? ' Spätere Einträge zählen stärker (1., 2., 3. … Eintrag mit Gewicht 1, 2, 3 …).' : ' Alle Einträge im Zeitraum zählen gleich.';
     if (S.mode === 'tap') {
       if (S.out === 'np') return 'Stufen: sehr gut 15–13, gut 12–10, befriedigend 9–7, ausreichend 6–4, mangelhaft/ungenügend 3–0 Notenpunkte. Note: 15–13 = 1 · 12–10 = 2 · 9–7 = 3 · 6–4 = 4 · 3–1 = 5 · 0 = 6. Ergebnis = gewichteter Durchschnitt, ab ,5 aufgerundet.' + tw;
       return 'Stufe = Note, − / + setzt die Tendenz. Ergebnis = gewichteter Durchschnitt (intern 15–0 Punkte, ab ,5 aufgerundet).' + tw;
@@ -944,12 +945,31 @@
   }
 
   /* ================= Erfassen ================= */
+  function single() { return S.timeW === 'single'; }
+  // Note eines einzelnen Eintrags: gewichteter Durchschnitt der bewerteten Kriterien dieses Tages
+  function entryGrade(e) {
+    if (!e || e.abs) return null;
+    var ws = 0, x = 0;
+    active().forEach(function (c) { var f = e.r[c.id]; if (f == null) return; var w = W(c); ws += w; x += w * (S.mode === 'tap' ? npOf(f) : f); });
+    if (!ws) return null;
+    var g = { val:x / ws };
+    if (S.mode === 'tap') { g.np = Math.floor(g.val + 0.5 + 1e-9); g.z = noteNP(g.np); }
+    else { g.pct = g.val * 100; var fr = fromPct(g.pct); g.np = fr.np; g.z = fr.z; }
+    return g;
+  }
+  function gradeShort(g) { if (!g) return ''; return S.mode === 'tap' && S.out === 'note' ? TEND[g.np] : S.out === 'np' ? g.np + ' NP' : 'Note ' + g.z.z; }
+  function gradeText(g) {
+    if (!g) return '';
+    if (S.mode === 'tap') return S.out === 'note' ? TEND[g.np] + ' (' + g.z.t + ')' : g.np + ' NP (Note ' + g.z.z + ')';
+    return (S.out === 'np' ? g.np + ' NP' : 'Note ' + g.z.z + ' (' + g.z.t + ')') + ' · ' + fmt(g.pct, 0) + ' %';
+  }
   function chipsHTML(sid) {
     var e = entryOf(sid, S.date);
     if (!e) return '<span>—</span>';
     if (e.abs) return '<span class="abs">fehlt</span>';
     var h = '';
     active().forEach(function (c) { var f = e.r[c.id]; if (f != null) h += '<span>' + esc(c.s) + ' ' + esc(valLabel(f, c)) + '</span>'; });
+    var g = entryGrade(e); if (g) h += '<span><b>→ ' + esc(gradeShort(g)) + '</b></span>';
     if (e.note.trim()) h += '<span>✎</span>';
     return h || '<span>—</span>';
   }
@@ -1080,8 +1100,22 @@
   }
 
   /* ================= Auswertung ================= */
+  function gradeLines(res) {
+    var h = '';
+    res.entries.forEach(function (e) { var g = entryGrade(e); if (g) h += '<div>' + de(e.d) + ' – <b>' + esc(gradeText(g)) + '</b></div>'; });
+    return h;
+  }
   function ovTable(clickable) {
     var cs = active(), r = perRange(), sw = sum(cs.map(W)) || 1;
+    if (single()) {
+      var t = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Einträge</th><th>fehlt</th><th>Einzelnoten (Datum – Note)</th></tr></thead><tbody>';
+      S.students.forEach(function (s, n) {
+        var res = result(s.id, r);
+        t += '<tr' + (clickable ? ' data-sid="' + esc(s.id) + '"' : '') + '><td>' + (n + 1) + '</td><td class="l">' + esc(s.name) + '</td>' +
+          '<td class="' + (res.n ? '' : 'few') + '">' + res.n + '</td><td>' + (res.abs || '') + '</td><td class="l">' + gradeLines(res) + '</td></tr>';
+      });
+      return t + '</tbody></table></div>';
+    }
     var h = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Einträge</th><th>fehlt</th>';
     cs.forEach(function (c, i) {
       h += '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (S.mode === 'tap' ? fmt(W(c) / sw * 100, 0) + ' %' : 'max ' + fmt(W(c))) + ')</th>';
@@ -1117,6 +1151,19 @@
     var s = stuById(sid); if (!s) return '';
     var cs = active(), res = result(sid), sw = sum(cs.map(W)) || 1;
     var h = '<h1>' + esc(s.name) + ' – Unterrichtsbeiträge</h1><p class="sub">' + esc(courseName(S)) + ' · Zeitraum: ' + esc(perLabel()) + '</p>';
+    if (single()) {
+      h += '<div class="res"><span>Einträge: <b>' + res.n + '</b>' + (res.abs ? ' · fehlt: ' + res.abs : '') + '</span><span>Jeder Eintrag ist eine eigene Note.</span></div>';
+      if (!res.entries.length) return h + '<p>Keine Einträge im Zeitraum.</p>';
+      h += '<table class="ovt"><thead><tr><th>Datum</th>' + cs.map(function (c, i) { return '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (S.mode === 'tap' ? fmt(W(c) / sw * 100, 0) + ' %' : 'max ' + fmt(W(c))) + ')</th>'; }).join('') + '<th>Note</th><th>Bemerkung</th></tr></thead><tbody>';
+      res.entries.forEach(function (e) {
+        var g = entryGrade(e);
+        h += '<tr' + (forPrint ? '' : ' data-ed="' + esc(e.d) + '"') + '><td>' + de(e.d) + '</td>';
+        if (e.abs) h += '<td colspan="' + (cs.length + 1) + '">fehlt</td>';
+        else { cs.forEach(function (c) { var f = e.r[c.id]; h += '<td>' + (f == null ? '' : esc(valLabel(f, c))) + '</td>'; }); h += '<td><b>' + esc(gradeText(g)) + '</b></td>'; }
+        h += '<td class="l">' + esc(e.note) + '</td></tr>';
+      });
+      return h + '</tbody></table><p class="legend">' + esc(legend()) + '</p>';
+    }
     h += '<div class="res">';
     resCols(res).forEach(function (x) { h += '<span>' + esc(x[0]) + ': <b class="big2">' + (x[1] === '' ? '–' : esc(x[1])) + (x[0] === 'Note' && res.done ? ' (' + res.z.t + ')' : '') + '</b></span>'; });
     h += '<span>Einträge: <b>' + res.n + '</b>' + (res.abs ? ' · fehlt: ' + res.abs : '') + '</span></div>';
@@ -1207,6 +1254,16 @@
   function exportCSV() {
     var cs = active(), r = perRange(), rows = [];
     rows.push(['Klasse/Kurs', courseName(S), 'Zeitraum', perLabel()]);
+    if (single()) {
+      rows.push(['Nr', 'Name', 'Datum'].concat(cs.map(function (c) { return c.n; }), ['Note', 'Bemerkung']));
+      S.students.forEach(function (s, i) {
+        result(s.id, r).entries.forEach(function (e) {
+          var g = entryGrade(e); if (!g) return;
+          rows.push([i + 1, s.name, de(e.d)].concat(cs.map(function (c) { var f = e.r[c.id]; return f == null ? '' : valLabel(f, c); }), [gradeText(g), e.note]));
+        });
+      });
+      csvOut(fileBase() + '_einzelnoten_' + stamp() + '.csv', rows); return;
+    }
     rows.push(['Nr', 'Name', 'Einträge', 'fehlt'].concat(cs.map(function (c) { return c.n; }), resCols({}).map(function (x) { return x[0]; })));
     S.students.forEach(function (s, i) {
       var res = result(s.id, r);
@@ -1215,10 +1272,10 @@
     csvOut(fileBase() + '_auswertung_' + stamp() + '.csv', rows);
   }
   function exportEntriesCSV() {
-    var cs = active(), rows = [['Datum', 'Name', 'fehlt'].concat(cs.map(function (c) { return c.n; }), ['Bemerkung'])];
+    var cs = active(), rows = [['Datum', 'Name', 'fehlt'].concat(cs.map(function (c) { return c.n; }), ['Note des Eintrags', 'Bemerkung'])];
     S.entries.slice().sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; }).forEach(function (e) {
       var s = stuById(e.sid); if (!s) return;
-      rows.push([de(e.d), s.name, e.abs ? 'ja' : ''].concat(cs.map(function (c) { var f = e.r[c.id]; return f == null ? '' : valLabel(f, c); }), [e.note]));
+      rows.push([de(e.d), s.name, e.abs ? 'ja' : ''].concat(cs.map(function (c) { var f = e.r[c.id]; return f == null ? '' : valLabel(f, c); }), [gradeText(entryGrade(e)), e.note]));
     });
     csvOut(fileBase() + '_eintraege_' + stamp() + '.csv', rows);
   }
@@ -1328,8 +1385,9 @@
       h += '<p class="note" id="keymsg"></p><div class="ktw" id="keytab"></div>';
     }
     h += '<p class="lbl">' + (tap ? 'c' : 'd') + ') Mehrere Einträge im Zeitraum</p><div class="chips">' +
-      chip('timew', 'equal', S.timeW === 'equal', 'Alle Einträge zählen gleich', 'Einfacher Durchschnitt.') +
-      chip('timew', 'recent', S.timeW === 'recent', 'Spätere Einträge zählen mehr', 'Berücksichtigt die Lernentwicklung (Gewicht 1, 2, 3 …).') + '</div>' +
+      chip('timew', 'single', S.timeW === 'single', 'Jeder Eintrag ist eine eigene Note', 'Kein Durchschnitt: Einzelnoten mit Datum untereinander.') +
+      chip('timew', 'equal', S.timeW === 'equal', 'Durchschnitt: alle gleich', 'Einfacher Durchschnitt über den Zeitraum.') +
+      chip('timew', 'recent', S.timeW === 'recent', 'Durchschnitt: spätere zählen mehr', 'Berücksichtigt die Lernentwicklung (Gewicht 1, 2, 3 …).') + '</div>' +
       '<p class="lbl">' + (tap ? 'd' : 'e') + ') Halbjahreswechsel</p><div class="row"><label class="row">Das 2. Halbjahr beginnt am <input type="text" data-a="hj" maxlength="6" style="width:90px" value="' + esc(S.hj.split('-').reverse().join('.') + '.') + '"></label>' +
       '<span class="note">(Format TT.MM., z. B. 15.02.; gilt für die Zeitraumauswahl „1./2. Halbjahr“)</span></div></div>';
 

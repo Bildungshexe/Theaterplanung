@@ -788,7 +788,7 @@
   function freshCfg(occ, bid) { return { sel:B[bid][occ].slice(), weights:{}, preset:'std' }; }
   function freshCourse() {
     var c = { id:uid('k'), name:'Theaterkurs', stueck:'', premDate:'', students:[], custom:[], texts:{},
-              cfg:{ probe:{}, prem:{} }, mode:'tap', totP:20, totA:30, half:true, timeW:'equal', probeShare:40,
+              cfg:{ probe:{}, prem:{} }, mode:'tap', totP:20, totA:30, half:true, timeW:'single', timeWv:2, probeShare:40,
               ges:{ on:false, prem:50 }, hj:'02-15', per:{ p:'all', from:'', to:'' }, date:todayISO(), entries:[], prem:{} };
     BIDS.forEach(function (b) { ['probe', 'prem'].forEach(function (o) { if (o === 'prem' && B[b].probeOnly) return; c.cfg[o][b] = freshCfg(o, b); applyPreset(c, o, b); }); });
     return c;
@@ -826,7 +826,7 @@
     }
     f.mode = o.mode === 'pt' ? 'pt' : 'tap';
     f.totP = Math.max(1, Math.min(1000, Math.round(num(o.totP, 20)))); f.totA = Math.max(1, Math.min(1000, Math.round(num(o.totA, 30))));
-    f.half = o.half !== false; f.timeW = o.timeW === 'recent' ? 'recent' : 'equal';
+    f.half = o.half !== false; f.timeW = o.timeWv === 2 && (o.timeW === 'equal' || o.timeW === 'recent') ? o.timeW : 'single';
     f.probeShare = Math.max(0, Math.min(100, num(o.probeShare, 40)));
     f.ges = { on:!!(o.ges && o.ges.on), prem:Math.max(0, Math.min(100, num(o.ges && o.ges.prem, 50))) };
     f.hj = /^\d{2}-\d{2}$/.test(String(o.hj)) ? o.hj : '02-15';
@@ -1011,8 +1011,22 @@
     var n = use.filter(function (e) { for (var k in e.r) return true; return false; }).length;
     return { parts:parts, val:val, np:val == null ? null : finalNP(val), n:n, abs:es.length - use.length, entries:es };
   }
+  function single() { return S.timeW === 'single'; }
+  // Note einer einzelnen Probe: Bereiche dieses Tages nach Anteilen verrechnet
+  function probeEntryGrade(s, e) {
+    if (!e || e.abs) return null;
+    var list = bereicheFor(s, 'probe'), sh = sharesFor(s, 'probe', list);
+    var parts = list.map(function (b) {
+      return { bid:b, share:sh[b], sc:scoreBereich('probe', b, function (c) { var f = e.r[kk(b, c.id)]; return f == null ? null : (S.mode === 'tap' ? npOf(f) : f); }) };
+    });
+    var val = combine(parts);
+    return val == null ? null : { parts:parts, val:val, np:finalNP(val) };
+  }
+  function probeGrades(s, po) {
+    return po.entries.map(function (e) { var g = probeEntryGrade(s, e); return g ? { d:e.d, g:g, e:e } : null; }).filter(Boolean);
+  }
   function gesResult(pr, po) {
-    if (!S.ges.on) return null;
+    if (!S.ges.on || single()) return null;
     if (pr.val == null && po.val == null) return { val:null, np:null };
     var w = S.ges.prem / 100, val = pr.val == null ? po.val : po.val == null ? pr.val : w * pr.val + (1 - w) * po.val;
     return { val:val, np:finalNP(val), partial:pr.val == null || po.val == null };
@@ -1091,6 +1105,7 @@
       var sc = scoreBereich('probe', b, function (c) { var f = e.r[kk(b, c.id)]; return f == null ? null : (S.mode === 'tap' ? npOf(f) : f); });
       if (sc.val != null) h += '<span>' + esc(B[b].s) + ' ' + finalNP(sc.val) + '</span>';
     });
+    var g = probeEntryGrade(s, e); if (g) h += '<span><b>→ ' + g.np + ' NP</b></span>';
     if (e.note.trim()) h += '<span>✎</span>';
     return h || '<span>—</span>';
   }
@@ -1227,13 +1242,15 @@
   /* ---------- Auswertung ---------- */
   function ovTable(clickable) {
     var r = perRange();
-    var h = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Aufgaben</th><th>Proben-<br>Einträge</th><th>Proben</th>';
+    var h = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Aufgaben</th><th>Proben-<br>Einträge</th><th>' + (single() ? 'Proben-Einzelnoten<br>(Datum – NP)' : 'Proben') + '</th>';
     TASKB.forEach(function (b) { if (S.students.some(function (s) { return s.tasks[b] != null; }) && activeOf(S, 'prem', b).length) h += '<th>Premiere<br>' + esc(B[b].s) + '</th>'; });
     h += '<th>Premiere<br>gesamt</th>' + (S.ges.on ? '<th>Gesamt<br>(' + fmt(S.ges.prem, 0) + ' % Premiere)</th>' : '') + '</tr></thead><tbody>';
     S.students.forEach(function (s, n) {
       var po = probeResult(s, r), pr = premResult(s), g = gesResult(pr, po);
       h += '<tr' + (clickable ? ' data-sid="' + esc(s.id) + '"' : '') + '><td>' + (n + 1) + '</td><td class="l">' + esc(s.name) + '</td><td class="l">' + esc(tasksLabel(s)) + '</td>' +
-        '<td class="' + (po.n ? '' : 'few') + '">' + po.n + (po.abs ? ' (' + po.abs + ' f)' : '') + '</td><td><b>' + (po.np == null ? '' : po.np) + '</b></td>';
+        '<td class="' + (po.n ? '' : 'few') + '">' + po.n + (po.abs ? ' (' + po.abs + ' f)' : '') + '</td>' +
+        (single() ? '<td class="l">' + probeGrades(s, po).map(function (x) { return '<div>' + de(x.d) + ' – <b>' + x.g.np + ' NP</b></div>'; }).join('') + '</td>'
+                  : '<td><b>' + (po.np == null ? '' : po.np) + '</b></td>');
       TASKB.forEach(function (b) {
         if (!(S.students.some(function (x) { return x.tasks[b] != null; }) && activeOf(S, 'prem', b).length)) return;
         var p = null; pr.parts.forEach(function (x) { if (x.bid === b) p = x; });
@@ -1274,10 +1291,26 @@
     var s = stuById(sid); if (!s) return '';
     var po = probeResult(s), pr = premResult(s), g = gesResult(pr, po);
     var h = '<h1>' + esc(s.name) + ' – ' + esc(courseName(S)) + '</h1><p class="sub">Aufgaben: ' + esc(tasksLabel(s)) + ' · Proben-Zeitraum: ' + esc(perLabel()) + (S.premDate ? ' · Premiere: ' + de(S.premDate) : '') + '</p>';
-    h += '<div class="res"><span>Proben: <b class="big2">' + npText(po.np) + '</b></span><span>Premiere: <b class="big2">' + npText(pr.np) + '</b>' + (pr.open ? ' (unvollständig)' : '') + '</span>' +
+    h += '<div class="res"><span>Proben: <b class="big2">' + (single() ? probeGrades(s, po).length + ' Einzelnoten' : npText(po.np)) + '</b></span><span>Premiere: <b class="big2">' + npText(pr.np) + '</b>' + (pr.open ? ' (unvollständig)' : '') + '</span>' +
       (g ? '<span>Gesamt: <b class="big2">' + npText(g.np) + '</b>' + (g.partial ? ' (nur ein Teil vorhanden)' : '') + '</span>' : '') + '</div>';
     h += '<h2>Premiere (Klausurersatz)</h2>' + (pr.parts.length ? partsTable('prem', pr.parts) : '<p>Keine Premiere-Kriterien zugeordnet.</p>') + (pr.note ? '<div class="cmtbox">' + esc(pr.note) + '</div>' : '');
-    h += '<h2>Proben (' + po.n + ' Einträge' + (po.abs ? ', ' + po.abs + '× gefehlt' : '') + ')</h2>' + (po.parts.length ? partsTable('probe', po.parts) : '<p>Keine Proben-Kriterien zugeordnet.</p>');
+    h += '<h2>Proben (' + po.n + ' Einträge' + (po.abs ? ', ' + po.abs + '× gefehlt' : '') + ')</h2>';
+    if (single()) {
+      var bl = bereicheFor(s, 'probe');
+      h += '<table class="ovt"><thead><tr><th>Datum</th>' + bl.map(function (b) { return '<th>' + esc(B[b].s) + '</th>'; }).join('') + '<th>Note der Probe</th><th>Bemerkung</th></tr></thead><tbody>';
+      po.entries.forEach(function (e) {
+        var g = probeEntryGrade(s, e);
+        h += '<tr' + (forPrint ? '' : ' data-ed="' + esc(e.d) + '"') + '><td>' + de(e.d) + '</td>';
+        if (e.abs) h += '<td colspan="' + (bl.length + 1) + '">fehlt</td>';
+        else {
+          bl.forEach(function (b) { var p = null; if (g) g.parts.forEach(function (x) { if (x.bid === b) p = x; }); h += '<td>' + (p && p.sc.val != null ? finalNP(p.sc.val) + ' NP' : '') + '</td>'; });
+          h += '<td><b>' + (g ? npText(g.np) : '') + '</b></td>';
+        }
+        h += '<td class="l">' + esc(e.note) + '</td></tr>';
+      });
+      return h + '</tbody></table><p class="legend">Jede Probe ergibt eine eigene Note (kein Durchschnitt). ' + esc(legend()) + '</p>';
+    }
+    h += (po.parts.length ? partsTable('probe', po.parts) : '<p>Keine Proben-Kriterien zugeordnet.</p>');
     var notes = po.entries.filter(function (e) { return e.note.trim() || e.abs; });
     if (notes.length) {
       h += '<table class="ovt" style="margin-top:6px"><thead><tr><th>Datum</th><th>Bemerkung</th></tr></thead><tbody>' +
@@ -1384,13 +1417,13 @@
   function csvCell(x) { var t = String(x == null ? '' : x); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }
   function exportCSV() {
     var r = perRange(), rows = [['Kurs', courseName(S), 'Proben-Zeitraum', perLabel()]];
-    var head = ['Nr', 'Name', 'Aufgaben', 'Proben-Einträge', 'gefehlt', 'Proben NP'];
+    var head = ['Nr', 'Name', 'Aufgaben', 'Proben-Einträge', 'gefehlt', single() ? 'Proben-Einzelnoten' : 'Proben NP'];
     TASKB.forEach(function (b) { if (activeOf(S, 'prem', b).length) head.push('Premiere ' + B[b].s + ' NP'); });
     head.push('Premiere NP', 'Premiere vollständig'); if (S.ges.on) head.push('Gesamt NP'); head.push('Rückmeldung Premiere');
     rows.push(head);
     S.students.forEach(function (s, i) {
       var po = probeResult(s, r), pr = premResult(s), g = gesResult(pr, po);
-      var row = [i + 1, s.name, tasksLabel(s), po.n, po.abs, po.np == null ? '' : po.np];
+      var row = [i + 1, s.name, tasksLabel(s), po.n, po.abs, single() ? probeGrades(s, po).map(function (x) { return de(x.d) + ': ' + x.g.np + ' NP'; }).join(' | ') : (po.np == null ? '' : po.np)];
       TASKB.forEach(function (b) {
         if (!activeOf(S, 'prem', b).length) return;
         var p = null; pr.parts.forEach(function (x) { if (x.bid === b) p = x; });
@@ -1485,9 +1518,10 @@
     }
     h += '<p class="lbl">b) Proben-Ergebnis</p><div class="inl">Anteil „Probenarbeit (alle)“ am Proben-Ergebnis <input type="text" inputmode="decimal" data-a="probeShare" value="' + fmt(S.probeShare) + '"> %' +
       '<span class="note">(der Rest verteilt sich auf die Aufgabenbereiche)</span></div><div class="chips">' +
-      chip('timew', 'equal', S.timeW === 'equal', 'Alle Proben zählen gleich', 'Einfacher Durchschnitt.') +
-      chip('timew', 'recent', S.timeW === 'recent', 'Spätere Proben zählen mehr', 'Berücksichtigt die Entwicklung (Gewicht 1, 2, 3 …).') + '</div>' +
-      '<p class="lbl">c) Gesamtergebnis (optional)</p><label class="inl"><input type="checkbox" data-a="geson"' + (S.ges.on ? ' checked' : '') + '> Gesamtergebnis aus Premiere und Proben berechnen</label>' +
+      chip('timew', 'single', S.timeW === 'single', 'Jede Probe ist eine eigene Note', 'Kein Durchschnitt: Einzelnoten mit Datum untereinander.') +
+      chip('timew', 'equal', S.timeW === 'equal', 'Durchschnitt: alle Proben gleich', 'Einfacher Durchschnitt.') +
+      chip('timew', 'recent', S.timeW === 'recent', 'Durchschnitt: spätere zählen mehr', 'Berücksichtigt die Entwicklung (Gewicht 1, 2, 3 …).') + '</div>' +
+      '<p class="lbl">c) Gesamtergebnis (optional)</p>' + (S.timeW === 'single' ? '<p class="note">Bei Einzelnoten wird kein Gesamtergebnis berechnet.</p>' : '') + '<label class="inl"><input type="checkbox" data-a="geson"' + (S.ges.on ? ' checked' : '') + '> Gesamtergebnis aus Premiere und Proben berechnen</label>' +
       (S.ges.on ? '<div class="inl">Anteil Premiere <input type="text" inputmode="decimal" data-a="gesprem" value="' + fmt(S.ges.prem) + '"> % (Proben: Rest)</div>' : '') +
       '<p class="lbl">d) Halbjahreswechsel</p><div class="inl">2. Halbjahr beginnt am <input type="text" data-a="hj" maxlength="6" value="' + esc(S.hj.split('-').reverse().join('.') + '.') + '"> <span class="note">(TT.MM., für die Zeitraumauswahl)</span></div></div>';
 
