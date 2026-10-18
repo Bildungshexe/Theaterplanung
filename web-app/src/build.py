@@ -3,7 +3,9 @@ import os, hashlib
 from PIL import Image, ImageDraw, ImageFont
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.abspath(os.path.join(here, '..', '..'))
-out = os.path.abspath(os.path.join(here, '..'))
+out = os.path.join(root, 'docs')  # GitHub Pages: Quelle „/docs“
+os.makedirs(out, exist_ok=True)
+open(os.path.join(out, '.nojekyll'), 'w').close()
 HEAD = ('<link rel="manifest" href="manifest.webmanifest">\n'
         '<meta name="apple-mobile-web-app-capable" content="yes">\n'
         '<meta name="mobile-web-app-capable" content="yes">\n'
