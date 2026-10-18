@@ -112,9 +112,9 @@
   .et .ev { font-size:15pt; color:var(--acc); font-weight:bold; min-width:34px; text-align:center; }
   .st { width:44px; height:44px; font-size:16pt; line-height:1; border:1px solid #888; border-radius:6px; background:#fff; padding:0; }
   .st:disabled { opacity:.3; cursor:default; }
-  .lvs { display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; }
+  .lvs { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; }
   .lvb { border:1px solid #aaa; border-radius:8px; background:#fff; min-height:52px; padding:4px 2px; text-align:center; font-weight:bold; font-size:13pt; -webkit-tap-highlight-color:transparent; }
-  .lvb small { display:block; font-weight:normal; font-size:9.5pt; color:#444; }
+  .lvb small { display:block; font-weight:normal; font-size:9.5pt; color:#444; overflow-wrap:anywhere; hyphens:auto; }
   .lvb.on { background:var(--hit); border-color:var(--acc); box-shadow:inset 0 0 0 2px var(--acc); }
   .desc { font-size:10.5pt; color:#333; margin-top:4px; min-height:1em; }
   .pin { display:flex; gap:8px; align-items:center; }
