@@ -33,6 +33,10 @@
   .bar button:active, .actions button:active { background:#e4e4e4; }
   button.primary { background:var(--acc) !important; color:#fff !important; border-color:var(--acc) !important; }
   button.danger { color:#a00; }
+  .gbar { background:#1d1d1d; color:#fff; padding:6px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .gbar label { display:flex; gap:8px; align-items:center; flex:1 1 260px; font-weight:bold; }
+  .gbar select { flex:1; min-width:0; max-width:420px; }
+  .gbar select, .gbar button, .gbar .homebtn { padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; color:#111; font:inherit; }
   .actions { background:#3a3a3a; padding:6px 10px 8px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; color:#fff; }
   .actions .grp { display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-right:8px; margin-right:2px; border-right:1px solid #666; }
   .actions .grp:last-child { border-right:none; }
@@ -198,7 +202,7 @@
   @page { size: A4 landscape; margin: 0; }
   @media print {
     body { background:#fff; }
-    .bar, .actions, .setup, .help, .warn, .hint { display:none !important; }
+    .gbar, .bar, .actions, .setup, .help, .warn, .hint { display:none !important; }
     .stage { padding:0; }
     .sheet, .ov { box-shadow:none; margin:0; width:297mm; max-width:none; padding:6mm 8mm; }
     .sheet { height:auto; min-height:209mm; }
@@ -248,8 +252,12 @@
 </head>
 <body data-view="setup">
 
-<div class="bar" id="bar">
+<div class="gbar" id="gbar">
   <a class="homebtn" href="index.html">⌂ Start</a>
+  <label>Gruppe <select id="gsel" aria-label="Gruppe wählen"></select></label>
+  <button id="gnew">+ Neue Gruppe</button>
+</div>
+<div class="bar" id="bar">
   <span class="brand" id="brand"></span>
   <button id="prev" title="Vorheriger Bogen" aria-label="Vorheriger Bogen">◀</button>
   <select id="sel" aria-label="Bogen auswählen"></select>
@@ -667,7 +675,39 @@
       'Angemessen und themenbezogen; neue Wörter meist erklärt.',
       'Einfach, teils wiederholend; Umschreibungen.',
       'Begrenzt; Germanismen; Verständnishilfen fehlen.',
-      'Sehr begrenzt; häufig Deutsch.' ] }
+      'Sehr begrenzt; häufig Deutsch.' ] },
+
+    /* --- Songvortrag (Spanisch) --- */
+    sv_aus: { n:'Aussprache und Intonation', s:'Aussprache', g:'S', d:[
+      'Durchgehend korrekt, natürliche Betonung; r/rr, j, ll, ñ sicher; sehr flüssig.',
+      'Überwiegend korrekt, einzelne Fehler ohne Verständnisstörung; meist stimmige Betonung; flüssig.',
+      'Wiederkehrende Fehler, aber verständlich; Betonung teils deutsch geprägt; gelegentlich Stocken.',
+      'Häufige Fehler, Verständnis teils erschwert; unsicherer Rhythmus; deutliches Stocken.',
+      'Stark fehlerhaft, schwer verständlich; sehr stockend oder nicht erbracht.' ] },
+    sv_text: { n:'Textverständnis und Interpretation', s:'Interpretation', g:'I', d:[
+      'Inhalt präzise erfasst; Aussage, Stilmittel, Kontext differenziert gedeutet; eigene Deutung.',
+      'Inhalt sicher erfasst; Aussage und mind. ein Stilmittel erklärt; Deutung weitgehend begründet.',
+      'Inhalt im Wesentlichen richtig; Deutung eher beschreibend; Stilmittel nur ansatzweise.',
+      'Inhalt lückenhaft; vage Erklärungen, teils Fehldeutungen; kaum Kontext.',
+      'Inhalt kaum verstanden; Text nur aufgesagt oder übersetzt; keine Deutung.' ] },
+    sv_anmod: { n:'Sprachliche Qualität der Anmoderation', s:'Anmoderation', g:'S', d:[
+      'Frei und klar gegliedert; differenzierter Wortschatz, sichere Grammatik; Fehler stören nicht.',
+      'Weitgehend frei und gegliedert; angemessener Wortschatz; einzelne Fehler, gut verständlich.',
+      'Teils abgelesen; einfacher Wortschatz; wiederkehrende Fehler, aber verständlich.',
+      'Überwiegend abgelesen; begrenzter Wortschatz; viele Fehler erschweren das Verständnis.',
+      'Anmoderation fehlt, kaum verständlich oder nicht auf Spanisch.' ] },
+    sv_vortrag: { n:'Vortragsleistung', s:'Vortrag', g:'P', d:[
+      'Text sicher, höchstens kurze Stütze; wirkungsvoller Ausdruck und Blickkontakt; Tempo sicher.',
+      'Text weitgehend sicher; Ausdruck erkennbar; meist Blickkontakt; Tempo überwiegend stimmig.',
+      'Einzelne Textlücken, überbrückt; zurückhaltender Ausdruck; Tempo schwankt.',
+      'Deutliche Textunsicherheit, auf Vorlage angewiesen; kaum Ausdruck.',
+      'Vortrag bricht ab oder wirkt unvorbereitet; Text nicht beherrscht.' ] },
+    sv_eigen: { n:'Eigenständigkeit und Songwahl', s:'Songwahl', g:'I', d:[
+      'Überzeugend begründete, anspruchsvolle Wahl; klar persönlicher Zugang.',
+      'Wahl nachvollziehbar begründet; angemessener Anspruch; persönlicher Bezug erkennbar.',
+      'Wahl nur kurz begründet; durchschnittlicher Anspruch; Bezug eher allgemein.',
+      'Wahl kaum begründet; sehr einfacher Text; kaum Eigenanteil.',
+      'Keine Begründung; Vorgaben nicht erfüllt; kein Eigenanteil.' ] }
   };
 
   var SUBJ = {
@@ -683,6 +723,11 @@
     es:  { n:'Spanisch', acc:'#B5401A', light:'#FBECE6', hit:'#F4C7B6', preset:'sprache',
            list:['e_inhalt','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','e_fluss','e_aussp','e_korr','e_wort'],
            def:['e_inhalt','aufbau','e_fluss','e_aussp','e_korr','e_wort'] },
+    song: { n:'Songvortrag (Spanisch)', acc:'#8B1E2D', light:'#F6E9EB', hit:'#F3C9CF', preset:'eigen',
+           title:'Songvortrag Spanisch', thema:'Song / Interpret', w:{ sv_aus:25, sv_text:25, sv_anmod:20, sv_vortrag:20, sv_eigen:10 },
+           foot:'Nicht bewertet: Tontreffsicherheit, Stimmschönheit, Instrumentenkönnen, Begleitform.',
+           list:['sv_aus', 'sv_text', 'sv_anmod', 'sv_vortrag', 'sv_eigen', 'medien', 'zeit'],
+           def:['sv_aus', 'sv_text', 'sv_anmod', 'sv_vortrag', 'sv_eigen'] },
     x:   { n:'Anderes Fach', acc:'#2F5D3A', light:'#EAF3EC', hit:'#C3E0CA', preset:'inhalt',
            list:['sach','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','sprache'],
            def:['sach','quellen','aufbau','vortrag','medien','sprache'] }
@@ -701,7 +746,21 @@
   /* ================= Zustand ================= */
   var KEY = 'referat_bewertung_v1';
   var canStore = storageOk();
-  var state = null;
+  var DB = null, state = null;   // DB = alle Gruppen, state = aktuelle Gruppe
+  function defTitle(f) { return SUBJ[f].title || 'Referat ' + SUBJ[f].n; }
+  function gid() { return 'g' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); }
+  function setName(st) { return (st.kurs ? st.kurs + ' · ' : '') + st.titel; }
+  function freshDB(fach) { var st = fresh(fach); return { v:3, cur:st.id, sets:[st] }; }
+  function sanitizeDB(o) {
+    if (!o) return null;
+    if (o.v !== 3) { var one = sanitize(o); return one ? { v:3, cur:one.id, sets:[one] } : null; }
+    if (!Array.isArray(o.sets)) return null;
+    var sets = o.sets.slice(0, 60).map(function (x) { try { return sanitize(x); } catch (e) { return null; } }).filter(Boolean);
+    if (!sets.length) return null;
+    var seen = {}; sets.forEach(function (x) { if (seen[x.id]) x.id = gid(); seen[x.id] = 1; });
+    return { v:3, cur:sets.some(function (x) { return x.id === o.cur; }) ? o.cur : sets[0].id, sets:sets };
+  }
+  function curSet() { for (var i = 0; i < DB.sets.length; i++) if (DB.sets[i].id === DB.cur) return DB.sets[i]; DB.cur = DB.sets[0].id; return DB.sets[0]; }
   var els = {};
 
   function storageOk() {
@@ -714,12 +773,13 @@
   function newStudent() {
     return { id:'s' + Date.now() + Math.floor(Math.random() * 1000), name:'', thema:'', datum:today(), cmt:'', r:{} };
   }
-  function fresh() {
-    var f = { v:2, setup:false, fach:'de', titel:'Referat Deutsch', kurs:'', sel:SUBJ.de.def.slice(), custom:[], preset:SUBJ.de.preset,
+  function fresh(fach) {
+    fach = SUBJ[fach] ? fach : 'de';
+    var f = { v:2, id:gid(), setup:false, fach:fach, titel:defTitle(fach), kurs:'', sel:SUBJ[fach].def.slice(), custom:[], preset:SUBJ[fach].preset,
               groups:{ I:50, P:30, S:20 }, texts:{},
               mode:'np', out:'np', total:30, half:true, keyType:'abi', knick:[50, 20],
               indNote:[85, 70, 55, 40, 20], indNP:ABI.slice(1),
-              weights:{}, withov:false, cur:0, students:[ newStudent() ] };
+              weights:SUBJ[fach].w ? JSON.parse(JSON.stringify(SUBJ[fach].w)) : {}, withov:false, cur:0, students:[ newStudent() ] };
     applyPreset(f);
     return f;
   }
@@ -731,7 +791,7 @@
   function flush() {
     clearTimeout(tmr); tmr = null;
     if (!canStore || !state) return Promise.resolve();
-    return SEC.write(KEY, JSON.stringify(state));
+    return SEC.write(KEY, JSON.stringify(DB));
   }
   function save() {
     if (!canStore || tmr) return;
@@ -742,7 +802,8 @@
   function str(x, max) { return String(x == null ? '' : x).slice(0, max || 2000); }
   function sanitize(o) {
     if (!o || (o.v !== 1 && o.v !== 2) || !Array.isArray(o.students) || !SUBJ[o.fach]) return null;
-    var f = fresh();
+    var f = fresh(o.fach);
+    f.id = str(o.id, 40) || f.id;
     f.setup = !!o.setup; f.fach = o.fach; f.titel = str(o.titel, 120); f.kurs = str(o.kurs, 120);
     f.custom = (Array.isArray(o.custom) ? o.custom : []).filter(function (c) { return c && c.id && c.n; }).slice(0, 20).map(function (c) {
       return { id:str(c.id, 40), n:str(c.n, 60), g: GROUPS[c.g] ? c.g : 'I' };
@@ -779,7 +840,7 @@
     if (!f.students.length) f.students.push(newStudent());
     f.cur = Math.min(Math.max(0, o.cur | 0), f.students.length - 1);
     if (f.sel.length < MIN) { f.sel = SUBJ[f.fach].def.slice(); }
-    if (!f.titel) f.titel = 'Referat ' + SUBJ[f.fach].n;
+    if (!f.titel) f.titel = defTitle(f.fach);
     var anyW = active(f).some(function (c) { return f.weights[c.id] > 0; });
     if (!anyW) applyPreset(f);
     return f;
@@ -986,7 +1047,8 @@
     d.dataset.id = s.id;
     var h = '<div class="head"><h1>' + esc(state.titel) + '</h1>';
     h += '<label class="fld"><b>Name</b><input type="text" data-f="name" placeholder="Name eintippen" autocomplete="off"></label>';
-    h += '<label class="fld"><b>Thema</b><input type="text" data-f="thema" placeholder="Thema des Referats" autocomplete="off"></label>';
+    var thl = SUBJ[state.fach].thema || 'Thema';
+    h += '<label class="fld"><b>' + thl + '</b><input type="text" data-f="thema" placeholder="' + (SUBJ[state.fach].thema ? 'Song – Interpret' : 'Thema des Referats') + '" autocomplete="off"></label>';
     h += '<div class="fld"><b>Kurs</b><span class="kursv">' + esc(state.kurs) + '</span></div>';
     h += '<label class="fld"><b>Datum</b><input type="text" data-f="datum" placeholder="TT.MM.JJJJ" autocomplete="off"></label></div>';
     h += '<div class="grid" style="grid-template-rows:auto repeat(' + cs.length + ', ' + (cs.length > 7 ? 'auto' : '1fr') + ')"><div class="gh">Kriterium</div>';
@@ -1005,7 +1067,7 @@
     h += '</div>';
     h += '<div class="sum"><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="sstat"></div></div>';
     h += '<div class="cmt"><b>Rückmeldung</b><textarea data-f="cmt" aria-label="Rückmeldung"></textarea><div class="cmtp"></div></div>';
-    h += '<div class="foot">' + esc(legend()) + '</div>';
+    h += '<div class="foot">' + esc(legend()) + (SUBJ[state.fach].foot ? ' ' + esc(SUBJ[state.fach].foot) : '') + '</div>';
     d.innerHTML = h;
     if (!blank) {
       ['name', 'thema', 'datum', 'cmt'].forEach(function (f) { d.querySelector('[data-f="' + f + '"]').value = s[f]; });
@@ -1060,7 +1122,7 @@
     var cs = active(), sw = sum(cs.map(W)) || 1;
     var d = document.createElement('section');
     d.className = 'ov';
-    var h = '<h1>Übersicht ' + esc(state.titel) + (state.kurs ? ' – ' + esc(state.kurs) : '') + '</h1><div class="tw"><table><tr><th>Nr.</th><th>Name</th><th>Thema</th>';
+    var h = '<h1>Übersicht ' + esc(state.titel) + (state.kurs ? ' – ' + esc(state.kurs) : '') + '</h1><div class="tw"><table><tr><th>Nr.</th><th>Name</th><th>' + (SUBJ[state.fach].thema || 'Thema') + '</th>';
     cs.forEach(function (c, i) {
       h += '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (state.mode === 'np' ? fmt(W(c) / sw * 100, 0) + ' %' : fmt(W(c)) + ' P') + ')</th>';
     });
@@ -1084,7 +1146,14 @@
     var S = SUBJ[state.fach], r = document.documentElement.style;
     r.setProperty('--acc', S.acc); r.setProperty('--light', S.light); r.setProperty('--hit', S.hit);
   }
+  function renderGsel() {
+    els.gsel.innerHTML = DB.sets.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === state.id ? ' selected' : '') + '>' + esc(setName(x)) + '</option>'; }).join('');
+  }
+  function switchSet(id) {
+    DB.cur = id; state = curSet(); save(); renderAll(); setView(state.setup ? 'sheet' : 'setup');
+  }
   function renderAll() {
+    renderGsel();
     setAccent();
     els.stage.innerHTML = '';
     state.students.forEach(function (s) { els.stage.appendChild(buildSheet(s)); });
@@ -1129,7 +1198,13 @@
     var h = '<div class="sbox"><h2>Referate bewerten – Einrichtung</h2>' +
       '<p>Stellen Sie in fünf Schritten Ihren Bewertungsbogen zusammen. Alles lässt sich später über „Einrichtung“ wieder ändern, auch wenn schon bewertet wurde.</p>' +
       '<p class="priv"><b>Datenschutz:</b> Das Programm arbeitet vollständig offline. Alle Eingaben bleiben ausschließlich in diesem Browser auf diesem Gerät; es werden keine Daten übertragen.</p>' +
-      '<button type="button" data-a="load">Vorhandene Sicherung laden</button></div>';
+      '<button type="button" data-a="load">Vorhandene Sicherung laden</button>' +
+      '<div class="row" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b>Diese Gruppe: ' + esc(setName(state)) + '</b>' +
+      (DB.sets.length > 1 ? '<button type="button" class="danger" data-a="delset">Diese Gruppe löschen</button>' +
+        '<label style="display:flex;gap:6px;align-items:center">Einstellungen übernehmen von <select id="copyfrom">' +
+        DB.sets.filter(function (x) { return x.id !== state.id; }).map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(setName(x)) + '</option>'; }).join('') +
+        '</select></label><button type="button" data-a="copycfg">Übernehmen</button>' : '') +
+      '</div><p class="note">Jede Gruppe (z. B. 9b Deutsch, Q12 Spanisch Songvortrag) hat eigene Schülerbögen und eigene Einstellungen. Neue Gruppen legen Sie oben mit „+ Neue Gruppe“ an und wechseln über die Auswahlliste.</p></div>';
 
     h += '<div class="sbox"><h3><span class="no">1</span> Fach wählen</h3><div class="chips">';
     for (var f in SUBJ) h += '<button type="button" class="chip' + (f === state.fach ? ' on' : '') + '" data-a="fach" data-v="' + f + '">' + SUBJ[f].n + '</button>';
@@ -1280,15 +1355,29 @@
 
   function setupClick(a, v) {
     if (secClick(a)) return;
+    if (a === 'delset') {
+      if (!confirm('Gruppe „' + setName(state) + '“ mit allen Bögen löschen? Das kann nicht rückgängig gemacht werden.')) return;
+      var gone = state.id; DB.sets = DB.sets.filter(function (x) { return x.id !== gone; });
+      DB.cur = DB.sets[0].id; state = curSet(); save(); renderAll(); setView('setup'); return;
+    }
+    if (a === 'copycfg') {
+      var srcId = document.getElementById('copyfrom').value, src = null;
+      DB.sets.forEach(function (x) { if (x.id === srcId) src = x; });
+      if (!src || !confirm('Fach, Kriterien, Texte, Gewichtung und Notenberechnung von „' + setName(src) + '“ übernehmen? Die Schülerbögen dieser Gruppe bleiben erhalten.')) return;
+      ['fach', 'sel', 'custom', 'preset', 'groups', 'texts', 'mode', 'out', 'total', 'half', 'keyType', 'knick', 'indNote', 'indNP', 'weights'].forEach(function (k) { state[k] = JSON.parse(JSON.stringify(src[k])); });
+      if (!state.titel || state.titel.indexOf('Referat') === 0 || state.titel === 'Songvortrag Spanisch') state.titel = src.titel;
+      save(); renderAll(); renderSetup(); return;
+    }
     if (a === 'fach') {
       if (v === state.fach) return;
       if (hasRatings() && !confirm('Fach wechseln? Die Kriterienauswahl wird neu gesetzt. Bewertungen bleiben nur für Kriterien erhalten, die in beiden Fächern vorkommen.')) return;
-      var defTitle = !state.titel || state.titel === 'Referat ' + SUBJ[state.fach].n;
+      var isDef = !state.titel || state.titel === defTitle(state.fach);
       var keep = state.sel.filter(function (id) { return !C[id]; });
       state.fach = v;
       state.sel = SUBJ[v].def.concat(keep).slice(0, MAX);
       state.preset = SUBJ[v].preset;
-      if (defTitle) state.titel = 'Referat ' + SUBJ[v].n;
+      if (SUBJ[v].w) state.weights = JSON.parse(JSON.stringify(SUBJ[v].w));
+      if (isDef) state.titel = defTitle(v);
       applyPreset(); save(); renderSetup();
     } else if (a === 'out') {
       state.out = v; save(); renderSetup();
@@ -1326,7 +1415,7 @@
     } else if (a === 'done') {
       if (active().length < MIN) { alert('Bitte mindestens ' + MIN + ' Kriterien wählen.'); return; }
       if (state.mode === 'pt' && !keyCheck()) { alert('Bitte den Notenschlüssel prüfen (siehe rote Meldung in Schritt 5).'); return; }
-      if (!state.titel.trim()) state.titel = 'Referat ' + SUBJ[state.fach].n;
+      if (!state.titel.trim()) state.titel = defTitle(state.fach);
       state.setup = true; save(); renderAll(); setView('sheet');
     } else if (a === 'load') {
       els.file.click();
@@ -1336,7 +1425,7 @@
       if (!confirm('Wirklich ALLE Bögen und Einstellungen auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.')) return;
       clearTimeout(tmr); tmr = null;
       SEC.wipe(KEY); updLockBtn();
-      state = fresh(); renderAll(); renderSetup(); window.scrollTo(0, 0);
+      DB = freshDB(); state = curSet(); renderAll(); renderSetup(); window.scrollTo(0, 0);
     }
   }
 
@@ -1375,7 +1464,7 @@
   }
   function stamp() { return new Date().toISOString().slice(0, 10); }
   function fileBase() { return 'referat_' + state.fach + '_' + (state.kurs || 'kurs').replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g, '_'); }
-  function exportJSON() { exportBackup(fileBase() + '_sicherung_' + stamp() + '.json', JSON.stringify(state, null, 1)); }
+  function exportJSON() { exportBackup('referate_alle_gruppen_sicherung_' + stamp() + '.json', JSON.stringify(DB, null, 1)); }
   function csvCell(x) {
     var t = String(x == null ? '' : x);
     if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
@@ -1397,7 +1486,16 @@
 
   /* ================= Start ================= */
   function init() {
-    ['stage', 'sel', 'withov', 'brand', 'setup', 'file'].forEach(function (id) { els[id] = document.getElementById(id); });
+    ['stage', 'sel', 'withov', 'brand', 'setup', 'file', 'gsel'].forEach(function (id) { els[id] = document.getElementById(id); });
+    els.gsel.addEventListener('change', function () { switchSet(els.gsel.value); });
+    document.getElementById('gnew').addEventListener('click', function () {
+      var st = fresh(state.fach === 'song' ? 'song' : 'de'); DB.sets.push(st); switchSet(st.id);
+    });
+    if (location.hash === '#song') {
+      var sg = null; DB.sets.forEach(function (x) { if (x.fach === 'song' && !sg) sg = x; });
+      if (!sg) { if (DB.sets.length === 1 && !DB.sets[0].setup && !hasRatingsOf(DB.sets[0])) DB.sets = []; sg = fresh('song'); DB.sets.push(sg); }
+      DB.cur = sg.id; state = sg;
+    }
     if (!canStore) document.getElementById('warn').hidden = false;
     renderAll();
     setView(state.setup ? 'sheet' : 'setup');
@@ -1469,11 +1567,17 @@
       var r = new FileReader();
       r.onload = function () {
         readBackup(r.result, function (raw, found) {
-          var o = null; try { o = sanitize(raw); } catch (err) {}
+          var o = null; try { o = sanitizeDB(raw); } catch (err) {}
           if (!o) { alert('Die Datei konnte nicht gelesen werden. Bitte eine Sicherung aus diesem Bewertungsbogen wählen.'); return; }
-          if (!confirm('Aktuelle Daten durch die geladene Sicherung ersetzen?')) return;
+          if (raw.v === 3) {
+            if (!confirm('Alle aktuellen Gruppen durch die geladene Sicherung (' + o.sets.length + ' Gruppe/n) ersetzen?')) return;
+            DB = o;
+          } else {
+            if (!confirm('Ältere Sicherung als zusätzliche Gruppe „' + setName(o.sets[0]) + '“ hinzufügen?')) return;
+            o.sets[0].id = gid(); DB.sets.push(o.sets[0]); DB.cur = o.sets[0].id;
+          }
           if (found && !SEC.on()) SEC.adopt(found);
-          state = o; state.setup = true; flush(); updLockBtn(); renderAll(); setView('sheet');
+          state = curSet(); state.setup = true; flush(); updLockBtn(); renderAll(); setView('sheet');
         });
       };
       r.readAsText(f); e.target.value = '';
@@ -1541,10 +1645,11 @@
       if (!canStore && state.students.some(function (s) { return s.name.trim() || hasR(s); })) { e.preventDefault(); e.returnValue = ''; }
     });
   }
+  function hasRatingsOf(st) { return st.students.some(function (x) { for (var k in x.r) return true; return !!x.name.trim(); }); }
   function boot() {
     var raw = load();
-    if (raw && SEC.isEnv(raw)) unlockScreen(raw, function (o) { var s = null; try { s = sanitize(o); } catch (e) {} state = s || fresh(); init(); });
-    else { var s = null; try { s = raw ? sanitize(raw) : null; } catch (e) {} state = s || fresh(); init(); }
+    function start(o) { var d = null; try { d = o ? sanitizeDB(o) : null; } catch (e) {} DB = d || freshDB(); state = curSet(); init(); }
+    if (raw && SEC.isEnv(raw)) unlockScreen(raw, start); else start(raw);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

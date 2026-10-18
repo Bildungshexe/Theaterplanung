@@ -208,6 +208,7 @@
 <div class="bar" id="bar">
   <a class="homebtn" href="index.html">⌂ Start</a>
   <select id="csel" aria-label="Klasse / Kurs wählen"></select>
+  <button id="cnew" title="Neue Klasse / neuen Kurs anlegen">+ Neu</button>
   <button data-view="erf">Erfassen</button>
   <button data-view="ausw">Auswertung</button>
   <button data-view="setup">Einrichtung</button>
@@ -1232,7 +1233,11 @@
       '<p class="priv"><b>Datenschutz:</b> Das Programm arbeitet vollständig offline. Alle Eingaben bleiben ausschließlich in diesem Browser auf diesem Gerät; es werden keine Daten übertragen.</p>' +
       '<div class="row"><b>Aktuell: ' + esc(courseName(S)) + '</b><button type="button" data-a="newc">+ Neue Klasse / neuen Kurs anlegen</button>' +
       (DB.courses.length > 1 ? '<button type="button" class="danger" data-a="delcourse">Diese Klasse löschen</button>' : '') +
-      '<button type="button" data-a="load">Sicherung laden</button></div></div>';
+      '<button type="button" data-a="load">Sicherung laden</button></div>' +
+      (DB.courses.length > 1 ? '<div class="row" style="margin-top:10px"><label class="row">Einstellungen übernehmen von <select id="copyfrom">' +
+        DB.courses.filter(function (x) { return x.id !== S.id; }).map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(courseName(x)) + '</option>'; }).join('') +
+        '</select></label><button type="button" data-a="copycfg">Übernehmen</button></div>' : '') +
+      '<p class="note">Jede Klasse bzw. jeder Kurs hat eigene Teilnehmende, Einträge und Einstellungen. Neue Klassen legen Sie oben in der Leiste mit „+ Neu“ an und wechseln über die Auswahlliste.</p></div>';
 
     h += '<div class="sbox"><h3><span class="no">1</span> Klasse und Fach</h3><p class="lbl">Jahrgangsstufe</p><div class="chips">';
     STUFEN.forEach(function (s) { h += chip('stufe', s, s === S.stufe, s); });
@@ -1383,6 +1388,13 @@
   }
   function setupClick(a, v) {
     if (secClick(a)) return;
+    if (a === 'copycfg') {
+      var srcId = document.getElementById('copyfrom').value, src = null;
+      DB.courses.forEach(function (x) { if (x.id === srcId) src = x; });
+      if (!src || !confirm('Kriterien, Texte, Gewichtung und Notenberechnung von „' + courseName(src) + '“ übernehmen? Teilnehmende und Einträge dieser Gruppe bleiben erhalten.')) return;
+      ['fach', 'fachName', 'sel', 'custom', 'texts', 'preset', 'groups', 'weights', 'mode', 'out', 'total', 'half', 'keyType', 'knick', 'indNote', 'indNP', 'timeW', 'hj'].forEach(function (k) { S[k] = JSON.parse(JSON.stringify(src[k])); });
+      save(); setView('setup'); return;
+    }
     if (a === 'stufe') {
       var oldDef = +S.stufe >= 11 ? 'np' : 'note';
       S.stufe = v;
@@ -1483,6 +1495,7 @@
       var b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view);
     });
     document.getElementById('helpbtn').addEventListener('click', function () { var h = document.getElementById('help'); h.hidden = !h.hidden; });
+    document.getElementById('cnew').addEventListener('click', function () { setupClick('newc'); });
     els.csel.addEventListener('change', function () {
       DB.cur = els.csel.value; S = curCourse(); openSid = null; save(); setView(DB.view === 'einzel' ? 'ausw' : DB.view);
     });

@@ -213,7 +213,8 @@
 
 <div class="bar" id="bar">
   <a class="homebtn" href="index.html">⌂ Start</a>
-  <select id="csel" aria-label="Kurs / Produktion wählen"></select>
+  <select id="csel" aria-label="Gruppe wählen"></select>
+  <button id="cnew" title="Neue Gruppe anlegen">+ Neu</button>
   <button data-view="probe">Proben</button>
   <button data-view="prem">Premiere</button>
   <button data-view="ausw">Auswertung</button>
@@ -1408,11 +1409,15 @@
     var h = '<div class="sbox"><h2>Theaterkurs bewerten – Einrichtung</h2>' +
       '<p>Legen Sie Kurs, Teilnehmende und Aufgaben fest und wählen Sie für jeden Bereich die Kriterien für Proben und Premiere. Alles lässt sich später ändern.</p>' +
       '<p class="priv"><b>Datenschutz:</b> Das Programm arbeitet vollständig offline. Alle Eingaben bleiben ausschließlich in diesem Browser auf diesem Gerät.</p>' +
-      '<div class="row"><button type="button" data-a="newc">+ Neuen Kurs / neue Produktion anlegen</button>' + (DB.courses.length > 1 ? '<button type="button" class="danger" data-a="delcourse">Diesen Kurs löschen</button>' : '') +
-      '<button type="button" data-a="load">Sicherung laden</button></div></div>';
+      '<div class="row"><b>Aktuell: ' + esc(courseName(S)) + '</b><button type="button" data-a="newc">+ Neue Gruppe anlegen</button>' + (DB.courses.length > 1 ? '<button type="button" class="danger" data-a="delcourse">Diesen Kurs löschen</button>' : '') +
+      '<button type="button" data-a="load">Sicherung laden</button></div>' +
+      (DB.courses.length > 1 ? '<div class="row" style="margin-top:10px"><label class="row">Einstellungen übernehmen von <select id="copyfrom">' +
+        DB.courses.filter(function (x) { return x.id !== S.id; }).map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(courseName(x)) + '</option>'; }).join('') +
+        '</select></label><button type="button" data-a="copycfg">Übernehmen</button></div>' : '') +
+      '<p class="note">Jede Gruppe hat eigene Teilnehmende, Einträge und Einstellungen. Neue Gruppen legen Sie oben in der Leiste mit „+ Neu“ an und wechseln über die Auswahlliste.</p></div>';
 
     h += '<div class="sbox"><h3><span class="no">1</span> Kurs und Produktion</h3><div class="row2">' +
-      '<label>Kurs<input type="text" data-s="name" maxlength="60" value="' + esc(S.name) + '" placeholder="z. B. Theater Q12"></label>' +
+      '<label>Gruppe / Kurs<input type="text" data-s="name" maxlength="60" value="' + esc(S.name) + '" placeholder="z. B. Theater Q12"></label>' +
       '<label>Stück<input type="text" data-s="stueck" maxlength="100" value="' + esc(S.stueck) + '" placeholder="Titel der Inszenierung"></label>' +
       '<label>Premiere am<input type="date" data-s="premDate" value="' + esc(S.premDate) + '"></label></div></div>';
 
@@ -1507,6 +1512,13 @@
   }
   function setupClick(a, v) {
     if (secClick(a)) return;
+    if (a === 'copycfg') {
+      var srcId = document.getElementById('copyfrom').value, src = null;
+      DB.courses.forEach(function (x) { if (x.id === srcId) src = x; });
+      if (!src || !confirm('Kriterien, Texte, Gewichtung und Notenberechnung von „' + courseName(src) + '“ übernehmen? Teilnehmende und Einträge dieser Gruppe bleiben erhalten.')) return;
+      ['custom', 'texts', 'cfg', 'mode', 'totP', 'totA', 'half', 'timeW', 'probeShare', 'ges', 'hj'].forEach(function (k) { S[k] = JSON.parse(JSON.stringify(src[k])); });
+      save(); setView('setup'); return;
+    }
     var cfg = cfgOf(S, curOcc, curB);
     if (a === 'bsel') { curB = v; if (B[v].probeOnly) curOcc = 'probe'; renderSetup(); }
     else if (a === 'occ') { curOcc = v; renderSetup(); }
@@ -1549,7 +1561,7 @@
       ['probe', 'prem'].forEach(function (o) { var cf = cfgOf(S, o, curB); if (cf) { cf.sel = cf.sel.filter(function (x) { return x !== v; }); delete cf.weights[v]; applyPreset(S, o, curB); } });
       delete S.texts[v]; save(); renderSetup();
     } else if (a === 'txreset') { delete S.texts[v]; save(); renderSetup(); }
-    else if (a === 'newc') { var c = freshCourse(); DB.courses.push(c); DB.cur = c.id; S = c; openSid = null; save(); setView('setup'); }
+    else if (a === 'newc') { var c = freshCourse(); c.name = 'Theatergruppe ' + (DB.courses.length + 1); DB.courses.push(c); DB.cur = c.id; S = c; openSid = null; save(); setView('setup'); }
     else if (a === 'delcourse') {
       if (!confirm('Kurs „' + courseName(S) + '“ mit allen Bewertungen löschen? Das kann nicht rückgängig gemacht werden.')) return;
       var gone = S.id; DB.courses = DB.courses.filter(function (x) { return x.id !== gone; }); DB.cur = DB.courses[0].id; S = curCourse(); save(); setView('setup');
@@ -1573,6 +1585,7 @@
     document.getElementById('lockbtn').addEventListener('click', lockNow);
     els.bar.addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (b) { openSid = null; setView(b.dataset.view); } });
     document.getElementById('helpbtn').addEventListener('click', function () { var h = document.getElementById('help'); h.hidden = !h.hidden; });
+    document.getElementById('cnew').addEventListener('click', function () { setupClick('newc'); });
     els.csel.addEventListener('change', function () { DB.cur = els.csel.value; S = curCourse(); openSid = null; save(); setView(DB.view); });
 
     els.probe.addEventListener('click', function (e) { listClick('probe', e); });

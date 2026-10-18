@@ -28,7 +28,8 @@ for src, dst in tools:
     for a, b in [(CSP_OLD, CSP_NEW),
                  ('<meta name="referrer" content="no-referrer">', '<meta name="referrer" content="no-referrer">\n' + HEAD),
                  ('<style>\n', '<style>\n' + HOME_CSS),
-                 ('<div class="bar" id="bar">', '<div class="bar" id="bar">\n  <a class="homebtn" href="index.html">⌂ Start</a>'),
+                 (('<div class="gbar" id="gbar">' if '<div class="gbar" id="gbar">' in s else '<div class="bar" id="bar">'),
+                  ('<div class="gbar" id="gbar">' if '<div class="gbar" id="gbar">' in s else '<div class="bar" id="bar">') + '\n  <a class="homebtn" href="index.html">⌂ Start</a>'),
                  ('</body>', SW_REG)]:
         assert s.count(a) >= 1, (src, a)
         s = s.replace(a, b, 1)
