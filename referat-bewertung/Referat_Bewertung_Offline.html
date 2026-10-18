@@ -82,6 +82,22 @@
   .inl { display:flex; gap:8px; align-items:center; margin:8px 0; }
   .inl input { width:22px; height:22px; }
   .done { text-align:center; }
+  .lbl { font-weight:bold; margin:12px 0 6px !important; }
+  .keys input { width:84px; }
+  .ktw { overflow-x:auto; margin-top:8px; }
+  table.kt { border-collapse:collapse; }
+  table.kt th, table.kt td { border:1px solid #bbb; padding:4px 10px; text-align:center; }
+  table.kt th { background:#f3f3f3; }
+  .grpin { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:10px; align-items:center; }
+  .grpin label { display:flex; gap:6px; align-items:center; font-weight:bold; }
+  .grpin input { width:80px; text-align:center; }
+  details.txed { margin-top:12px; border:1px solid #bbb; border-radius:8px; padding:8px 12px; }
+  details.txed summary { cursor:pointer; font-weight:bold; min-height:36px; display:list-item; padding-top:6px; }
+  .txc { border-top:1px solid #ddd; padding:10px 0; display:grid; gap:6px; }
+  .txc label { display:flex; flex-direction:column; gap:2px; font-weight:bold; font-size:10.5pt; }
+  .txc input, .txc textarea { font-weight:normal; padding:6px 8px; border:1px solid #888; border-radius:6px; font-size:11pt; }
+  .txc textarea { resize:vertical; min-height:44px; }
+  .txc button { justify-self:start; }
   .big { font-size:14pt; padding:12px 26px !important; min-height:52px !important; }
 
   /* ---------- Bogen (Grundform = A4-Tabelle) ---------- */
@@ -176,7 +192,7 @@
     .bar, .actions, .setup, .help, .warn, .hint { display:none !important; }
     .stage { padding:0; }
     .sheet, .ov { box-shadow:none; margin:0; width:297mm; max-width:none; padding:6mm 8mm; }
-    .sheet { height:209mm; overflow:hidden; }
+    .sheet { height:auto; min-height:209mm; }
     .ov { min-height:209mm; }
     .sheet ~ .sheet, .ov { break-before: page; page-break-before: always; }
     .lv:hover { background:transparent; }
@@ -244,7 +260,15 @@
   'use strict';
 
   /* ================= Kataloge ================= */
-  var MAX = 7, MIN = 2;
+  var MAX = 12, MIN = 1;
+  // KMK-Notenschlüssel (Oberstufe/Abitur): Mindestprozent je Notenpunkt, Index = Notenpunkte
+  var ABI = [0, 20, 27, 33, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95];
+  var TEND = ['6', '5−', '5', '5+', '4−', '4', '4+', '3−', '3', '3+', '2−', '2', '2+', '1−', '1', '1+'];
+  var KEYS = [
+    { id:'abi',   n:'Abiturschlüssel', t:'KMK-Schlüssel der Oberstufe: 4 ab 40 %, 5 ab 20 %.' },
+    { id:'knick', n:'Mit Knick',       t:'Grenzen 4/5 und 5/6 in Prozent festlegen; darüber gleichmäßig.' },
+    { id:'ind',   n:'Individuell',     t:'Jede Grenze selbst eintragen.' }
+  ];
   var LV_NAMES = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft / ungenügend'];
   var NP_LV = [ { lo:13, hi:15, def:14 }, { lo:10, hi:12, def:11 }, { lo:7, hi:9, def:8 }, { lo:4, hi:6, def:5 }, { lo:0, hi:3, def:2 } ];
   var GROUPS = { I:'Inhalt', P:'Präsentation', S:'Sprache' };
@@ -398,7 +422,7 @@
       'Lückenhaft, teils fehlerhaft.',
       'Thema verfehlt.' ] },
     e_fluss: { n:'Sprechfluss und freies Sprechen', s:'Sprechfluss', g:'S', d:[
-      'Frei und flüssig; sichere Redemittel (pues, entonces …); kaum Pausen.',
+      'Frei und flüssig; sichere Redemittel und Überleitungen; kaum Pausen.',
       'Weitgehend frei und flüssig; kurze Pausen.',
       'Teils abgelesen; gelegentliches Stocken.',
       'Überwiegend abgelesen; häufiges Stocken.',
@@ -410,7 +434,7 @@
       'Häufige Fehler; Verständnis teils erschwert.',
       'Kaum verständlich.' ] },
     e_korr: { n:'Sprachliche Korrektheit', s:'Korrektheit', g:'S', d:[
-      'Auch komplexe Strukturen (z. B. subjuntivo, Zeiten) sicher; kaum Fehler.',
+      'Auch komplexe Strukturen (z. B. Modus, Zeiten) sicher; kaum Fehler.',
       'Weitgehend korrekt; Fehler bei komplexen Strukturen.',
       'Einfache Strukturen korrekt; wiederkehrende Fehler.',
       'Viele Fehler, auch bei Grundstrukturen.',
@@ -446,7 +470,8 @@
     { id:'inhalt',  n:'Schwerpunkt Inhalt',       t:'Inhalt 60 · Präsentation 25 · Sprache 15', g:{ I:60, P:25, S:15 } },
     { id:'praes',   n:'Schwerpunkt Präsentation', t:'Inhalt 35 · Präsentation 45 · Sprache 20', g:{ I:35, P:45, S:20 } },
     { id:'sprache', n:'Schwerpunkt Sprache',      t:'Inhalt 30 · Präsentation 20 · Sprache 50', g:{ I:30, P:20, S:50 } },
-    { id:'eigen',   n:'Eigene Gewichtung',        t:'Werte in der Tabelle selbst eintragen.' }
+    { id:'bereich', n:'Eigener Schwerpunkt',      t:'Anteile für Inhalt, Präsentation und Sprache selbst festlegen.' },
+    { id:'eigen',   n:'Eigene Gewichtung',        t:'Jedes Kriterium in der Tabelle einzeln festlegen.' }
   ];
   var TOTALS = [10, 15, 20, 24, 30, 40, 50, 60, 100];
 
@@ -467,8 +492,11 @@
     return { id:'s' + Date.now() + Math.floor(Math.random() * 1000), name:'', thema:'', datum:today(), cmt:'', r:{} };
   }
   function fresh() {
-    var f = { v:1, setup:false, fach:'de', titel:'Referat Deutsch', kurs:'', sel:SUBJ.de.def.slice(), custom:[], preset:SUBJ.de.preset,
-              mode:'np', total:30, half:true, key:[85, 70, 55, 40, 20], weights:{}, withov:false, cur:0, students:[ newStudent() ] };
+    var f = { v:2, setup:false, fach:'de', titel:'Referat Deutsch', kurs:'', sel:SUBJ.de.def.slice(), custom:[], preset:SUBJ.de.preset,
+              groups:{ I:50, P:30, S:20 }, texts:{},
+              mode:'np', out:'np', total:30, half:true, keyType:'abi', knick:[50, 20],
+              indNote:[85, 70, 55, 40, 20], indNP:ABI.slice(1),
+              weights:{}, withov:false, cur:0, students:[ newStudent() ] };
     applyPreset(f);
     return f;
   }
@@ -476,15 +504,21 @@
     if (!canStore) return null;
     try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; }
   }
-  var tmr = null;
-  function save() {
+  var tmr = null, txOpen = false;
+  function flush() {
+    clearTimeout(tmr); tmr = null;
     if (!canStore) return;
-    clearTimeout(tmr);
-    tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 200);
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
+  function save() {
+    if (!canStore || tmr) return;
+    tmr = setTimeout(flush, 250);
+  }
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
   function str(x, max) { return String(x == null ? '' : x).slice(0, max || 2000); }
   function sanitize(o) {
-    if (!o || o.v !== 1 || !Array.isArray(o.students) || !SUBJ[o.fach]) return null;
+    if (!o || (o.v !== 1 && o.v !== 2) || !Array.isArray(o.students) || !SUBJ[o.fach]) return null;
     var f = fresh();
     f.setup = !!o.setup; f.fach = o.fach; f.titel = str(o.titel, 120); f.kurs = str(o.kurs, 120);
     f.custom = (Array.isArray(o.custom) ? o.custom : []).filter(function (c) { return c && c.id && c.n; }).slice(0, 20).map(function (c) {
@@ -496,7 +530,17 @@
     f.mode = o.mode === 'pt' ? 'pt' : 'np';
     f.total = Math.max(1, Math.min(1000, Math.round(num(o.total, 30))));
     f.half = o.half !== false;
-    if (Array.isArray(o.key) && o.key.length === 5) f.key = o.key.map(function (x) { return Math.max(0, Math.min(100, num(x, 0))); });
+    f.out = o.out === 'note' ? 'note' : 'np';
+    f.keyType = (o.keyType === 'knick' || o.keyType === 'ind') ? o.keyType : 'abi';
+    function pcts(a, n, d) { return (Array.isArray(a) && a.length === n) ? a.map(function (x) { return Math.max(0, Math.min(100, num(x, 0))); }) : d; }
+    f.knick = pcts(o.knick, 2, f.knick);
+    f.indNote = pcts(o.indNote, 5, f.indNote);
+    f.indNP = pcts(o.indNP, 15, f.indNP);
+    if (o.groups && typeof o.groups === 'object') for (var gk in GROUPS) f.groups[gk] = Math.max(0, num(o.groups[gk], f.groups[gk]));
+    if (o.texts && typeof o.texts === 'object') for (var tk in o.texts) {
+      var tx = o.texts[tk];
+      if (known[tk] && tx && typeof tx === 'object') f.texts[tk] = { n:str(tx.n, 80), d:[0, 1, 2, 3, 4].map(function (i) { return str(Array.isArray(tx.d) ? tx.d[i] : '', 200); }) };
+    }
     f.weights = {};
     if (o.weights && typeof o.weights === 'object') for (var k in o.weights) if (known[k]) f.weights[k] = Math.max(0, num(o.weights[k], 0));
     f.withov = !!o.withov;
@@ -526,11 +570,19 @@
   function byId(id) { for (var i = 0; i < state.students.length; i++) if (state.students[i].id === id) return state.students[i]; return null; }
   function qa(root, sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); }
 
+  function short(n) { return n.length > 14 ? n.slice(0, 13) + '.' : n; }
   function critObj(st, id) {
+    var b = critBase(st, id), o = b && st.texts && st.texts[id];
+    if (!o) return b;
+    var n = (o.n || '').trim();
+    return { id:b.id, n:n || b.n, s:n && n !== b.n ? short(n) : b.s, g:b.g, custom:b.custom, base:b,
+             d:b.d.map(function (x, i) { var t = (o.d[i] || '').trim(); return t || x; }) };
+  }
+  function critBase(st, id) {
     if (C[id]) { var c = C[id]; return { id:id, n:c.n, s:c.s, g:c.g, d:c.d }; }
     for (var i = 0; i < st.custom.length; i++) if (st.custom[i].id === id) {
       var u = st.custom[i];
-      return { id:u.id, n:u.n, s:u.n.length > 14 ? u.n.slice(0, 13) + '.' : u.n, g:u.g, d:GENERIC, custom:true };
+      return { id:u.id, n:u.n, s:short(u.n), g:u.g, d:GENERIC, custom:true };
     }
     return null;
   }
@@ -574,10 +626,10 @@
     } else if (!p.g) {
       sh = cs.map(function () { return 1; });
     } else {
-      var cnt = {}, gs = 0;
+      var pg = p.id === 'bereich' ? st.groups : p.g, cnt = {}, gs = 0;
       cs.forEach(function (c) { cnt[c.g] = (cnt[c.g] || 0) + 1; });
-      for (var g in cnt) gs += p.g[g];
-      sh = cs.map(function (c) { return p.g[c.g] / gs / cnt[c.g]; });
+      for (var g in cnt) gs += pg[g] || 0;
+      sh = gs > 0 ? cs.map(function (c) { return (pg[c.g] || 0) / gs / cnt[c.g]; }) : cs.map(function () { return 1; });
     }
     var out = distribute(sh, T, st.mode === 'pt');
     cs.forEach(function (c, i) { st.weights[c.id] = out[i]; });
@@ -589,7 +641,7 @@
   function roundS(x, st) { return Math.round(x / st) * st; }
   function range(c, k) {
     if (state.mode === 'np') return NP_LV[k];
-    var m = W(c), st = stepSize(), kp = state.key;
+    var m = W(c), st = stepSize(), kp = noteTh();
     var lower = k < 4 ? kp[k] : 0, upper = k === 0 ? 100 : kp[k - 1];
     var lo = Math.max(0, ceilS(m * lower / 100, st));
     var hi = k === 0 ? m : Math.min(m, ceilS(m * upper / 100, st) - st);
@@ -614,11 +666,41 @@
     if (np >= 1)  return { z:5, t:'mangelhaft' };
     return { z:6, t:'ungenügend' };
   }
-  function notePct(p) {
-    var kp = state.key, t = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft', 'ungenügend'];
-    for (var i = 0; i < 5; i++) if (p >= kp[i] - 1e-9) return { z:i + 1, t:t[i] };
-    return { z:6, t:t[5] };
+  // Mindestprozent je Notenpunkt (Index 0–15)
+  function npTh(st) {
+    st = st || state;
+    if (st.keyType === 'knick') {
+      var a = st.knick[0], b = st.knick[1], t = [0];
+      for (var n = 1; n <= 15; n++) t.push(n >= 4 ? a + (n - 4) * (100 - a) / 12 : b + (n - 1) * (a - b) / 3);
+      return t;
+    }
+    if (st.keyType === 'ind') return [0].concat(st.indNP);
+    return ABI.slice();
   }
+  // Mindestprozent für die Noten 1–5
+  function noteTh(st) {
+    st = st || state;
+    if (st.keyType === 'knick') {
+      var a = st.knick[0];
+      return [1, 2, 3, 4].map(function (i) { return 100 - i * (100 - a) / 4; }).concat([st.knick[1]]);
+    }
+    if (st.keyType === 'ind' && st.out === 'note') return st.indNote.slice();
+    var t = npTh(st);
+    return [t[13], t[10], t[7], t[4], t[1]];
+  }
+  function fromPct(p) {
+    if (state.out === 'np') {
+      var t = npTh();
+      for (var n = 15; n >= 1; n--) if (p >= t[n] - 1e-9) return { np:n, z:noteNP(n) };
+      return { np:0, z:noteNP(0) };
+    }
+    var kp = noteTh(), names = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft', 'ungenügend'];
+    for (var i = 0; i < 5; i++) if (p >= kp[i] - 1e-9) return { z:{ z:i + 1, t:names[i] } };
+    return { z:{ z:6, t:names[5] } };
+  }
+  function keyName() { for (var i = 0; i < KEYS.length; i++) if (KEYS[i].id === state.keyType) return KEYS[i].n; return ''; }
+  function p1(x) { return fmt(Math.round(x * 100) / 100); }
+  function valLabel(v) { return state.mode === 'np' && state.out === 'note' ? TEND[v] : fmt(v); }
   function calc(s) {
     normalize(s);
     var cs = active(), open = 0, got = 0, wv = 0, ws = 0, mx = 0;
@@ -637,18 +719,40 @@
       res.z = noteNP(res.np);
     } else {
       res.pct = mx ? got / mx * 100 : 0;
-      res.z = notePct(res.pct);
+      var fr = fromPct(res.pct);
+      res.np = fr.np; res.z = fr.z;
     }
     return res;
   }
   function bandLabel(k) {
-    if (state.mode === 'np') return NP_LV[k].hi + '–' + NP_LV[k].lo + ' NP';
-    return k === 4 ? 'unter ' + fmt(state.key[3]) + ' %' : 'ab ' + fmt(state.key[k]) + ' %';
+    if (state.mode === 'np') return state.out === 'np' ? NP_LV[k].hi + '–' + NP_LV[k].lo + ' NP' : (k === 4 ? 'Note 5 / 6' : 'Note ' + (k + 1));
+    var kp = noteTh();
+    return k === 4 ? 'unter ' + p1(kp[3]) + ' %' : 'ab ' + p1(kp[k]) + ' %';
   }
   function legend() {
-    if (state.mode === 'np') return 'Notenpunkte → Note: 15–13 = 1 · 12–10 = 2 · 9–7 = 3 · 6–4 = 4 · 3–1 = 5 · 0 = 6. Gesamt = gewichteter Durchschnitt, ab ,5 aufgerundet.';
-    var kp = state.key;
-    return 'Notenschlüssel: 1 ab ' + fmt(kp[0]) + ' % · 2 ab ' + fmt(kp[1]) + ' % · 3 ab ' + fmt(kp[2]) + ' % · 4 ab ' + fmt(kp[3]) + ' % · 5 ab ' + fmt(kp[4]) + ' % · 6 darunter.';
+    if (state.mode === 'np') {
+      if (state.out === 'np') return 'Notenpunkte → Note: 15–13 = 1 · 12–10 = 2 · 9–7 = 3 · 6–4 = 4 · 3–1 = 5 · 0 = 6. Gesamt = gewichteter Durchschnitt, ab ,5 aufgerundet.';
+      return 'Stufe = Note, − / + setzt die Tendenz. Gesamtnote = gewichteter Durchschnitt (intern 15–0 Punkte, ab ,5 aufgerundet).';
+    }
+    if (state.out === 'np') {
+      var t = npTh(), a = [];
+      for (var n = 15; n >= 1; n--) a.push(n + ' ab ' + p1(t[n]) + ' %');
+      return keyName() + ' (Notenpunkte): ' + a.join(' · ') + ' · 0 darunter.';
+    }
+    var kp = noteTh();
+    return keyName() + ': 1 ab ' + p1(kp[0]) + ' % · 2 ab ' + p1(kp[1]) + ' % · 3 ab ' + p1(kp[2]) + ' % · 4 ab ' + p1(kp[3]) + ' % · 5 ab ' + p1(kp[4]) + ' % · 6 darunter.';
+  }
+  function resCols(r) {
+    var d = !!r.done, c = [];
+    if (state.mode === 'np') {
+      if (state.out === 'np') c.push(['Ø NP', d ? fmt(r.ex, 1) : ''], ['Notenpunkte', d ? r.np : '']);
+      else c.push(['Tendenz', d ? TEND[r.np] : '']);
+    } else {
+      c.push(['Punkte (' + fmt(r.max || 0) + ')', r.any ? fmt(r.got) : ''], ['Prozent', d ? fmt(r.pct, 1) : '']);
+      if (state.out === 'np') c.push(['Notenpunkte', d ? r.np : '']);
+    }
+    c.push(['Note', d ? r.z.z : '']);
+    return c;
   }
 
   /* ================= Bogen ================= */
@@ -662,14 +766,15 @@
     h += '<label class="fld"><b>Thema</b><input type="text" data-f="thema" placeholder="Thema des Referats" autocomplete="off"></label>';
     h += '<div class="fld"><b>Kurs</b><span class="kursv">' + esc(state.kurs) + '</span></div>';
     h += '<label class="fld"><b>Datum</b><input type="text" data-f="datum" placeholder="TT.MM.JJJJ" autocomplete="off"></label></div>';
-    h += '<div class="grid" style="grid-template-rows:auto repeat(' + cs.length + ', 1fr)"><div class="gh">Kriterium</div>';
+    h += '<div class="grid" style="grid-template-rows:auto repeat(' + cs.length + ', ' + (cs.length > 7 ? 'auto' : '1fr') + ')"><div class="gh">Kriterium</div>';
     LV_NAMES.forEach(function (n, k) { h += '<div class="gh">' + n + '<span>' + bandLabel(k) + '</span></div>'; });
     cs.forEach(function (c, i) {
       var wl = state.mode === 'np' ? 'Gewichtung ' + fmt(W(c) / sw * 100, 0) + ' %' : 'max. ' + fmt(W(c)) + ' Punkte (' + fmt(W(c) / sw * 100, 0) + ' %)';
+      var nl = state.mode === 'np' ? (state.out === 'np' ? 'NP' : '') : 'von ' + fmt(W(c)) + ' P';
       h += '<div class="crit"><span class="cn">' + (i + 1) + ' ' + esc(c.n) + '</span><span class="wl">' + wl + '</span>' +
            '<span class="np"><button type="button" class="st" data-c="' + esc(c.id) + '" data-d="-1" aria-label="weniger">−</button>' +
            '<b class="nv">–</b><button type="button" class="st" data-c="' + esc(c.id) + '" data-d="1" aria-label="mehr">+</button>' +
-           '<span class="nl">' + (state.mode === 'np' ? 'NP' : 'von ' + fmt(W(c)) + ' P') + '</span></span></div>';
+           '<span class="nl">' + nl + '</span></span></div>';
       c.d.forEach(function (t, k) {
         h += '<div class="lv' + (k === 4 ? ' last' : '') + '" role="button" tabindex="0" data-c="' + esc(c.id) + '" data-k="' + k + '" data-l="' + esc(LV_NAMES[k] + ' · ' + bandLabel(k)) + '">' + esc(t) + '</div>';
       });
@@ -693,7 +798,7 @@
     var c0 = calc(s), cs = active();
     qa(d, '.crit').forEach(function (cell, i) {
       var c = cs[i], x = s.r[c.id];
-      cell.querySelector('.nv').textContent = x ? fmt(x.v) : '–';
+      cell.querySelector('.nv').textContent = x ? valLabel(x.v) : '–';
       var b = cell.querySelectorAll('button.st');
       if (x) { var rg = range(c, x.k); b[0].disabled = x.v <= rg.lo + 1e-9; b[1].disabled = x.v >= rg.hi - 1e-9; }
       else { b[0].disabled = b[1].disabled = true; }
@@ -704,14 +809,25 @@
       el.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     var s1 = d.querySelector('.s1'), s2 = d.querySelector('.s2'), s3 = d.querySelector('.s3'), st = d.querySelector('.sstat');
+    var nt = 'Note: <b class="big">' + (c0.done ? c0.z.z + ' (' + c0.z.t + ')' : '–') + '</b>';
     if (state.mode === 'np') {
-      s1.innerHTML = 'Ø Notenpunkte: <b class="big">' + (c0.done ? fmt(c0.ex, 1) : '–') + '</b>';
-      s2.innerHTML = 'Notenpunkte: <b class="big">' + (c0.done ? c0.np : '–') + '</b>';
+      if (state.out === 'np') {
+        s1.innerHTML = 'Ø Notenpunkte: <b class="big">' + (c0.done ? fmt(c0.ex, 1) : '–') + '</b>';
+        s2.innerHTML = 'Notenpunkte: <b class="big">' + (c0.done ? c0.np : '–') + '</b>';
+      } else {
+        s1.innerHTML = 'Tendenz: <b class="big">' + (c0.done ? TEND[c0.np] : '–') + '</b>';
+        s2.innerHTML = nt; nt = '';
+      }
     } else {
       s1.innerHTML = 'Punkte: <b class="big">' + (c0.any ? fmt(c0.got) : '–') + '</b> / ' + fmt(c0.max);
-      s2.innerHTML = 'Anteil: <b class="big">' + (c0.done ? fmt(c0.pct, 0) + ' %' : '–') + '</b>';
+      if (state.out === 'np') {
+        s2.innerHTML = 'Anteil: ' + (c0.done ? fmt(c0.pct, 1) + ' %' : '–') + ' → <b class="big">' + (c0.done ? c0.np + ' NP' : '–') + '</b>';
+      } else {
+        s2.innerHTML = 'Anteil: <b class="big">' + (c0.done ? fmt(c0.pct, 1) + ' %' : '–') + '</b>';
+      }
     }
-    s3.innerHTML = 'Note: <b class="big">' + (c0.done ? c0.z.z + ' (' + c0.z.t + ')' : '–') + '</b>';
+    s3.innerHTML = nt;
+    s3.style.display = nt ? '' : 'none';
     st.textContent = d.classList.contains('blank') ? '' : c0.done ? '' :
       c0.any ? 'Noch ' + c0.open + (c0.open === 1 ? ' Kriterium' : ' Kriterien') + ' offen' : 'Beschreibungen antippen – die Note erscheint automatisch.';
   }
@@ -725,15 +841,15 @@
     cs.forEach(function (c, i) {
       h += '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (state.mode === 'np' ? fmt(W(c) / sw * 100, 0) + ' %' : fmt(W(c)) + ' P') + ')</th>';
     });
-    h += state.mode === 'np' ? '<th>Ø NP</th><th>NP</th>' : '<th>Punkte<br>(' + fmt(sw) + ')</th><th>%</th>';
-    h += '<th>Note</th></tr>';
+    resCols({ max:sw }).forEach(function (x) { h += '<th>' + esc(x[0]) + '</th>'; });
+    h += '</tr>';
     state.students.forEach(function (s, n) {
       var r = calc(s);
       h += '<tr data-i="' + n + '"><td>' + (n + 1) + '</td><td class="l">' + esc(s.name || '–') + '</td><td class="l">' + esc(s.thema) + '</td>';
-      cs.forEach(function (c) { var x = s.r[c.id]; h += '<td>' + (x ? fmt(x.v) : '') + '</td>'; });
-      if (state.mode === 'np') h += '<td>' + (r.done ? fmt(r.ex, 1) : '') + '</td><td>' + (r.done ? r.np : '') + '</td>';
-      else h += '<td>' + (r.done ? fmt(r.got) : '') + '</td><td>' + (r.done ? fmt(r.pct, 0) : '') + '</td>';
-      h += '<td><b>' + (r.done ? r.z.z : '') + '</b></td></tr>';
+      cs.forEach(function (c) { var x = s.r[c.id]; h += '<td>' + (x ? valLabel(x.v) : '') + '</td>'; });
+      var rc = resCols(r);
+      rc.forEach(function (x, i) { h += '<td>' + (i === rc.length - 1 ? '<b>' + x[1] + '</b>' : esc(x[1])) + '</td>'; });
+      h += '</tr>';
     });
     h += '</table></div><div class="ovnote foot">' + esc(legend()) + ' Zeile antippen öffnet den Bogen.</div>';
     d.innerHTML = h;
@@ -800,7 +916,7 @@
       '<label>Titel des Bogens<input type="text" data-s="titel" maxlength="60" value="' + esc(state.titel) + '"></label>' +
       '<label>Kurs / Klasse<input type="text" data-s="kurs" maxlength="40" placeholder="z. B. Q12 Deutsch eA oder 9b" value="' + esc(state.kurs) + '"></label></div></div>';
 
-    h += '<div class="sbox"><h3><span class="no">3</span> Kriterien auswählen <small id="ccount">(' + n + ' von höchstens ' + MAX + ' gewählt)</small></h3>' +
+    h += '<div class="sbox"><h3><span class="no">3</span> Kriterien auswählen <small id="ccount">(' + n + ' gewählt, ' + MIN + ' bis ' + MAX + ' möglich)</small></h3>' +
       '<p class="note">Antippen zum An- und Abwählen. Klein darunter steht die Beschreibung für „sehr gut“. Farben: ' +
       '<i class="tag tI">Inhalt</i> <i class="tag tP">Präsentation</i> <i class="tag tS">Sprache</i></p><div class="clist">';
     cs.forEach(function (c) {
@@ -812,33 +928,73 @@
     h += '</div><div class="addc"><input type="text" id="cname" maxlength="60" placeholder="Eigenes Kriterium, z. B. Kreativität">' +
       '<select id="cgrp" aria-label="Bereich"><option value="I">Inhalt</option><option value="P">Präsentation</option><option value="S">Sprache</option></select>' +
       '<button type="button" data-a="addc">+ Kriterium hinzufügen</button></div>' +
-      '<p class="note">Eigene Kriterien erhalten allgemeine Stufenbeschreibungen („Anforderungen in besonderem Maße erfüllt“ usw.).</p></div>';
+      '<p class="note">Eigene Kriterien erhalten zunächst allgemeine Stufenbeschreibungen; diese lassen sich unten anpassen. Bei mehr als 7 Kriterien kann ein gedruckter Bogen auf eine zweite Seite reichen.</p>';
+    h += '<details class="txed" id="txed"' + (txOpen ? ' open' : '') + '><summary>Texte der gewählten Kriterien bearbeiten</summary>' +
+      '<p class="note">Name und Stufenbeschreibungen anpassen. Änderungen gelten sofort für alle Bögen. Kurze Texte (bis ca. 90 Zeichen) passen am besten auf den Druck.</p>';
+    act.forEach(function (c) {
+      var id = esc(c.id);
+      h += '<div class="txc"><label>Name des Kriteriums<input type="text" maxlength="80" data-tx="' + id + '" data-ti="n" value="' + esc(c.n) + '"></label>';
+      LV_NAMES.forEach(function (ln, k) {
+        h += '<label>' + ln + '<textarea rows="2" maxlength="200" data-tx="' + id + '" data-ti="' + k + '">' + esc(c.d[k]) + '</textarea></label>';
+      });
+      if (state.texts[c.id]) h += '<button type="button" data-a="txreset" data-v="' + id + '">Originaltexte wiederherstellen</button>';
+      h += '</div>';
+    });
+    h += '</details></div>';
 
     h += '<div class="sbox"><h3><span class="no">4</span> Schwerpunkt der Bewertung</h3><div class="chips">';
     PRESETS.forEach(function (p) {
       h += '<button type="button" class="chip' + (p.id === state.preset ? ' on' : '') + '" data-a="preset" data-v="' + p.id + '">' + p.n + '<small>' + p.t + '</small></button>';
     });
-    h += '</div><table class="wt"><tr><th>Kriterium</th><th class="c">' + (np ? 'Gewichtung in %' : 'Höchstpunkte') + '</th><th class="c">Anteil</th></tr>';
+    h += '</div>';
+    if (state.preset === 'bereich') {
+      var present = {}; act.forEach(function (c) { present[c.g] = 1; });
+      h += '<div class="grpin">';
+      for (var g in GROUPS) if (present[g]) h += '<label><i class="tag t' + g + '">' + GROUPS[g] + '</i><input type="text" inputmode="decimal" data-gr="' + g + '" value="' + fmt(state.groups[g]) + '"> %</label>';
+      h += '<span id="grsum"></span></div>';
+    }
+    h += '<table class="wt"><tr><th>Kriterium</th><th class="c">' + (np ? 'Gewichtung in %' : 'Höchstpunkte') + '</th><th class="c">Anteil</th></tr>';
     act.forEach(function (c) {
       h += '<tr><td>' + esc(c.n) + ' <i class="tag t' + c.g + '">' + GROUPS[c.g] + '</i></td><td class="c"><input type="number" inputmode="numeric" min="' + (np ? 0 : 1) + '" step="1" data-w="' + esc(c.id) + '" value="' + W(c) + '"></td><td class="c" data-pc="' + esc(c.id) + '"></td></tr>';
     });
     h += '<tr class="wsr"><td>Summe</td><td class="c" id="wsum"></td><td class="c">100 %</td></tr></table>' +
-      '<p class="note">Die Schwerpunkte verteilen die Anteile auf die Bereiche Inhalt, Präsentation und Sprache. Fehlt ein Bereich, wird anteilig umgerechnet. Wer selbst Werte einträgt, wechselt automatisch zu „Eigene Gewichtung“.</p></div>';
+      '<p class="note">Die Schwerpunkte verteilen die Anteile auf die Bereiche Inhalt, Präsentation und Sprache; innerhalb eines Bereichs zählen die Kriterien gleich. Fehlt ein Bereich, wird anteilig umgerechnet. Wer in der Tabelle selbst Werte einträgt, wechselt automatisch zu „Eigene Gewichtung“.</p></div>';
 
-    h += '<div class="sbox"><h3><span class="no">5</span> Punkte und Noten</h3><div class="chips">' +
-      '<button type="button" class="chip' + (np ? ' on' : '') + '" data-a="mode" data-v="np">Notenpunkte 0–15<small>Oberstufe: Jede Stufe gibt Notenpunkte; der gewichtete Durchschnitt ergibt die Note.</small></button>' +
-      '<button type="button" class="chip' + (!np ? ' on' : '') + '" data-a="mode" data-v="pt">Punkte → Note 1–6<small>Jedes Kriterium hat Höchstpunkte; der Notenschlüssel ergibt die Note.</small></button></div>';
+    function chip(a, v, on, t, sm) { return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + t + '<small>' + sm + '</small></button>'; }
+    var outN = state.out === 'note';
+    h += '<div class="sbox"><h3><span class="no">5</span> Punkte und Noten</h3>' +
+      '<p class="lbl">a) Wie wird jedes Kriterium bewertet?</p><div class="chips">' +
+      chip('mode', 'np', np, 'Stufe antippen', 'Jede Stufe hat einen Notenwert; der gewichtete Durchschnitt ergibt das Ergebnis.') +
+      chip('mode', 'pt', !np, 'Punkte mit Notenschlüssel', 'Jedes Kriterium hat Höchstpunkte; der Notenschlüssel ergibt das Ergebnis.') + '</div>' +
+      '<p class="lbl">b) Ergebnis als</p><div class="chips">' +
+      chip('out', 'note', outN, 'Noten 1–6', np ? 'Feinwerte als Tendenz (2+, 2, 2−).' : 'z. B. Unter- und Mittelstufe.') +
+      chip('out', 'np', !outN, 'Notenpunkte 15–0', 'Oberstufe.') + '</div>';
     if (np) {
-      h += '<p class="note">Stufen: sehr gut = 15–13, gut = 12–10, befriedigend = 9–7, ausreichend = 6–4, mangelhaft/ungenügend = 3–0 Notenpunkte. Beim Antippen wird der mittlere Wert gesetzt (14, 11, 8, 5, 2), mit − und + lässt er sich anpassen.</p>';
+      h += '<p class="note">' + (outN
+        ? 'Stufen = Noten 1 bis 5/6. Beim Antippen wird die Note ohne Tendenz gesetzt, mit − und + wird daraus z. B. 2− oder 2+. Die Gesamtnote ergibt sich aus dem gewichteten Durchschnitt (intern in Notenpunkten).'
+        : 'Stufen: sehr gut = 15–13, gut = 12–10, befriedigend = 9–7, ausreichend = 6–4, mangelhaft/ungenügend = 3–0 Notenpunkte. Beim Antippen wird der mittlere Wert gesetzt (14, 11, 8, 5, 2), mit − und + lässt er sich anpassen.') + '</p>';
     } else {
       var opts = TOTALS.slice(); if (opts.indexOf(state.total) < 0) { opts.push(state.total); opts.sort(function (a, b) { return a - b; }); }
       h += '<div class="stack" style="margin-top:10px"><label>Gesamtpunktzahl<select data-a="total">' +
         opts.map(function (t) { return '<option value="' + t + '"' + (t === state.total ? ' selected' : '') + '>' + t + ' Punkte</option>'; }).join('') +
         '</select></label></div>' +
         '<label class="inl"><input type="checkbox" data-a="half"' + (state.half ? ' checked' : '') + '> halbe Punkte erlauben</label>' +
-        '<b>Notenschlüssel</b> (Prozent der Gesamtpunkte):<div class="keys">';
-      for (var i = 0; i < 5; i++) h += '<label>Note ' + (i + 1) + ' ab <input type="number" inputmode="numeric" min="0" max="100" step="1" data-key="' + i + '" value="' + state.key[i] + '"> %</label>';
-      h += '<span>Note 6 darunter</span></div><p class="note" id="keymsg">Der voreingestellte Schlüssel ist nur ein Vorschlag. Bitte an die Vorgabe Ihrer Schule oder Fachschaft anpassen.</p>';
+        '<p class="lbl">c) Notenschlüssel</p><div class="chips">';
+      KEYS.forEach(function (k) { h += chip('key', k.id, state.keyType === k.id, k.n, k.t); });
+      h += '</div>';
+      if (state.keyType === 'knick') {
+        h += '<div class="keys"><label>Grenze 4/5: Note 4 ab <input type="text" inputmode="decimal" data-kn="0" value="' + fmt(state.knick[0]) + '"> %</label>' +
+             '<label>Grenze 5/6: Note 5 ab <input type="text" inputmode="decimal" data-kn="1" value="' + fmt(state.knick[1]) + '"> %</label></div>' +
+             '<p class="note">Oberhalb der Grenze 4/5 werden die Noten 1–4 (bzw. 15–4 Punkte) gleichmäßig verteilt, zwischen den beiden Grenzen die Note 5 (bzw. 3–1 Punkte).</p>';
+      } else if (state.keyType === 'ind') {
+        h += '<div class="keys">';
+        if (outN) for (var i = 0; i < 5; i++) h += '<label>Note ' + (i + 1) + ' ab <input type="text" inputmode="decimal" data-in="' + i + '" value="' + fmt(state.indNote[i]) + '"> %</label>';
+        else for (var p = 15; p >= 1; p--) h += '<label>' + p + ' NP ab <input type="text" inputmode="decimal" data-ip="' + (p - 1) + '" value="' + fmt(state.indNP[p - 1]) + '"> %</label>';
+        h += '<span>' + (outN ? 'Note 6' : '0 NP') + ' darunter</span></div><button type="button" data-a="indcopy">Werte aus dem Abiturschlüssel übernehmen</button>';
+      } else {
+        h += '<p class="note">KMK-Schlüssel (Oberstufe/Abitur): 15 NP ab 95 %, 14 ab 90 %, 13 ab 85 %, 12 ab 80 %, 11 ab 75 %, 10 ab 70 %, 9 ab 65 %, 8 ab 60 %, 7 ab 55 %, 6 ab 50 %, 5 ab 45 %, 4 ab 40 %, 3 ab 33 %, 2 ab 27 %, 1 ab 20 %. Es wird nicht gerundet. Bitte mit der aktuellen Vorgabe abgleichen; bei Abweichung „Individuell“ wählen.</p>';
+      }
+      h += '<p class="note" id="keymsg"></p><div class="ktw" id="keytab"></div>';
     }
     h += '</div>';
 
@@ -852,6 +1008,7 @@
 
     els.setup.innerHTML = h;
     updSums();
+    keyCheck();
   }
   function hasR(s) { for (var k in s.r) return true; return false; }
   function updSums() {
@@ -861,15 +1018,39 @@
     act.forEach(function (c) {
       var td = els.setup.querySelector('[data-pc="' + c.id + '"]');
       if (td) td.textContent = fmt(t ? W(c) / t * 100 : 0, 0) + ' %';
+      var inp = els.setup.querySelector('[data-w="' + c.id + '"]');
+      if (inp && document.activeElement !== inp) inp.value = W(c);
     });
+    var gs = document.getElementById('grsum');
+    if (gs) {
+      var present = {}, s = 0; act.forEach(function (c) { present[c.g] = 1; });
+      for (var g in present) s += state.groups[g] || 0;
+      gs.innerHTML = 'Summe ' + fmt(s) + ' %' + (Math.abs(s - 100) > 1e-9 ? ' <span class="bad">(nicht 100 – wird anteilig umgerechnet)</span>' : '');
+    }
   }
   function keyCheck() {
-    var k = state.key, ok = true;
-    for (var i = 1; i < 5; i++) if (!(k[i] < k[i - 1])) ok = false;
+    if (state.mode !== 'pt') return true;
+    var ok = true, msg = '';
+    if (state.keyType === 'knick') {
+      ok = state.knick[0] > state.knick[1] && state.knick[0] < 100 && state.knick[1] > 0;
+      msg = 'Die Grenze 4/5 muss über der Grenze 5/6 liegen (beide zwischen 0 und 100 %).';
+    } else if (state.keyType === 'ind') {
+      var a = state.out === 'note' ? state.indNote : state.indNP.slice().reverse();
+      for (var i = 1; i < a.length; i++) if (!(a[i] < a[i - 1])) ok = false;
+      if (!(a[a.length - 1] > 0) || !(a[0] <= 100)) ok = false;
+      msg = 'Die Grenzen müssen von oben nach unten kleiner werden (zwischen 0 und 100 %).';
+    }
     var el = document.getElementById('keymsg');
-    if (el) {
-      el.innerHTML = ok ? 'Der voreingestellte Schlüssel ist nur ein Vorschlag. Bitte an die Vorgabe Ihrer Schule oder Fachschaft anpassen.'
-                        : '<span class="bad">Die Grenzen müssen von Note 1 bis Note 5 kleiner werden.</span>';
+    if (el) el.innerHTML = ok ? '' : '<span class="bad">' + msg + '</span>';
+    var kt = document.getElementById('keytab');
+    if (kt) {
+      var tot = sum(active().map(W)), st = stepSize(), rows = [];
+      if (state.out === 'np') { var t = npTh(); for (var n = 15; n >= 1; n--) rows.push([n + ' NP', t[n]]); rows.push(['0 NP', null]); }
+      else { var k = noteTh(); for (var j = 0; j < 5; j++) rows.push(['Note ' + (j + 1), k[j]]); rows.push(['Note 6', null]); }
+      kt.innerHTML = ok ? '<table class="kt"><tr><th>Ergebnis</th><th>ab Prozent</th><th>ab Punkten (von ' + fmt(tot) + ')</th></tr>' +
+        rows.map(function (r) {
+          return '<tr><td>' + r[0] + '</td><td>' + (r[1] === null ? 'darunter' : p1(r[1]) + ' %') + '</td><td>' + (r[1] === null ? 'darunter' : fmt(ceilS(tot * r[1] / 100, st))) + '</td></tr>';
+        }).join('') + '</table>' : '';
     }
     return ok;
   }
@@ -885,6 +1066,19 @@
       state.preset = SUBJ[v].preset;
       if (defTitle) state.titel = 'Referat ' + SUBJ[v].n;
       applyPreset(); save(); renderSetup();
+    } else if (a === 'out') {
+      state.out = v; save(); renderSetup();
+    } else if (a === 'key') {
+      if (v === state.keyType) return;
+      if (v === 'ind') {
+        state.indNote = noteTh().map(function (x) { return Math.round(x * 100) / 100; });
+        state.indNP = npTh().slice(1).map(function (x) { return Math.round(x * 100) / 100; });
+      }
+      state.keyType = v; save(); renderSetup();
+    } else if (a === 'indcopy') {
+      state.indNote = [85, 70, 55, 40, 20]; state.indNP = ABI.slice(1); save(); renderSetup();
+    } else if (a === 'txreset') {
+      delete state.texts[v]; save(); renderSetup();
     } else if (a === 'preset') {
       state.preset = v; applyPreset(); save(); renderSetup();
     } else if (a === 'mode') {
@@ -907,7 +1101,7 @@
       applyPreset(); save(); renderSetup();
     } else if (a === 'done') {
       if (active().length < MIN) { alert('Bitte mindestens ' + MIN + ' Kriterien wählen.'); return; }
-      if (state.mode === 'pt' && !keyCheck()) { alert('Bitte den Notenschlüssel prüfen: Die Grenzen müssen von Note 1 bis Note 5 kleiner werden.'); return; }
+      if (state.mode === 'pt' && !keyCheck()) { alert('Bitte den Notenschlüssel prüfen (siehe rote Meldung in Schritt 5).'); return; }
       if (!state.titel.trim()) state.titel = 'Referat ' + SUBJ[state.fach].n;
       state.setup = true; save(); renderAll(); setView('sheet');
     } else if (a === 'load') {
@@ -917,7 +1111,7 @@
     } else if (a === 'wipe') {
       if (!confirm('Wirklich ALLE Bögen und Einstellungen auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.')) return;
       try { localStorage.removeItem(KEY); } catch (e) {}
-      clearTimeout(tmr);
+      clearTimeout(tmr); tmr = null;
       state = fresh(); renderAll(); renderSetup(); window.scrollTo(0, 0);
     }
   }
@@ -952,13 +1146,12 @@
   function exportCSV() {
     var cs = active(), np = state.mode === 'np', rows = [];
     var head = ['Nr', 'Name', 'Thema', 'Datum'].concat(cs.map(function (c) { return c.n + (np ? ' (' + W(c) + ' %)' : ' (max ' + W(c) + ')'); }));
-    head = head.concat(np ? ['Durchschnitt NP', 'Notenpunkte', 'Note'] : ['Punkte', 'Prozent', 'Note'], ['Rückmeldung']);
+    head = head.concat(resCols({ max:sum(cs.map(W)) }).map(function (x) { return x[0]; }), ['Rückmeldung']);
     rows.push(head);
     state.students.forEach(function (s, i) {
       var r = calc(s);
-      var row = [i + 1, s.name, s.thema, s.datum].concat(cs.map(function (c) { var x = s.r[c.id]; return x ? fmt(x.v) : ''; }));
-      row = row.concat(np ? [r.done ? fmt(r.ex, 2) : '', r.done ? r.np : '', r.done ? r.z.z : '']
-                          : [r.done ? fmt(r.got) : '', r.done ? fmt(r.pct, 1) : '', r.done ? r.z.z : ''], [s.cmt]);
+      var row = [i + 1, s.name, s.thema, s.datum].concat(cs.map(function (c) { var x = s.r[c.id]; return x ? valLabel(x.v) : ''; }));
+      row = row.concat(resCols(r).map(function (x) { return x[1]; }), [s.cmt]);
       rows.push(row);
     });
     download(fileBase() + '_tabelle_' + stamp() + '.csv', '﻿' + rows.map(function (r) { return r.map(csvCell).join(';'); }).join('\r\n'), 'text/csv;charset=utf-8');
@@ -1047,6 +1240,8 @@
 
     // Einrichtung
     els.setup.addEventListener('click', function (e) {
+      var sm = e.target.closest('summary');
+      if (sm) { txOpen = !sm.parentNode.open; return; }
       var b = e.target.closest('button[data-a]'); if (!b) return;
       setupClick(b.dataset.a, b.dataset.v);
     });
@@ -1063,7 +1258,7 @@
       } else if (a === 'total') {
         state.total = +t.value; applyPreset(); save(); renderSetup();
       } else if (a === 'half') {
-        state.half = t.checked; save();
+        state.half = t.checked; save(); keyCheck();
       }
     });
     els.setup.addEventListener('input', function (e) {
@@ -1076,12 +1271,27 @@
         if (state.preset !== 'eigen') {
           state.preset = 'eigen';
           qa(els.setup, '[data-a="preset"]').forEach(function (b) { b.classList.toggle('on', b.dataset.v === 'eigen'); });
+          qa(els.setup, '.grpin').forEach(function (el) { el.parentNode.removeChild(el); });
         }
         if (state.mode === 'pt') state.total = Math.max(1, sum(active().map(W)));
-        updSums(); save();
-      } else if (t.dataset.key !== undefined) {
-        state.key[+t.dataset.key] = Math.max(0, Math.min(100, Math.round(num(t.value, 0))));
+        updSums(); keyCheck(); save();
+      } else if (t.dataset.gr) {
+        state.groups[t.dataset.gr] = Math.max(0, num(t.value, 0));
+        applyPreset(); updSums(); keyCheck(); save();
+      } else if (t.dataset.kn !== undefined) {
+        state.knick[+t.dataset.kn] = Math.max(0, Math.min(100, num(t.value, 0)));
         keyCheck(); save();
+      } else if (t.dataset.in !== undefined) {
+        state.indNote[+t.dataset.in] = Math.max(0, Math.min(100, num(t.value, 0)));
+        keyCheck(); save();
+      } else if (t.dataset.ip !== undefined) {
+        state.indNP[+t.dataset.ip] = Math.max(0, Math.min(100, num(t.value, 0)));
+        keyCheck(); save();
+      } else if (t.dataset.tx) {
+        var id = t.dataset.tx, base = critBase(state, id); if (!base) return;
+        var o = state.texts[id] || (state.texts[id] = { n:'', d:['', '', '', '', ''] });
+        if (t.dataset.ti === 'n') o.n = t.value.slice(0, 80); else o.d[+t.dataset.ti] = t.value.slice(0, 200);
+        save();
       }
     });
 
