@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bewertung">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#2b2b2b">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Theaterkurs – Bewertung</title>
+<style>
+  .homebtn { display:inline-flex; align-items:center; padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; color:#111; text-decoration:none; }
+  body { padding-top:env(safe-area-inset-top); }
+  :root { --acc:#6B2D5C; --light:#F4EAF1; --hit:#E7C6DD; --gray:#E9E9E9; --line:#7f7f7f; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; }
+  body { font-family:Arial, Helvetica, sans-serif; font-size:11pt; color:#111; background:#d9d9d9; touch-action:manipulation; -webkit-text-size-adjust:100%; }
+  button, input, select, textarea { font:inherit; color:#111; }
+  button { cursor:pointer; }
+  input:focus, select:focus, textarea:focus, button:focus-visible { outline:2px solid #3b82f6; outline-offset:0; }
+  [hidden] { display:none !important; }
+  .bad { color:#b00000; font-weight:bold; }
+
+  .bar { position:sticky; top:0; z-index:20; background:#2b2b2b; color:#fff; padding:8px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .bar select { flex:1 1 200px; max-width:360px; }
+  .bar button, .bar select { padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; }
+  .bar button.on { background:var(--acc); color:#fff; border-color:var(--acc); font-weight:bold; }
+  button.primary { background:var(--acc) !important; color:#fff !important; border-color:var(--acc) !important; }
+  button.danger { color:#a00; }
+
+  .wrap { max-width:1000px; margin:0 auto; padding:12px 10px 60px; }
+  .wide { max-width:297mm; }
+  .sbox { background:#fff; border-radius:8px; padding:14px 16px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.18); line-height:1.4; }
+  .sbox h2 { margin:0 0 6px; color:var(--acc); font-size:17pt; }
+  .sbox h3 { margin:0 0 8px; font-size:13pt; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sbox h3 small { font-weight:normal; color:#444; font-size:11pt; }
+  .sbox h4 { margin:12px 0 6px; font-size:11.5pt; color:var(--acc); }
+  .sbox .no { display:inline-flex; width:30px; height:30px; border-radius:50%; background:var(--acc); color:#fff; align-items:center; justify-content:center; font-size:12pt; flex:none; }
+  .sbox p { margin:4px 0 8px; }
+  .note { color:#333; }
+  .sbox button { padding:8px 14px; min-height:44px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .priv { background:#eef6ee; border-left:4px solid #3c7a3c; padding:8px 10px; }
+  .warn { background:#fff3cd; color:#5c4400; border:1px solid #e0c060; max-width:1000px; margin:10px auto 0; padding:10px 14px; border-radius:6px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { text-align:left; border:2px solid #bbb !important; background:#fff; border-radius:8px !important; padding:10px 14px !important; min-width:64px; }
+  .chip small { display:block; color:#444; font-size:10.5pt; margin-top:2px; }
+  .chip.on { border-color:var(--acc) !important; background:var(--light) !important; box-shadow:inset 0 0 0 1px var(--acc); font-weight:bold; }
+  .chip.on small { font-weight:normal; }
+  .chip.sm { padding:6px 10px !important; min-height:40px !important; min-width:0; font-size:10.5pt; }
+  .lbl { font-weight:bold; margin:12px 0 6px !important; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .row2 label, .stack label { display:flex; flex-direction:column; gap:4px; font-weight:bold; }
+  .sbox input[type=text], .sbox input[type=number], .sbox input[type=date], .sbox select, .sbox textarea { padding:8px 10px; min-height:44px; border:1px solid #888; border-radius:6px; font-weight:normal; background:#fff; }
+  .clist { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .ckrow { display:flex; gap:6px; align-items:stretch; }
+  .ck { flex:1; display:flex; gap:10px; align-items:flex-start; border:1px solid #bbb; border-radius:8px; padding:8px 10px; cursor:pointer; }
+  .ck.on { border-color:var(--acc); background:var(--light); }
+  .ck input { width:22px; height:22px; margin:2px 0 0; flex:none; }
+  .ck small { display:block; color:#333; font-size:10.5pt; margin-top:2px; }
+  .gtag { font-style:normal; font-size:9.5pt; padding:1px 6px; border-radius:10px; background:#666; color:#fff; white-space:nowrap; }
+  .mini { min-height:auto !important; padding:4px 8px !important; font-size:10pt; color:#a00; }
+  .addc { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .addc input { flex:1 1 220px; }
+  table.wt { border-collapse:collapse; width:100%; margin-top:10px; }
+  table.wt th, table.wt td { border:1px solid #bbb; padding:6px 8px; text-align:left; }
+  table.wt .c { text-align:center; }
+  table.wt input { width:90px; text-align:center; }
+  table.wt tr.wsr td { font-weight:bold; background:#f3f3f3; }
+  .ktw { overflow-x:auto; margin-top:8px; }
+  table.kt { border-collapse:collapse; }
+  table.kt th, table.kt td { border:1px solid #bbb; padding:4px 10px; text-align:center; }
+  table.kt th { background:#f3f3f3; }
+  .inl { display:flex; gap:8px; align-items:center; margin:8px 0; flex-wrap:wrap; }
+  .inl input[type=checkbox] { width:22px; height:22px; }
+  .inl input[type=text] { width:90px; text-align:center; }
+  details.txed { margin-top:12px; border:1px solid #bbb; border-radius:8px; padding:8px 12px; }
+  details.txed summary { cursor:pointer; font-weight:bold; min-height:36px; padding-top:6px; }
+  .txc { border-top:1px solid #ddd; padding:10px 0; display:grid; gap:6px; }
+  .txc label { display:flex; flex-direction:column; gap:2px; font-weight:bold; font-size:10.5pt; }
+  .txc input, .txc textarea { font-weight:normal; padding:6px 8px; border:1px solid #888; border-radius:6px; font-size:11pt; }
+  .txc textarea { resize:vertical; min-height:44px; }
+  .txc button { justify-self:start; }
+  .tl { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+  .tc { border:1px solid #ccc; border-radius:8px; padding:8px 10px; }
+  .tc .top { display:flex; gap:8px; align-items:center; }
+  .tc .top input { flex:1; min-width:0; }
+  .tc .tasks { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; align-items:center; }
+  .tc .share { display:inline-flex; gap:4px; align-items:center; font-size:10.5pt; }
+  .tc .share input { width:64px; min-height:40px !important; text-align:center; padding:4px !important; }
+  .done { text-align:center; }
+  .big { font-size:14pt; padding:12px 26px !important; min-height:52px !important; }
+
+  /* ---------- Erfassen ---------- */
+  .erfhead { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .erfhead label { display:flex; gap:8px; align-items:center; font-weight:bold; }
+  .slist { display:flex; flex-direction:column; gap:6px; }
+  .stu { background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.18); overflow:hidden; }
+  .stu.open { box-shadow:0 0 0 2px var(--acc), 0 2px 8px rgba(0,0,0,.25); }
+  .sh { display:flex; gap:10px; align-items:center; width:100%; border:none; background:#fff; text-align:left; padding:10px 12px; min-height:52px; }
+  .stu.open .sh { background:var(--light); }
+  .sh .nm { font-weight:bold; min-width:140px; }
+  .sh .chs { flex:1; display:flex; flex-wrap:wrap; gap:4px; color:#333; font-size:10.5pt; }
+  .sh .chs span { background:#f0f0f0; border-radius:10px; padding:1px 8px; }
+  .sh .chs span.abs { background:#ffe2e2; color:#900; }
+  .sh .chs span.ok { background:#dff2e2; color:#1e6b2e; }
+  .sh .cnt { flex:none; font-size:10.5pt; color:#444; background:#eee; border-radius:12px; padding:2px 9px; }
+  .sh .cnt.zero { background:#fff0c2; color:#6a5200; }
+  .ed { padding:6px 12px 12px; border-top:1px solid #ddd; }
+  .bh { margin:12px 0 2px; padding:6px 10px; background:var(--light); border-left:4px solid var(--acc); font-weight:bold; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .bh span { font-weight:normal; }
+  .er { padding:8px 0; border-bottom:1px solid #eee; }
+  .et { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
+  .et b { flex:1 1 200px; }
+  .et .ev { font-size:15pt; color:var(--acc); font-weight:bold; min-width:34px; text-align:center; }
+  .st { width:44px; height:44px; font-size:16pt; line-height:1; border:1px solid #888; border-radius:6px; background:#fff; padding:0; }
+  .st:disabled { opacity:.3; cursor:default; }
+  .lvs { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; }
+  .lvb { border:1px solid #aaa; border-radius:8px; background:#fff; min-height:52px; padding:4px 2px; text-align:center; font-weight:bold; font-size:12.5pt; -webkit-tap-highlight-color:transparent; }
+  .lvb small { display:block; font-weight:normal; font-size:9.5pt; color:#444; overflow-wrap:anywhere; hyphens:auto; }
+  .lvb.on { background:var(--hit); border-color:var(--acc); box-shadow:inset 0 0 0 2px var(--acc); }
+  .lvs.long { grid-template-columns:1fr; }
+  .lvs.long .lvb { text-align:left; font-size:11pt; padding:8px 10px; font-weight:normal; }
+  .lvs.long .lvb b { color:var(--acc); }
+  .desc { font-size:10.5pt; color:#333; margin-top:4px; min-height:1em; }
+  .pin { display:flex; gap:8px; align-items:center; }
+  .pin input { width:90px; min-height:44px; text-align:center; font-size:14pt; border:1px solid #888; border-radius:6px; }
+  .eact { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:10px; }
+  .eact button { min-height:44px; padding:8px 14px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .eact button.on { background:#ffe2e2; border-color:#900; color:#900; font-weight:bold; }
+  .eact input, .eact textarea { flex:1 1 220px; min-height:44px; padding:8px 10px; border:1px solid #888; border-radius:6px; }
+  .absnote { color:#900; font-weight:bold; margin:6px 0; }
+  .resline { margin-top:8px; padding:8px 10px; background:#f6f6f6; border-radius:6px; }
+
+  /* ---------- Auswertung & Druck ---------- */
+  .tw { overflow-x:auto; }
+  table.ovt { border-collapse:collapse; width:100%; }
+  table.ovt th, table.ovt td { border:1px solid var(--line); padding:5px 7px; text-align:center; font-size:11pt; }
+  table.ovt th { background:var(--gray); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.ovt td.l { text-align:left; }
+  table.ovt tr[data-sid] { cursor:pointer; }
+  table.ovt tr[data-sid]:hover td { background:#f6f6f6; }
+  table.ovt td.few { background:#fff0c2; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .res { display:flex; flex-wrap:wrap; gap:8px 24px; background:var(--light); border:1px solid var(--line); padding:8px 12px; margin:8px 0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .res b.big2 { font-size:15pt; color:var(--acc); }
+  .legend { font-size:11pt; color:#222; margin-top:6px; }
+  #print { display:none; }
+  .pg h1 { font-size:15pt; color:var(--acc); margin:0 0 2mm; }
+  .pg h2 { font-size:12.5pt; margin:3mm 0 1.5mm; }
+  .pg .sub { margin:0 0 2mm; }
+  .pg .hd { display:flex; flex-wrap:wrap; gap:2mm 8mm; margin:0 0 2mm; }
+  .pg .hd span { border-bottom:1px solid var(--line); min-width:50mm; padding-bottom:0.5mm; }
+  table.raster { border-collapse:collapse; width:100%; table-layout:fixed; }
+  table.raster th, table.raster td { border:1px solid var(--line); padding:1.1mm 1.5mm; vertical-align:top; line-height:1.16; font-size:11pt; }
+  table.raster th { background:var(--gray); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.raster td.cn { background:var(--light); font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.raster td.hit { background:var(--hit); box-shadow:inset 0 0 0 0.7mm var(--acc); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.raster td.pt { text-align:center; vertical-align:middle; font-weight:bold; color:var(--acc); }
+  table.blank { border-collapse:collapse; width:100%; }
+  table.blank th, table.blank td { border:1px solid var(--line); padding:1mm 2mm; font-size:11pt; height:8.5mm; }
+  table.blank th { background:var(--gray); height:auto; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .cmtbox { border:1px solid var(--line); min-height:16mm; padding:1.5mm 2mm; margin-top:2mm; white-space:pre-wrap; }
+
+  @media screen and (max-width: 760px) {
+    body { font-size:12pt; }
+    .bar { gap:6px; padding:6px; }
+    .bar select { flex-basis:100%; }
+    .bar button { flex:1 1 0; padding:8px 4px; }
+    .row2, .clist { grid-template-columns:1fr; }
+    .sbox input[type=text], .sbox input[type=number], .sbox input[type=date], .sbox select, .sbox textarea, .eact input, .eact textarea, .pin input { font-size:16px; }
+    .wrap { padding:8px 6px 60px; }
+    .sh { flex-wrap:wrap; }
+    .sh .nm { flex-basis:100%; }
+    .lvb { font-size:11.5pt; }
+  }
+  /* ---------- Passwortschutz ---------- */
+  .lockov { position:fixed; top:0; left:0; right:0; bottom:0; z-index:100; background:rgba(30,30,30,.94); display:flex; align-items:center; justify-content:center; padding:16px; }
+  .lockbox { background:#fff; border-radius:10px; padding:18px 20px; max-width:460px; width:100%; box-shadow:0 4px 20px rgba(0,0,0,.4); line-height:1.4; }
+  .lockbox h2 { margin:0 0 8px; font-size:15pt; color:var(--acc); }
+  .lockbox p { margin:4px 0 8px; }
+  .lockbox input.pw { width:100%; min-height:46px; font-size:16px; padding:8px 10px; border:1px solid #888; border-radius:6px; margin:6px 0; }
+  .lockbox .show { display:flex; gap:8px; align-items:center; margin:4px 0; }
+  .lockbox .show input { width:20px; height:20px; margin:0; }
+  .lockbox .err { color:#b00000; font-weight:bold; min-height:1.3em; }
+  .lockbox .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .lockbox button { min-height:44px; padding:8px 16px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .lockbox .forgot { margin-top:16px; border-top:1px solid #ddd; padding-top:10px; }
+  .secbox { margin-top:12px; border-top:1px solid #ddd; padding-top:10px; }
+  .secbox .row, .secrow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .secon { color:#1e6b2e; font-weight:bold; }
+  .secoff { color:#8a5a00; font-weight:bold; }
+  @media print { .lockov { display:none !important; } }
+
+  @page { size:A4 landscape; margin:0; }
+  @media print {
+    body { background:#fff; }
+    body > * { display:none !important; }
+    body > #print { display:block !important; }
+    .pg { width:297mm; min-height:209mm; padding:7mm 9mm; break-after:page; page-break-after:always; }
+    .pg:last-child { break-after:auto; page-break-after:auto; }
+    thead { display:table-header-group; }
+    tr { break-inside:avoid; page-break-inside:avoid; }
+    table.raster.fill { height:128mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar">
+  <a class="homebtn" href="index.html">⌂ Start</a>
+  <select id="csel" aria-label="Kurs / Produktion wählen"></select>
+  <button data-view="probe">Proben</button>
+  <button data-view="prem">Premiere</button>
+  <button data-view="ausw">Auswertung</button>
+  <button data-view="setup">Einrichtung</button>
+  <button id="helpbtn">Hilfe</button>
+  <button id="lockbtn" hidden>Sperren</button>
+</div>
+<input type="file" id="file" accept="application/json,.json" style="display:none">
+<div class="warn" id="warn" hidden>Achtung: Dieser Browser erlaubt hier kein Speichern (z. B. privates Fenster oder eingeschränkte Datei-Ansicht). Die Eingaben gehen beim Schließen verloren. Bitte regelmäßig „Sicherung speichern“ benutzen oder die Datei direkt in Chrome, Edge, Firefox oder Safari öffnen.</div>
+
+<div class="wrap" id="help" hidden><div class="sbox">
+  <h3>So funktioniert es</h3>
+  <ol>
+    <li><b>Einrichtung:</b> Kurs bzw. Produktion anlegen, Teilnehmende einfügen und ihnen Aufgaben zuordnen (z. B. Schauspiel 70 %, PR 30 %). Für jeden Bereich getrennt für „Proben“ und „Premiere“ Kriterien auswählen und gewichten.</li>
+    <li><b>Proben:</b> Datum wählen, Namen antippen, Stufen antippen oder Punkte eintragen. „fehlt“ und „Bemerkung“ halten Abwesenheit und Beobachtungen fest.</li>
+    <li><b>Premiere:</b> Einmalige Bewertung als Klausurersatz. Pro Person werden alle zugeordneten Bereiche bewertet; die Bereichsergebnisse werden nach den Anteilen verrechnet.</li>
+    <li><b>Auswertung:</b> Proben-Ergebnis (gewählter Zeitraum), Premiere-Ergebnis und auf Wunsch ein Gesamtergebnis, jeweils in Notenpunkten 15–0. Druck von Übersicht, Einzelberichten, ausgefüllten und leeren Premiere-Bögen, Probenliste und Kriterienraster.</li>
+    <li><b>Drucken / PDF:</b> Im Druckfenster „Als PDF speichern“ oder Drucker wählen, A4 quer, Ränder „Keine“, „Hintergrundgrafiken“ einschalten.</li>
+  </ol>
+  <h3>Datenschutz</h3>
+  <p>Das Programm arbeitet vollständig offline und ist technisch so gesperrt, dass es keine Verbindung ins Internet aufbauen kann. Alle Eingaben bleiben im Browser dieses Geräts. Für die Erfassung genügen Vornamen oder Kürzel. Sicherungs-, CSV- und PDF-Dateien wie Notenlisten behandeln. Am Schuljahresende über „Einrichtung“ → „Alle Daten löschen“ entfernen. <b>Empfehlung:</b> Unter „Einrichtung“ → „Daten auf diesem Gerät“ einen Passwortschutz einrichten. Dann sind gespeicherte Daten und Sicherungsdateien mit AES-256 verschlüsselt. Ein vergessenes Passwort kann niemand wiederherstellen.</p>
+</div></div>
+
+<main class="wrap" id="setup"></main>
+<main class="wrap" id="probe" hidden></main>
+<main class="wrap" id="prem" hidden></main>
+<main class="wrap wide" id="ausw" hidden></main>
+<main class="wrap wide" id="einzel" hidden></main>
+<div id="print"></div>
+
+<script>
+(function () {
+  'use strict';
+  var PW_UI = true;
+
+  /* ================= Passwortschutz (AES-GCM 256, Schlüssel per PBKDF2-SHA-256) ================= */
+  var SEC = (function () {
+    var ITER = 400000, key = null, salt = null, iter = ITER, auto = 15, chain = Promise.resolve(), queued = null;
+    function b64(buf) { var s = '', a = new Uint8Array(buf); for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s); }
+    function unb64(s) { var b = atob(s), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+    function ok() {
+      try { return !!(window.crypto && window.crypto.subtle && window.TextEncoder && window.TextDecoder && window.Promise && window.isSecureContext !== false); } catch (e) { return false; }
+    }
+    function derive(pw, s, it) {
+      return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (k) {
+        return crypto.subtle.deriveKey({ name:'PBKDF2', salt:s, iterations:it, hash:'SHA-256' }, k, { name:'AES-GCM', length:256 }, false, ['encrypt', 'decrypt']);
+      });
+    }
+    function seal(text, k, s, it) {
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      return crypto.subtle.encrypt({ name:'AES-GCM', iv:iv }, k, new TextEncoder().encode(text)).then(function (ct) {
+        return JSON.stringify({ enc:'AES-GCM', kdf:'PBKDF2-SHA256', iter:it, salt:b64(s), iv:b64(iv), ct:b64(ct), autolock:auto });
+      });
+    }
+    function isEnv(o) { return !!(o && o.enc === 'AES-GCM' && typeof o.ct === 'string' && typeof o.iv === 'string' && typeof o.salt === 'string'); }
+    function tryEnv(env, pw) {
+      var s = unb64(env.salt), it = Math.max(1000, env.iter | 0);
+      return derive(pw, s, it).then(function (k) {
+        return crypto.subtle.decrypt({ name:'AES-GCM', iv:unb64(env.iv) }, k, unb64(env.ct)).then(function (pt) {
+          return { txt:new TextDecoder().decode(pt), k:k, s:s, it:it, auto:(env.autolock >= 0 ? env.autolock | 0 : 15) };
+        });
+      });
+    }
+    function adopt(r) { key = r.k; salt = r.s; iter = r.it; auto = r.auto; }
+    function setPassword(pw) {
+      var s = crypto.getRandomValues(new Uint8Array(16));
+      return derive(pw, s, ITER).then(function (k) { key = k; salt = s; iter = ITER; });
+    }
+    function write(storeKey, text) {
+      queued = text;
+      chain = chain.then(function () {
+        if (queued === null) return;
+        var t = queued; queued = null;
+        if (!key) { try { localStorage.setItem(storeKey, t); } catch (e) {} return; }
+        return seal(t, key, salt, iter).then(function (env) { try { localStorage.setItem(storeKey, env); } catch (e) {} });
+      }).catch(function () {});
+      return chain;
+    }
+    function wipe(storeKey) {
+      queued = null; key = null; salt = null;
+      chain = chain.then(function () { try { localStorage.removeItem(storeKey); } catch (e) {} });
+      return chain;
+    }
+    return {
+      ok:ok, isEnv:isEnv, tryEnv:tryEnv, adopt:adopt, setPassword:setPassword, write:write, wipe:wipe,
+      clear:function () { key = null; salt = null; },
+      on:function () { return !!key; },
+      auto:function () { return auto; }, setAuto:function (m) { auto = Math.max(0, m | 0); },
+      sealNow:function (text) { return seal(text, key, salt, iter); }
+    };
+  })();
+
+  function pwDialog(o) {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div'); ov.className = 'lockov';
+      ov.innerHTML = '<div class="lockbox" role="dialog" aria-modal="true"><h2></h2><p class="t"></p>' +
+        '<input type="password" class="pw p1" autocomplete="' + (o.twice ? 'new-password' : 'current-password') + '" placeholder="Passwort" aria-label="Passwort">' +
+        (o.twice ? '<input type="password" class="pw p2" autocomplete="new-password" placeholder="Passwort wiederholen" aria-label="Passwort wiederholen">' : '') +
+        '<label class="show"><input type="checkbox" class="sh"> Passwort anzeigen</label><div class="err" role="alert"></div>' +
+        '<div class="btns"><button type="button" class="primary ok"></button>' + (o.cancel ? '<button type="button" class="cn">Abbrechen</button>' : '') + '</div>' +
+        (o.onForgot ? '<div class="forgot"><button type="button" class="danger fg">Passwort vergessen – alle Daten löschen</button></div>' : '') + '</div>';
+      ov.querySelector('h2').textContent = o.title;
+      ov.querySelector('.t').textContent = o.text || '';
+      var okb = ov.querySelector('.ok'), p1 = ov.querySelector('.p1'), p2 = ov.querySelector('.p2'), err = ov.querySelector('.err');
+      okb.textContent = o.okText || 'OK';
+      document.body.appendChild(ov);
+      setTimeout(function () { try { p1.focus(); } catch (e) {} }, 30);
+      function done(v) { if (ov.parentNode) ov.parentNode.removeChild(ov); resolve(v); }
+      function go() {
+        var a = p1.value;
+        if (o.twice) {
+          if (a.length < 8) { err.textContent = 'Bitte mindestens 8 Zeichen verwenden.'; return; }
+          if (a !== p2.value) { err.textContent = 'Die beiden Eingaben stimmen nicht überein.'; return; }
+        } else if (!a) { err.textContent = 'Bitte das Passwort eingeben.'; return; }
+        if (!o.check) { done(a); return; }
+        okb.disabled = true; err.textContent = 'Wird geprüft …';
+        o.check(a).then(function (r) {
+          if (r === true) { done(a); return; }
+          okb.disabled = false; err.textContent = r || 'Falsches Passwort.'; p1.select();
+        });
+      }
+      okb.addEventListener('click', go);
+      ov.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); if (p2 && document.activeElement === p1) p2.focus(); else go(); }
+        if (e.key === 'Escape' && o.cancel) done(null);
+      });
+      ov.querySelector('.sh').addEventListener('change', function (e) {
+        var t = e.target.checked ? 'text' : 'password'; p1.type = t; if (p2) p2.type = t;
+      });
+      if (o.cancel) ov.querySelector('.cn').addEventListener('click', function () { done(null); });
+      if (o.onForgot) ov.querySelector('.fg').addEventListener('click', function () { o.onForgot(); });
+    });
+  }
+  function verifyPw(pw) {
+    var env = null;
+    try { env = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (!SEC.isEnv(env)) return Promise.resolve('Gespeicherte Daten nicht gefunden.');
+    return SEC.tryEnv(env, pw).then(function () { return true; }, function () { return 'Falsches Passwort.'; });
+  }
+  function lockNow() { flush().then(function () { location.reload(); }); }
+  function updLockBtn() { var b = document.getElementById('lockbtn'); if (b) b.hidden = !SEC.on(); }
+  function secHTML() {
+    var h = '<div class="secbox"><h3>Passwortschutz</h3>';
+    if (!canStore) return h + '<p class="note">Nicht verfügbar, weil dieser Browser hier nichts speichert.</p></div>';
+    if (!SEC.ok()) return h + '<p class="bad">Dieser Browser unterstützt keine Verschlüsselung. Bitte einen aktuellen Browser (Chrome, Edge, Firefox, Safari) verwenden.</p></div>';
+    if (!SEC.on()) {
+      return h + '<p><span class="secoff">Aus.</span> Die Daten liegen unverschlüsselt im Browser. Mit Passwortschutz werden gespeicherte Daten und Sicherungsdateien mit AES-256 verschlüsselt; ohne Passwort sind sie nicht lesbar.</p>' +
+        '<div class="secrow"><button type="button" class="primary" data-a="pwset">Passwortschutz einrichten</button></div></div>';
+    }
+    var opts = [[0, 'nie'], [5, 'nach 5 Minuten'], [15, 'nach 15 Minuten'], [30, 'nach 30 Minuten'], [60, 'nach 60 Minuten']];
+    return h + '<p><span class="secon">Aktiv (AES-256).</span> Gespeicherte Daten und Sicherungsdateien sind verschlüsselt. CSV-Tabellen und PDF-Ausdrucke sind <b>nicht</b> verschlüsselt.</p>' +
+      '<div class="secrow"><label class="secrow">Automatisch sperren <select data-a="autolock">' +
+      opts.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === SEC.auto() ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label>' +
+      '<button type="button" data-a="pwlock">Jetzt sperren</button><button type="button" data-a="pwchg">Passwort ändern</button>' +
+      '<button type="button" class="danger" data-a="pwdel">Passwortschutz entfernen</button></div></div>';
+  }
+  function secClick(a) {
+    if (a === 'pwset') {
+      pwDialog({ title:'Passwortschutz einrichten', twice:true, cancel:true, okText:'Schützen',
+        text:'Wählen Sie ein Passwort mit mindestens 8 Zeichen. Wichtig: Ohne dieses Passwort lassen sich die Daten nicht wiederherstellen. Notieren Sie es an einem sicheren Ort.' }).then(function (pw) {
+        if (!pw) return;
+        SEC.setPassword(pw).then(function () { SEC.setAuto(15); return flush(); }).then(function () {
+          updLockBtn(); renderSetup();
+          alert('Der Passwortschutz ist aktiv. Bitte jetzt eine neue Sicherung speichern – ältere Sicherungsdateien sind noch unverschlüsselt und sollten gelöscht werden.');
+        });
+      });
+      return true;
+    }
+    if (a === 'pwchg') {
+      pwDialog({ title:'Passwort ändern', text:'Bitte zuerst das bisherige Passwort eingeben.', cancel:true, okText:'Weiter', check:verifyPw }).then(function (old) {
+        if (!old) return;
+        return pwDialog({ title:'Neues Passwort', twice:true, cancel:true, okText:'Ändern', text:'Neues Passwort mit mindestens 8 Zeichen eingeben.' }).then(function (pw) {
+          if (!pw) return;
+          return SEC.setPassword(pw).then(flush).then(function () { renderSetup(); alert('Das Passwort wurde geändert. Ältere Sicherungsdateien lassen sich weiterhin nur mit dem alten Passwort öffnen.'); });
+        });
+      });
+      return true;
+    }
+    if (a === 'pwdel') {
+      pwDialog({ title:'Passwortschutz entfernen', text:'Zur Bestätigung das Passwort eingeben. Danach werden die Daten wieder unverschlüsselt gespeichert.', cancel:true, okText:'Entfernen', check:verifyPw }).then(function (pw) {
+        if (!pw) return;
+        SEC.clear(); flush().then(function () { updLockBtn(); renderSetup(); });
+      });
+      return true;
+    }
+    if (a === 'pwlock') { lockNow(); return true; }
+    return false;
+  }
+  var lastAct = Date.now();
+  function idleCheck() { if (SEC.on() && SEC.auto() > 0 && Date.now() - lastAct > SEC.auto() * 60000) lockNow(); }
+  ['pointerdown', 'keydown', 'input', 'touchstart', 'wheel'].forEach(function (ev) { document.addEventListener(ev, function () { lastAct = Date.now(); }, true); });
+  setInterval(idleCheck, 15000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') idleCheck(); });
+  function unlockScreen(env, onData) {
+    if (!SEC.ok()) {
+      document.body.innerHTML = '<div style="max-width:600px;margin:40px auto;background:#fff;padding:20px;border-radius:8px;font:12pt Arial">Die gespeicherten Daten sind verschlüsselt, aber dieser Browser unterstützt die Entschlüsselung nicht. Bitte die Datei in einem aktuellen Chrome, Edge, Firefox oder Safari öffnen.</div>';
+      return;
+    }
+    pwDialog({ title:'Gesperrt', okText:'Entsperren', text:'Die Daten auf diesem Gerät sind mit einem Passwort geschützt.',
+      check:function (pw) {
+        return SEC.tryEnv(env, pw).then(function (r) {
+          var o = null; try { o = JSON.parse(r.txt); } catch (e) {}
+          SEC.adopt(r); onData(o); return true;
+        }, function () { return 'Falsches Passwort.'; });
+      },
+      onForgot:function () {
+        if (!confirm('Ohne Passwort lassen sich die Daten nicht entschlüsseln. Alle Daten auf diesem Gerät endgültig löschen?')) return;
+        if (!confirm('Wirklich löschen? Danach können Sie eine (unverschlüsselte oder verschlüsselte) Sicherung neu laden.')) return;
+        SEC.wipe(KEY).then(function () { location.reload(); });
+      } });
+  }
+  function readBackup(text, onObj) {
+    var o = null;
+    try { o = JSON.parse(text); } catch (e) {}
+    if (!o) { alert('Die Datei konnte nicht gelesen werden.'); return; }
+    if (!SEC.isEnv(o)) { onObj(o, null); return; }
+    if (!SEC.ok()) { alert('Diese Sicherung ist verschlüsselt, der Browser unterstützt aber keine Entschlüsselung.'); return; }
+    var found = null;
+    pwDialog({ title:'Sicherung entschlüsseln', cancel:true, okText:'Öffnen', text:'Diese Sicherung ist verschlüsselt. Bitte das Passwort eingeben, mit dem sie erstellt wurde.',
+      check:function (pw) { return SEC.tryEnv(o, pw).then(function (r) { found = r; return true; }, function () { return 'Falsches Passwort.'; }); } }).then(function (pw) {
+      if (!pw || !found) return;
+      var obj = null; try { obj = JSON.parse(found.txt); } catch (e) {}
+      if (!obj) { alert('Die Sicherung ist beschädigt.'); return; }
+      onObj(obj, found);
+    });
+  }
+  function exportBackup(name, text) {
+    if (SEC.on()) SEC.sealNow(text).then(function (env) { download(name.replace(/\.json$/, '_verschluesselt.json'), env, 'application/json'); });
+    else download(name, text, 'application/json');
+  }
+
+
+  /* ================= Kataloge ================= */
+  var LV_NAMES = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft / ungenügend'];
+  var NP_LV = [ { lo:13, hi:15, def:14 }, { lo:10, hi:12, def:11 }, { lo:7, hi:9, def:8 }, { lo:4, hi:6, def:5 }, { lo:0, hi:3, def:2 } ];
+  var ABI = [0, 20, 27, 33, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95];
+  var GENERIC = [
+    'Anforderungen in besonderem Maße erfüllt.',
+    'Anforderungen voll erfüllt.',
+    'Anforderungen im Allgemeinen erfüllt.',
+    'Anforderungen mit Mängeln, im Ganzen aber noch erfüllt.',
+    'Anforderungen nicht oder nur in Ansätzen erfüllt.' ];
+  var OCC = { probe:'Proben', prem:'Premiere' };
+
+  function K(n, s, g, w, d) { return { n:n, s:s, g:g, w:w, d:d }; }
+  var C = {
+    /* --- Schauspiel --- */
+    sp_text: K('Textsicherheit', 'Text', 'Sprache & Stimme', 1, [
+      'Text vollständig sicher, auch bei Störungen; Einsätze stets pünktlich.',
+      'Text sicher; seltene kleine Hänger werden souverän überspielt.',
+      'Text überwiegend sicher; einzelne Hänger oder Souffleur nötig.',
+      'Häufige Texthänger; der Spielfluss leidet.',
+      'Text nicht beherrscht.' ]),
+    sp_textlern: K('Textlernen (Probenfortschritt)', 'Textlernen', 'Sprache & Stimme', 1, [
+      'Text früh und sicher gelernt; arbeitet eigenständig an den Szenen.',
+      'Text termingerecht gelernt.',
+      'Text überwiegend gelernt, teils verspätet.',
+      'Text deutlich verspätet oder lückenhaft.',
+      'Text nicht gelernt.' ]),
+    sp_stimme: K('Stimme: Lautstärke, Artikulation, Verständlichkeit', 'Stimme', 'Sprache & Stimme', 1, [
+      'Durchgehend gut hörbar und deutlich, auch in der letzten Reihe.',
+      'Meist gut hörbar und deutlich; selten zu leise.',
+      'Überwiegend verständlich; Lautstärke oder Artikulation schwanken.',
+      'Oft zu leise oder undeutlich; Verständnis erschwert.',
+      'Kaum hörbar oder unverständlich.' ]),
+    sp_modul: K('Sprechgestaltung: Intonation, Modulation, Sprechtempo, Pausen', 'Sprechgestaltung', 'Sprache & Stimme', 1, [
+      'Variiert Tonfall, Tempo und Pausen gezielt; das Sprechen trägt die Figur.',
+      'Abwechslungsreiche Sprechweise; Pausen meist bewusst gesetzt.',
+      'Ansätze von Modulation; Tempo eher gleichförmig.',
+      'Monoton oder gehetzt; Pausen zufällig.',
+      'Aufsagen ohne Gestaltung.' ]),
+    sp_koerper: K('Körperausdruck: Gestik, Mimik, Haltung, Körperspannung', 'Körper', 'Körper & Ausdruck', 1, [
+      'Gestik, Mimik und Haltung präzise, figurengerecht und stets kontrolliert.',
+      'Ausdrucksstarker, überwiegend figurengerechter Körpereinsatz.',
+      'Körpereinsatz erkennbar, teils unbewusst oder privat.',
+      'Wenig Ausdruck; die Spannung fällt häufig ab.',
+      'Kein gestalteter Körperausdruck.' ]),
+    sp_raum: K('Nutzung der Bühne: Raum, Wege, Positionen, Publikumsbezug', 'Raum', 'Raum, Requisit & Kostüm', 1, [
+      'Nutzt den Raum bewusst; klare Wege, Positionen und Ausrichtung zum Publikum.',
+      'Sichere Raumnutzung; meist gut sichtbar positioniert.',
+      'Raumnutzung im Wesentlichen nach Absprache; teils verdeckt.',
+      'Unsichere Wege und Positionen; oft schlecht sichtbar.',
+      'Der Raum wird nicht gestaltend genutzt.' ]),
+    sp_requ: K('Einbindung von Requisiten und Kostüm', 'Requisit/Kostüm', 'Raum, Requisit & Kostüm', 1, [
+      'Requisiten und Kostüm selbstverständlich und bedeutungsvoll ins Spiel integriert.',
+      'Sicherer, funktionaler Umgang mit Requisiten und Kostüm.',
+      'Umgang überwiegend sicher; einzelne Unsicherheiten.',
+      'Requisiten oder Kostüm wirken fremd oder stören das Spiel.',
+      'Kein angemessener Umgang.' ]),
+    sp_tempo: K('Spieltempo, Rhythmus und Timing', 'Timing', 'Zusammenspiel & Präsenz', 1, [
+      'Rhythmus und Timing sitzen; Pausen und Tempowechsel erzeugen Wirkung.',
+      'Stimmiges Spieltempo; Timing überwiegend sicher.',
+      'Tempo im Wesentlichen angemessen; Timing teils ungenau.',
+      'Tempo schleppend oder gehetzt; Einsätze verzögert.',
+      'Kein Gefühl für Tempo und Timing.' ]),
+    sp_inter: K('Interaktion mit Mitspielenden', 'Interaktion', 'Zusammenspiel & Präsenz', 1, [
+      'Hört zu, reagiert genau und spielt Partner an; echtes Zusammenspiel.',
+      'Reagiert aufmerksam auf andere; gutes Zusammenspiel.',
+      'Reagiert meist passend, teils nur auf das Stichwort.',
+      'Spielt überwiegend für sich; wenig Reaktion.',
+      'Kein Bezug zu Mitspielenden.' ]),
+    sp_praes: K('Bühnenpräsenz und Konzentration', 'Präsenz', 'Zusammenspiel & Präsenz', 1, [
+      'Starke Präsenz; bleibt durchgehend in der Rolle, auch bei Pannen.',
+      'Präsent und konzentriert; fällt selten aus der Rolle.',
+      'Präsenz schwankt; gelegentlich aus der Rolle.',
+      'Oft unkonzentriert; fällt häufig aus der Rolle.',
+      'Keine Bühnenpräsenz.' ]),
+    sp_figur: K('Rollengestaltung und Darstellungsabsicht', 'Rolle', 'Gestaltung', 2, [
+      'Figur klar, vielschichtig und schlüssig; Darstellungsabsicht jederzeit erkennbar.',
+      'Figur deutlich erkennbar und stimmig; Absicht meist klar.',
+      'Figur in Grundzügen erkennbar; Absicht nicht immer deutlich.',
+      'Figur blass oder widersprüchlich; Absicht kaum erkennbar.',
+      'Keine Figur erkennbar.' ]),
+    sp_mittel: K('Theatrale und mediale Gestaltungsmittel', 'Gestaltungsmittel', 'Gestaltung', 2, [
+      'Gestaltungsmittel einfallsreich, handwerklich gekonnt und wirkungsvoll eingesetzt.',
+      'Gestaltungsmittel gezielt und sicher eingesetzt.',
+      'Gestaltungsmittel eingesetzt, eher konventionell oder teils unsicher.',
+      'Gestaltungsmittel selten oder handwerklich unsicher.',
+      'Keine bewusst eingesetzten Gestaltungsmittel.' ]),
+    /* --- Probenarbeit --- */
+    pa_zuverl: K('Zuverlässigkeit und Pünktlichkeit', 'Zuverlässigkeit', 'Arbeitshaltung', 1, [
+      'Immer pünktlich und vorbereitet; Absprachen und Termine stets eingehalten.',
+      'Fast immer pünktlich und vorbereitet.',
+      'Meist pünktlich; gelegentlich unvorbereitet.',
+      'Häufig unpünktlich oder unvorbereitet.',
+      'Unzuverlässig.' ]),
+    pa_regie: K('Umsetzung von Regieanweisungen und Feedback', 'Regie', 'Arbeitshaltung', 1, [
+      'Setzt Anweisungen schnell und genau um; nutzt Feedback zur Weiterentwicklung.',
+      'Setzt Anweisungen zuverlässig um.',
+      'Setzt Anweisungen teilweise um; braucht Wiederholungen.',
+      'Setzt Anweisungen selten um.',
+      'Ignoriert Anweisungen.' ]),
+    pa_eigen: K('Eigeninitiative und Kreativität', 'Initiative', 'Arbeitshaltung', 1, [
+      'Bringt eigene Ideen, Improvisationen und Lösungen ein, die die Inszenierung bereichern.',
+      'Bringt häufig brauchbare Ideen ein.',
+      'Gelegentlich eigene Ideen.',
+      'Selten eigene Beiträge.',
+      'Keine Eigeninitiative.' ]),
+    pa_team: K('Teamarbeit und Probendisziplin', 'Team', 'Arbeitshaltung', 1, [
+      'Konzentriert, rücksichtsvoll, unterstützt andere; trägt die Arbeitsatmosphäre.',
+      'Kooperativ und konzentriert.',
+      'Meist kooperativ; gelegentlich unkonzentriert.',
+      'Oft unkonzentriert oder störend.',
+      'Stört die Probenarbeit.' ]),
+    pa_reflex: K('Reflexion und Fachsprache', 'Reflexion', 'Arbeitshaltung', 1, [
+      'Reflektiert eigenes und fremdes Spiel präzise und mit Fachbegriffen.',
+      'Reflektiert nachvollziehbar; Fachbegriffe meist sicher.',
+      'Reflexion eher allgemein.',
+      'Reflexion oberflächlich.',
+      'Keine Reflexion.' ]),
+    /* --- Bühnenbild & Bühnenbau --- */
+    bb_konzept: K('Gestaltungskonzept und Wirkung', 'Konzept', '', 2, [
+      'Schlüssiges, originelles Raumkonzept, das die Inszenierung trägt.',
+      'Stimmiges Konzept, passt zur Inszenierung.',
+      'Konzept erkennbar, teils beliebig.',
+      'Kaum Konzept; Wirkung unklar.',
+      'Kein Konzept.' ]),
+    bb_plan: K('Planung: Skizzen, Modell, Material, Zeitplan', 'Planung', '', 1, [
+      'Vollständige Planung (Skizze/Modell, Material, Kosten, Zeitplan), rechtzeitig.',
+      'Gute Planung mit kleinen Lücken.',
+      'Planung vorhanden, aber lückenhaft.',
+      'Kaum geplant; vieles improvisiert.',
+      'Keine Planung.' ]),
+    bb_bau: K('Handwerkliche Umsetzung und Sicherheit', 'Bau', '', 2, [
+      'Sauber, stabil und sicher gebaut; Details sorgfältig ausgeführt.',
+      'Solide und sicher ausgeführt.',
+      'Funktional, kleinere Mängel in der Ausführung.',
+      'Deutliche Mängel; Nachbesserung nötig.',
+      'Unbrauchbar oder unsicher.' ]),
+    bb_funktion: K('Bespielbarkeit und Umbauten', 'Umbauten', '', 1, [
+      'Gut bespielbar; Umbauten schnell, leise und sicher.',
+      'Bespielbar; Umbauten klappen meist reibungslos.',
+      'Bespielbar mit Einschränkungen; Umbauten teils holprig.',
+      'Behindert das Spiel; Umbauten stören.',
+      'Nicht bespielbar.' ]),
+    /* --- Requisite --- */
+    rq_liste: K('Requisitenliste und Überblick', 'Liste', '', 1, [
+      'Vollständige, aktuelle Liste mit Zuordnung zu Szenen und Personen.',
+      'Liste vollständig, kleine Lücken in der Zuordnung.',
+      'Liste vorhanden, aber unvollständig.',
+      'Liste lückenhaft und veraltet.',
+      'Keine Liste.' ]),
+    rq_beschaff: K('Beschaffung und Herstellung', 'Beschaffung', '', 2, [
+      'Requisiten passend, stilistisch stimmig und rechtzeitig vorhanden.',
+      'Requisiten passend und rechtzeitig.',
+      'Requisiten überwiegend vorhanden, teils Notlösungen.',
+      'Vieles fehlt oder passt nicht.',
+      'Requisiten fehlen.' ]),
+    rq_organ: K('Organisation: Bereitstellung, Ablauf, Rückgabe', 'Organisation', '', 2, [
+      'Requisitentisch und Abläufe bestens organisiert; Pflege und Rückgabe gesichert.',
+      'Gut organisiert; Abläufe funktionieren.',
+      'Organisation mit kleineren Pannen.',
+      'Häufige Pannen; Requisiten fehlen im Spiel.',
+      'Keine Organisation.' ]),
+    rq_abspr: K('Absprache mit Regie und Spielenden', 'Absprache', '', 1, [
+      'Stimmt sich vorausschauend ab; löst Probleme selbstständig.',
+      'Stimmt sich zuverlässig ab.',
+      'Abstimmung meist erst nach Aufforderung.',
+      'Abstimmung lückenhaft.',
+      'Keine Abstimmung.' ]),
+    /* --- Kostüm --- */
+    ko_konzept: K('Kostümkonzept (Figur, Stil, Farben)', 'Konzept', '', 2, [
+      'Kostüme charakterisieren die Figuren treffend; schlüssiges Stil- und Farbkonzept.',
+      'Kostüme passen gut zu Figuren und Stück.',
+      'Kostüme passend, Konzept nur teilweise erkennbar.',
+      'Kostüme beliebig oder unpassend.',
+      'Kein Kostümkonzept.' ]),
+    ko_umsetz: K('Umsetzung: Beschaffung, Anpassung, Bespielbarkeit', 'Umsetzung', '', 2, [
+      'Sorgfältig angepasst, gut bespielbar, rechtzeitig fertig.',
+      'Gut umgesetzt und bespielbar.',
+      'Umsetzung mit kleineren Mängeln.',
+      'Deutliche Mängel; behindert das Spiel.',
+      'Nicht umgesetzt.' ]),
+    ko_organ: K('Organisation: Kostümliste, Umzüge, Pflege, Rückgabe', 'Organisation', '', 1, [
+      'Lückenlose Kostümliste; Umzüge geplant und geübt; Pflege und Rückgabe gesichert.',
+      'Gut organisiert; Umzüge klappen.',
+      'Organisation mit kleineren Pannen.',
+      'Häufige Pannen bei Umzügen oder fehlenden Teilen.',
+      'Keine Organisation.' ]),
+    /* --- Maske --- */
+    ma_konzept: K('Maskenkonzept und Bühnenwirkung', 'Konzept', '', 2, [
+      'Maske charakterisiert die Figuren treffend und wirkt unter Bühnenlicht.',
+      'Passende Maske mit guter Bühnenwirkung.',
+      'Maske passend, Wirkung teils schwach.',
+      'Maske unpassend oder wirkungslos.',
+      'Keine Maske gestaltet.' ]),
+    ma_hand: K('Handwerkliche Ausführung und Hygiene', 'Ausführung', '', 2, [
+      'Sauber, haltbar und hygienisch ausgeführt; Hautverträglichkeit beachtet.',
+      'Sauber und haltbar ausgeführt.',
+      'Ausführung mit kleineren Mängeln.',
+      'Unsauber oder hält nicht.',
+      'Nicht ausgeführt.' ]),
+    ma_ablauf: K('Ablaufplanung: Schminkplan, Zeit, Wechsel', 'Ablauf', '', 1, [
+      'Schminkplan vollständig; alle rechtzeitig fertig; Wechsel geplant.',
+      'Gut geplant; meist rechtzeitig.',
+      'Planung lückenhaft; Zeitdruck.',
+      'Verspätungen beeinträchtigen den Ablauf.',
+      'Keine Planung.' ]),
+    /* --- Organisation --- */
+    or_plan: K('Planung: Zeit-, Proben- und Aufgabenpläne', 'Planung', '', 2, [
+      'Vorausschauende, vollständige Pläne; Aufgaben klar verteilt.',
+      'Gute Pläne mit kleinen Lücken.',
+      'Pläne vorhanden, teils unvollständig.',
+      'Planung lückenhaft; vieles kurzfristig.',
+      'Keine Planung.' ]),
+    or_komm: K('Kommunikation und Absprachen', 'Kommunikation', '', 1, [
+      'Informiert alle Beteiligten rechtzeitig, klar und verbindlich.',
+      'Kommuniziert zuverlässig.',
+      'Kommunikation meist ausreichend, teils verspätet.',
+      'Informationen fehlen oft.',
+      'Keine Kommunikation.' ]),
+    or_doku: K('Dokumentation: Listen, Protokolle, Ablaufplan', 'Dokumentation', '', 1, [
+      'Vollständige, übersichtliche Dokumentation, stets aktuell.',
+      'Gute Dokumentation mit kleinen Lücken.',
+      'Dokumentation vorhanden, aber lückenhaft.',
+      'Kaum Dokumentation.',
+      'Keine Dokumentation.' ]),
+    or_abend: K('Ablauf am Aufführungstag (Einlass, Kasse, Abendregie)', 'Aufführungstag', '', 2, [
+      'Ablauf souverän organisiert; reagiert ruhig auf Störungen.',
+      'Ablauf gut organisiert.',
+      'Ablauf mit kleineren Pannen.',
+      'Deutliche Pannen im Ablauf.',
+      'Ablauf nicht organisiert.' ]),
+    /* --- PR --- */
+    pr_konzept: K('Konzept und Zielgruppen', 'Konzept', '', 1, [
+      'Durchdachtes Konzept; Zielgruppen gezielt angesprochen.',
+      'Klares Konzept mit passenden Zielgruppen.',
+      'Konzept erkennbar, Zielgruppen eher allgemein.',
+      'Kaum Konzept.',
+      'Kein Konzept.' ]),
+    pr_gestalt: K('Gestaltung: Plakat, Flyer, Programmheft, Social Media', 'Gestaltung', '', 2, [
+      'Ansprechend, stimmig zum Stück, fehlerfrei und informativ.',
+      'Ansprechend und informativ; kleine Mängel.',
+      'Brauchbar, aber wenig ansprechend oder mit Fehlern.',
+      'Unübersichtlich, fehlerhaft oder unvollständig.',
+      'Keine Materialien.' ]),
+    pr_verbreit: K('Verbreitung, Termine und Presse', 'Verbreitung', '', 1, [
+      'Rechtzeitig über passende Kanäle verbreitet; Presse und Schulöffentlichkeit eingebunden.',
+      'Rechtzeitig und breit verbreitet.',
+      'Verbreitung knapp oder auf wenige Kanäle beschränkt.',
+      'Zu spät oder kaum verbreitet.',
+      'Nicht verbreitet.' ]),
+    pr_recht: K('Rechtliches: Bild- und Urheberrechte, Datenschutz', 'Rechtliches', '', 1, [
+      'Bildrechte, Urheberrechte und Datenschutz vollständig beachtet und dokumentiert.',
+      'Rechtliches beachtet, kleine Lücken.',
+      'Rechtliches teilweise beachtet.',
+      'Rechtliches kaum beachtet.',
+      'Rechtliches missachtet.' ]),
+    /* --- Licht, Ton & Medien --- */
+    te_konzept: K('Licht-, Ton- und Medienkonzept', 'Konzept', '', 2, [
+      'Konzept unterstützt Stimmung und Aussage wirkungsvoll und einfallsreich.',
+      'Konzept passt gut zur Inszenierung.',
+      'Konzept erkennbar, eher funktional.',
+      'Kaum Konzept.',
+      'Kein Konzept.' ]),
+    te_umsetz: K('Technische Umsetzung und Timing der Einsätze', 'Umsetzung', '', 2, [
+      'Einsätze punktgenau; Technik sicher beherrscht.',
+      'Einsätze sicher; seltene kleine Fehler.',
+      'Einsätze meist richtig; einzelne Fehler.',
+      'Häufige Fehler oder Verzögerungen.',
+      'Technik nicht beherrscht.' ]),
+    te_doku: K('Dokumentation: Cue-Liste, Technikplan', 'Dokumentation', '', 1, [
+      'Vollständige Cue-Liste und Technikplan; jederzeit übergabefähig.',
+      'Gute Dokumentation.',
+      'Dokumentation lückenhaft.',
+      'Kaum Dokumentation.',
+      'Keine Dokumentation.' ])
+  };
+
+  var B = {
+    spiel:     { n:'Schauspiel', s:'Spiel', list:['sp_text', 'sp_textlern', 'sp_stimme', 'sp_modul', 'sp_koerper', 'sp_raum', 'sp_requ', 'sp_tempo', 'sp_inter', 'sp_praes', 'sp_figur', 'sp_mittel'],
+                 probe:['sp_textlern', 'sp_stimme', 'sp_koerper', 'sp_inter', 'sp_figur'],
+                 prem:['sp_text', 'sp_stimme', 'sp_modul', 'sp_koerper', 'sp_raum', 'sp_requ', 'sp_tempo', 'sp_inter', 'sp_praes', 'sp_figur', 'sp_mittel'] },
+    probe:     { n:'Probenarbeit (alle)', s:'Probenarbeit', probeOnly:true, list:['pa_zuverl', 'pa_regie', 'pa_eigen', 'pa_team', 'pa_reflex'], probe:['pa_zuverl', 'pa_regie', 'pa_eigen', 'pa_team'], prem:[] },
+    buehne:    { n:'Bühnenbild & Bühnenbau', s:'Bühne', list:['bb_konzept', 'bb_plan', 'bb_bau', 'bb_funktion'], probe:['bb_plan', 'bb_bau'], prem:['bb_konzept', 'bb_plan', 'bb_bau', 'bb_funktion'] },
+    requisite: { n:'Requisitenmanagement', s:'Requisite', list:['rq_liste', 'rq_beschaff', 'rq_organ', 'rq_abspr'], probe:['rq_liste', 'rq_beschaff', 'rq_abspr'], prem:['rq_liste', 'rq_beschaff', 'rq_organ', 'rq_abspr'] },
+    kostuem:   { n:'Kostüm', s:'Kostüm', list:['ko_konzept', 'ko_umsetz', 'ko_organ'], probe:['ko_konzept', 'ko_umsetz'], prem:['ko_konzept', 'ko_umsetz', 'ko_organ'] },
+    maske:     { n:'Maske', s:'Maske', list:['ma_konzept', 'ma_hand', 'ma_ablauf'], probe:['ma_konzept', 'ma_hand'], prem:['ma_konzept', 'ma_hand', 'ma_ablauf'] },
+    orga:      { n:'Organisation / Produktionsleitung', s:'Organisation', list:['or_plan', 'or_komm', 'or_doku', 'or_abend'], probe:['or_plan', 'or_komm', 'or_doku'], prem:['or_plan', 'or_komm', 'or_doku', 'or_abend'] },
+    pr:        { n:'Öffentlichkeitsarbeit (PR)', s:'PR', list:['pr_konzept', 'pr_gestalt', 'pr_verbreit', 'pr_recht'], probe:['pr_konzept', 'pr_gestalt'], prem:['pr_konzept', 'pr_gestalt', 'pr_verbreit', 'pr_recht'] },
+    technik:   { n:'Licht, Ton & Medien', s:'Technik', list:['te_konzept', 'te_umsetz', 'te_doku'], probe:['te_konzept', 'te_doku'], prem:['te_konzept', 'te_umsetz', 'te_doku'] }
+  };
+  var BIDS = ['spiel', 'probe', 'buehne', 'requisite', 'kostuem', 'maske', 'orga', 'pr', 'technik'];
+  var TASKB = BIDS.filter(function (b) { return !B[b].probeOnly; });
+  var PRESETS = [
+    { id:'std', n:'Empfohlen', t:'Kernkriterien (Rolle, Gestaltungsmittel, Konzept …) zählen doppelt.' },
+    { id:'gleich', n:'Alle gleich', t:'Jedes Kriterium zählt gleich viel.' },
+    { id:'eigen', n:'Eigene Gewichtung', t:'Werte in der Tabelle selbst eintragen.' }
+  ];
+  var TOTALS = [10, 15, 20, 24, 30, 40, 50, 60, 100];
+  var PERIODS = [
+    { id:'all', n:'Alle Proben' }, { id:'hjcur', n:'Aktuelles Halbjahr' }, { id:'hj1', n:'1. Halbjahr' }, { id:'hj2', n:'2. Halbjahr' },
+    { id:'sj', n:'Ganzes Schuljahr' }, { id:'4w', n:'Letzte 4 Wochen' }, { id:'custom', n:'Eigener Zeitraum (von – bis)' }
+  ];
+
+  /* ================= Hilfsfunktionen ================= */
+  function num(x, d) { var n = parseFloat(String(x).replace(',', '.')); return isNaN(n) ? d : n; }
+  function fmt(n, dec) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec === undefined ? 2 : dec }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function sum(a) { var t = 0; for (var i = 0; i < a.length; i++) t += a[i]; return t; }
+  function qa(root, sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); }
+  function str(x, max) { return String(x == null ? '' : x).slice(0, max || 2000); }
+  function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); }
+  function p2(n) { return ('0' + n).slice(-2); }
+  function iso(d) { return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+  function todayISO() { return iso(new Date()); }
+  function parseISO(s) { var a = String(s).split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
+  function addDays(s, n) { var d = parseISO(s); d.setDate(d.getDate() + n); return iso(d); }
+  function de(s) { if (!s) return ''; var a = s.split('-'); return a[2] + '.' + a[1] + '.' + a[0]; }
+  function isISO(s) { return /^\d{4}-\d{2}-\d{2}$/.test(String(s)); }
+  function short(n) { return n.length > 14 ? n.slice(0, 13) + '.' : n; }
+  function ceilS(x, st) { return Math.ceil(x / st - 1e-9) * st; }
+  function roundS(x, st) { return Math.round(x / st) * st; }
+  function levelOf(np) { return np >= 13 ? 0 : np >= 10 ? 1 : np >= 7 ? 2 : np >= 4 ? 3 : 4; }
+  function noteNP(np) {
+    if (np >= 13) return { z:1, t:'sehr gut' };
+    if (np >= 10) return { z:2, t:'gut' };
+    if (np >= 7)  return { z:3, t:'befriedigend' };
+    if (np >= 4)  return { z:4, t:'ausreichend' };
+    if (np >= 1)  return { z:5, t:'mangelhaft' };
+    return { z:6, t:'ungenügend' };
+  }
+  function abiNP(p) { for (var n = 15; n >= 1; n--) if (p >= ABI[n] - 1e-9) return n; return 0; }
+
+  /* ================= Zustand ================= */
+  var KEY = 'theaterkurs_v1';
+  var canStore = storageOk();
+  function storageOk() {
+    try { var k = '__t' + Math.random(); localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; } catch (e) { return false; }
+  }
+  function freshCfg(occ, bid) { return { sel:B[bid][occ].slice(), weights:{}, preset:'std' }; }
+  function freshCourse() {
+    var c = { id:uid('k'), name:'Theaterkurs', stueck:'', premDate:'', students:[], custom:[], texts:{},
+              cfg:{ probe:{}, prem:{} }, mode:'tap', totP:20, totA:30, half:true, timeW:'equal', probeShare:40,
+              ges:{ on:false, prem:50 }, hj:'02-15', per:{ p:'all', from:'', to:'' }, date:todayISO(), entries:[], prem:{} };
+    BIDS.forEach(function (b) { ['probe', 'prem'].forEach(function (o) { if (o === 'prem' && B[b].probeOnly) return; c.cfg[o][b] = freshCfg(o, b); applyPreset(c, o, b); }); });
+    return c;
+  }
+  function freshDB() { var c = freshCourse(); return { v:1, setup:false, view:'setup', cur:c.id, courses:[c] }; }
+  function load() {
+    if (!canStore) return null;
+    try { var t = localStorage.getItem(KEY); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+  }
+  function clampF(v) { v = num(v, NaN); return isNaN(v) ? null : Math.max(0, Math.min(1, v)); }
+  function sanR(r) { var o = {}; if (r && typeof r === 'object') for (var k in r) { var v = clampF(r[k]); if (v !== null && /^[a-z]+:[A-Za-z0-9_]+$/.test(k)) o[k] = v; } return o; }
+  function sanitizeCourse(o) {
+    if (!o || typeof o !== 'object') return null;
+    var f = freshCourse();
+    f.id = str(o.id || f.id, 40); f.name = str(o.name, 60) || 'Theaterkurs'; f.stueck = str(o.stueck, 100); f.premDate = isISO(o.premDate) ? o.premDate : '';
+    f.custom = (Array.isArray(o.custom) ? o.custom : []).filter(function (c) { return c && c.id && c.n && B[c.b]; }).slice(0, 60).map(function (c) {
+      return { id:str(c.id, 40).replace(/[^A-Za-z0-9_]/g, ''), n:str(c.n, 60), b:c.b };
+    });
+    ['probe', 'prem'].forEach(function (occ) {
+      BIDS.forEach(function (b) {
+        if (occ === 'prem' && B[b].probeOnly) return;
+        var src = o.cfg && o.cfg[occ] && o.cfg[occ][b], cfg = f.cfg[occ][b];
+        if (!src) return;
+        var known = {}; critsOf(f, b).forEach(function (c) { known[c.id] = 1; });
+        cfg.sel = (Array.isArray(src.sel) ? src.sel : []).filter(function (id) { return known[id]; });
+        cfg.preset = PRESETS.some(function (p) { return p.id === src.preset; }) ? src.preset : 'std';
+        cfg.weights = {};
+        if (src.weights && typeof src.weights === 'object') for (var k in src.weights) if (known[k]) cfg.weights[k] = Math.max(0, num(src.weights[k], 0));
+      });
+    });
+    if (o.texts && typeof o.texts === 'object') for (var tk in o.texts) {
+      var tx = o.texts[tk];
+      if (tx && typeof tx === 'object' && (C[tk] || f.custom.some(function (c) { return c.id === tk; })))
+        f.texts[tk] = { n:str(tx.n, 80), d:[0, 1, 2, 3, 4].map(function (i) { return str(Array.isArray(tx.d) ? tx.d[i] : '', 200); }) };
+    }
+    f.mode = o.mode === 'pt' ? 'pt' : 'tap';
+    f.totP = Math.max(1, Math.min(1000, Math.round(num(o.totP, 20)))); f.totA = Math.max(1, Math.min(1000, Math.round(num(o.totA, 30))));
+    f.half = o.half !== false; f.timeW = o.timeW === 'recent' ? 'recent' : 'equal';
+    f.probeShare = Math.max(0, Math.min(100, num(o.probeShare, 40)));
+    f.ges = { on:!!(o.ges && o.ges.on), prem:Math.max(0, Math.min(100, num(o.ges && o.ges.prem, 50))) };
+    f.hj = /^\d{2}-\d{2}$/.test(String(o.hj)) ? o.hj : '02-15';
+    var per = o.per || {};
+    f.per = { p:PERIODS.some(function (p) { return p.id === per.p; }) ? per.p : 'all', from:isISO(per.from) ? per.from : '', to:isISO(per.to) ? per.to : '' };
+    f.date = isISO(o.date) ? o.date : todayISO();
+    f.students = (Array.isArray(o.students) ? o.students : []).slice(0, 200).filter(function (s) { return s && s.id; }).map(function (s) {
+      var t = {};
+      if (s.tasks && typeof s.tasks === 'object') TASKB.forEach(function (b) { if (s.tasks[b] != null) t[b] = Math.max(0, Math.min(100, num(s.tasks[b], 0))); });
+      return { id:str(s.id, 40), name:str(s.name, 80), tasks:t };
+    });
+    var sids = {}; f.students.forEach(function (s) { sids[s.id] = 1; });
+    f.entries = (Array.isArray(o.entries) ? o.entries : []).slice(0, 60000).filter(function (e) { return e && sids[e.sid] && isISO(e.d); }).map(function (e) {
+      return { id:str(e.id || uid('e'), 40), sid:e.sid, d:e.d, r:sanR(e.r), abs:!!e.abs, note:str(e.note, 500) };
+    });
+    if (o.prem && typeof o.prem === 'object') for (var sid in o.prem) if (sids[sid]) f.prem[sid] = { r:sanR(o.prem[sid].r), note:str(o.prem[sid].note, 2000) };
+    ['probe', 'prem'].forEach(function (occ) { BIDS.forEach(function (b) {
+      var cfg = f.cfg[occ][b]; if (!cfg) return;
+      if (!activeOf(f, occ, b).some(function (c) { return cfg.weights[c.id] > 0; })) applyPreset(f, occ, b);
+    }); });
+    return f;
+  }
+  function sanitizeDB(o) {
+    if (!o || o.v !== 1 || !Array.isArray(o.courses)) return null;
+    var cs = o.courses.slice(0, 40).map(sanitizeCourse).filter(Boolean);
+    if (!cs.length) return null;
+    var cur = cs.some(function (c) { return c.id === o.cur; }) ? o.cur : cs[0].id;
+    return { v:1, setup:!!o.setup, view:['setup', 'probe', 'prem', 'ausw'].indexOf(o.view) >= 0 ? o.view : 'probe', cur:cur, courses:cs };
+  }
+
+  var DB = null, S = null;
+  var els = {}, openSid = null, txOpen = false, einzelSid = null, curB = 'spiel', curOcc = 'prem', longDesc = false;
+  function curCourse() { for (var i = 0; i < DB.courses.length; i++) if (DB.courses[i].id === DB.cur) return DB.courses[i]; DB.cur = DB.courses[0].id; return DB.courses[0]; }
+  var tmr = null;
+  function flush() { clearTimeout(tmr); tmr = null; if (!canStore || !DB) return Promise.resolve(); return SEC.write(KEY, JSON.stringify(DB)); }
+  function save() { if (!canStore || tmr) return; tmr = setTimeout(flush, 250); }
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+
+  /* ================= Kriterien & Gewichtung ================= */
+  function critBase(st, id) {
+    if (C[id]) { var c = C[id]; return { id:id, n:c.n, s:c.s, g:c.g, w:c.w, d:c.d }; }
+    for (var i = 0; i < st.custom.length; i++) if (st.custom[i].id === id) {
+      var u = st.custom[i]; return { id:u.id, n:u.n, s:short(u.n), g:'Eigene', w:1, d:GENERIC, custom:true, b:u.b };
+    }
+    return null;
+  }
+  function critObj(st, id) {
+    var b = critBase(st, id), o = b && st.texts[id];
+    if (!o) return b;
+    var n = (o.n || '').trim();
+    return { id:b.id, n:n || b.n, s:n && n !== b.n ? short(n) : b.s, g:b.g, w:b.w, custom:b.custom, b:b.b,
+             d:b.d.map(function (x, i) { var t = (o.d[i] || '').trim(); return t || x; }) };
+  }
+  function critsOf(st, bid) {
+    return B[bid].list.map(function (id) { return critObj(st, id); })
+      .concat(st.custom.filter(function (u) { return u.b === bid; }).map(function (u) { return critObj(st, u.id); }));
+  }
+  function cfgOf(st, occ, bid) { return st.cfg[occ][bid]; }
+  function activeOf(st, occ, bid) {
+    var cfg = cfgOf(st, occ, bid); if (!cfg) return [];
+    return critsOf(st, bid).filter(function (c) { return cfg.sel.indexOf(c.id) >= 0; });
+  }
+  function Wc(occ, bid, c) { return cfgOf(S, occ, bid).weights[c.id] || 0; }
+  function totalOf(st, occ) { return occ === 'probe' ? st.totP : st.totA; }
+  function distribute(sh, total, minOne) {
+    var s = sum(sh) || 1;
+    var raw = sh.map(function (x) { return x / s * total; });
+    var out = raw.map(Math.floor), rest = total - sum(out);
+    var idx = raw.map(function (x, i) { return i; }).sort(function (a, b) { return (raw[b] - out[b]) - (raw[a] - out[a]); });
+    for (var i = 0; i < rest; i++) out[idx[i % idx.length]]++;
+    if (minOne) out.forEach(function (x, i) {
+      if (x > 0) return;
+      var j = -1; out.forEach(function (y, m) { if (y > 1 && (j < 0 || y > out[j])) j = m; });
+      if (j >= 0) { out[j]--; out[i] = 1; }
+    });
+    return out;
+  }
+  function applyPreset(st, occ, bid) {
+    var cfg = cfgOf(st, occ, bid), cs = activeOf(st, occ, bid); if (!cfg || !cs.length) return;
+    var T = st.mode === 'tap' ? 100 : totalOf(st, occ), sh;
+    if (cfg.preset === 'eigen') {
+      var have = cs.map(function (c) { return cfg.weights[c.id] > 0 ? cfg.weights[c.id] : 0; });
+      var pos = have.filter(function (x) { return x > 0; }), avg = pos.length ? sum(pos) / pos.length : 1;
+      sh = have.map(function (x) { return x > 0 ? x : avg; });
+    } else if (cfg.preset === 'gleich') sh = cs.map(function () { return 1; });
+    else sh = cs.map(function (c) { return c.w || 1; });
+    var out = distribute(sh, T, st.mode === 'pt');
+    cs.forEach(function (c, i) { cfg.weights[c.id] = out[i]; });
+  }
+  function applyAll(st) { ['probe', 'prem'].forEach(function (o) { BIDS.forEach(function (b) { if (st.cfg[o][b]) applyPreset(st, o, b); }); }); }
+
+  /* ================= Werte & Berechnung ================= */
+  function kk(bid, cid) { return bid + ':' + cid; }
+  function npOf(f) { return Math.round(f * 15); }
+  function stepOf() { return S.half ? 0.5 : 1; }
+  function ptsOf(f, occ, bid, c) { return roundS(f * Wc(occ, bid, c), stepOf()); }
+  function valLabel(f, occ, bid, c) {
+    if (f == null) return '–';
+    return S.mode === 'tap' ? String(npOf(f)) : fmt(ptsOf(f, occ, bid, c));
+  }
+  function finalNP(v) { return S.mode === 'tap' ? Math.max(0, Math.min(15, Math.floor(v + 0.5 + 1e-9))) : abiNP(v * 100); }
+  function valText(v) { return S.mode === 'tap' ? fmt(v, 1) + ' NP' : fmt(v * 100, 1) + ' %'; }
+  function stuById(id) { for (var i = 0; i < S.students.length; i++) if (S.students[i].id === id) return S.students[i]; return null; }
+  function tasksOf(s) { return TASKB.filter(function (b) { return s.tasks[b] != null; }); }
+  function tasksLabel(s) {
+    var t = tasksOf(s); if (!t.length) return '–';
+    var tot = sum(t.map(function (b) { return s.tasks[b]; }));
+    return t.map(function (b) { return B[b].s + (t.length > 1 ? ' ' + fmt(tot ? s.tasks[b] / tot * 100 : 100 / t.length, 0) + ' %' : ''); }).join(', ');
+  }
+  function bereicheFor(s, occ) {
+    var list = tasksOf(s).filter(function (b) { return activeOf(S, occ, b).length; });
+    if (occ === 'probe' && activeOf(S, 'probe', 'probe').length) list = ['probe'].concat(list);
+    return list;
+  }
+  function sharesFor(s, occ, list) {
+    var t = tasksOf(s), tot = sum(t.map(function (b) { return s.tasks[b]; })), m = {};
+    var rest = occ === 'probe' && list.indexOf('probe') >= 0 ? (100 - S.probeShare) : 100;
+    list.forEach(function (b) {
+      if (b === 'probe') m[b] = S.probeShare;
+      else m[b] = rest * (tot ? s.tasks[b] / tot : 1 / Math.max(1, t.length));
+    });
+    return m;
+  }
+  function scoreBereich(occ, bid, getVal) {
+    var cs = activeOf(S, occ, bid), ws = 0, x = 0, open = 0, per = {};
+    cs.forEach(function (c) {
+      var g = getVal(c); per[c.id] = g;
+      if (g == null) { open++; return; }
+      var w = Wc(occ, bid, c); ws += w; x += w * g;
+    });
+    return { cs:cs, per:per, open:open, val:ws ? x / ws : null };
+  }
+  function combine(parts) {
+    var ws = 0, x = 0;
+    parts.forEach(function (p) { if (p.sc.val == null || !p.share) return; ws += p.share; x += p.share * p.sc.val; });
+    return ws ? x / ws : null;
+  }
+  function premResult(s) {
+    var rec = S.prem[s.id] || { r:{}, note:'' }, list = bereicheFor(s, 'prem'), sh = sharesFor(s, 'prem', list);
+    var parts = list.map(function (b) {
+      return { bid:b, share:sh[b], sc:scoreBereich('prem', b, function (c) { var f = rec.r[kk(b, c.id)]; return f == null ? null : (S.mode === 'tap' ? npOf(f) : f); }) };
+    });
+    var val = combine(parts), open = sum(parts.map(function (p) { return p.sc.open; }));
+    return { parts:parts, val:val, np:val == null ? null : finalNP(val), open:open, done:val != null && open === 0, note:rec.note };
+  }
+  function perRange() {
+    var p = S.per, t = todayISO(), d = parseISO(t), sy = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1, hjD = (sy + 1) + '-' + S.hj;
+    var syFrom = sy + '-08-01', syTo = (sy + 1) + '-07-31';
+    switch (p.p) {
+      case 'all': return { from:'', to:'' };
+      case '4w': return { from:addDays(t, -27), to:t };
+      case 'hj1': return { from:syFrom, to:addDays(hjD, -1) };
+      case 'hj2': return { from:hjD, to:syTo };
+      case 'sj': return { from:syFrom, to:syTo };
+      case 'custom': return { from:p.from || '', to:p.to || '' };
+      default: return t < hjD ? { from:syFrom, to:addDays(hjD, -1) } : { from:hjD, to:syTo };
+    }
+  }
+  function perLabel() {
+    var r = perRange();
+    if (!r.from && !r.to) return 'alle Proben';
+    return (r.from ? de(r.from) : 'Anfang') + ' – ' + (r.to ? de(r.to) : 'heute');
+  }
+  function inPer(d, r) { return (!r.from || d >= r.from) && (!r.to || d <= r.to); }
+  function probeResult(s, r) {
+    r = r || perRange();
+    var es = S.entries.filter(function (e) { return e.sid === s.id && inPer(e.d, r); }).sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    var use = es.filter(function (e) { return !e.abs; });
+    var list = bereicheFor(s, 'probe'), sh = sharesFor(s, 'probe', list);
+    var parts = list.map(function (b) {
+      return { bid:b, share:sh[b], sc:scoreBereich('probe', b, function (c) {
+        var sw = 0, sv = 0, key = kk(b, c.id);
+        use.forEach(function (e, i) {
+          var f = e.r[key]; if (f == null) return;
+          var w = S.timeW === 'recent' ? i + 1 : 1; sv += w * (S.mode === 'tap' ? npOf(f) : f); sw += w;
+        });
+        return sw ? sv / sw : null;
+      }) };
+    });
+    var val = combine(parts);
+    var n = use.filter(function (e) { for (var k in e.r) return true; return false; }).length;
+    return { parts:parts, val:val, np:val == null ? null : finalNP(val), n:n, abs:es.length - use.length, entries:es };
+  }
+  function gesResult(pr, po) {
+    if (!S.ges.on) return null;
+    if (pr.val == null && po.val == null) return { val:null, np:null };
+    var w = S.ges.prem / 100, val = pr.val == null ? po.val : po.val == null ? pr.val : w * pr.val + (1 - w) * po.val;
+    return { val:val, np:finalNP(val), partial:pr.val == null || po.val == null };
+  }
+  function npText(np) { return np == null ? '–' : np + ' NP (Note ' + noteNP(np).z + ')'; }
+  function legend() {
+    var a = S.mode === 'tap'
+      ? 'Stufen: sehr gut 15–13, gut 12–10, befriedigend 9–7, ausreichend 6–4, mangelhaft/ungenügend 3–0 Notenpunkte; Ergebnis = gewichteter Durchschnitt, ab ,5 aufgerundet.'
+      : 'Punkte → Notenpunkte nach Abiturschlüssel (KMK): 15 ab 95 % · 14 ab 90 % · 13 ab 85 % · 12 ab 80 % · 11 ab 75 % · 10 ab 70 % · 9 ab 65 % · 8 ab 60 % · 7 ab 55 % · 6 ab 50 % · 5 ab 45 % · 4 ab 40 % · 3 ab 33 % · 2 ab 27 % · 1 ab 20 % · 0 darunter.';
+    return a + ' Notenpunkte → Note: 15–13 = 1 · 12–10 = 2 · 9–7 = 3 · 6–4 = 4 · 3–1 = 5 · 0 = 6.';
+  }
+
+  /* ================= Ansichten ================= */
+  function courseName(c) { return c.name + (c.stueck ? ' · ' + c.stueck : ''); }
+  function renderCsel() {
+    els.csel.innerHTML = DB.courses.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === S.id ? ' selected' : '') + '>' + esc(courseName(c)) + '</option>'; }).join('');
+  }
+  function setView(v) {
+    DB.view = v === 'einzel' ? 'ausw' : v; save();
+    ['setup', 'probe', 'prem', 'ausw', 'einzel'].forEach(function (k) { els[k].hidden = k !== v; });
+    qa(els.bar, '[data-view]').forEach(function (b) { b.classList.toggle('on', b.dataset.view === v || (v === 'einzel' && b.dataset.view === 'ausw')); });
+    renderCsel();
+    if (v === 'setup') renderSetup();
+    if (v === 'probe') renderProbe();
+    if (v === 'prem') renderPrem();
+    if (v === 'ausw') renderAusw();
+    if (v === 'einzel') renderEinzel();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Editor (gemeinsam für Proben und Premiere) ---------- */
+  function critRowHTML(occ, bid, c, f) {
+    var has = f != null, ck = esc(c.id), bb = esc(bid);
+    var h = '<div class="er"><div class="et"><b>' + esc(c.n) + '</b>';
+    if (S.mode === 'tap') {
+      var np = has ? npOf(f) : null, k = has ? levelOf(np) : -1, L = has ? NP_LV[k] : null;
+      h += '<button type="button" class="st" data-a="st" data-b="' + bb + '" data-c="' + ck + '" data-d="-1" aria-label="weniger"' + (!has || np <= L.lo ? ' disabled' : '') + '>−</button>' +
+           '<span class="ev">' + (has ? np : '–') + '</span>' +
+           '<button type="button" class="st" data-a="st" data-b="' + bb + '" data-c="' + ck + '" data-d="1" aria-label="mehr"' + (!has || np >= L.hi ? ' disabled' : '') + '>+</button></div>' +
+           '<div class="lvs' + (occ === 'prem' && longDesc ? ' long' : '') + '">';
+      for (var j = 0; j < 5; j++) {
+        if (occ === 'prem' && longDesc) h += '<button type="button" class="lvb' + (j === k ? ' on' : '') + '" data-a="lv" data-b="' + bb + '" data-c="' + ck + '" data-k="' + j + '"><b>' + LV_NAMES[j] + ' (' + NP_LV[j].hi + '–' + NP_LV[j].lo + ')</b><br>' + esc(c.d[j]) + '</button>';
+        else h += '<button type="button" class="lvb' + (j === k ? ' on' : '') + '" data-a="lv" data-b="' + bb + '" data-c="' + ck + '" data-k="' + j + '" title="' + esc(c.d[j]) + '">' + NP_LV[j].hi + '–' + NP_LV[j].lo + '<small>' + LV_NAMES[j].replace(' / ungenügend', '/ung.') + '</small></button>';
+      }
+      h += '</div>' + (occ === 'prem' && longDesc ? '' : '<div class="desc">' + (has ? esc(c.d[k]) : '') + '</div>');
+    } else {
+      var m = Wc(occ, bid, c);
+      h += '<span>max. ' + fmt(m) + ' P</span></div><div class="pin">' +
+           '<button type="button" class="st" data-a="pst" data-b="' + bb + '" data-c="' + ck + '" data-d="-1" aria-label="weniger">−</button>' +
+           '<input type="text" inputmode="decimal" data-a="pv" data-b="' + bb + '" data-c="' + ck + '" value="' + (has ? fmt(ptsOf(f, occ, bid, c)) : '') + '" placeholder="–" aria-label="Punkte">' +
+           '<button type="button" class="st" data-a="pst" data-b="' + bb + '" data-c="' + ck + '" data-d="1" aria-label="mehr">+</button><span>von ' + fmt(m) + '</span></div>' +
+           '<div class="desc">' + esc(c.d[0]) + '</div>';
+    }
+    return h + '</div>';
+  }
+  function newValue(occ, bid, c, f, a, k, d) {
+    if (a === 'lv') return (f != null && levelOf(npOf(f)) === k) ? null : NP_LV[k].def / 15;
+    if (a === 'st') { if (f == null) return f; var np = npOf(f), L = NP_LV[levelOf(np)]; return Math.max(L.lo, Math.min(L.hi, np + d)) / 15; }
+    if (a === 'pst') {
+      var m = Wc(occ, bid, c), st = stepOf();
+      var v = f == null ? (d > 0 ? st : 0) : Math.max(0, Math.min(m, ptsOf(f, occ, bid, c) + d * st));
+      return m ? v / m : 0;
+    }
+    return f;
+  }
+
+  /* ---------- Proben ---------- */
+  function entryOf(sid, d) { for (var i = 0; i < S.entries.length; i++) { var e = S.entries[i]; if (e.sid === sid && e.d === d) return e; } return null; }
+  function getEntry(sid, d) { var e = entryOf(sid, d); if (!e) { e = { id:uid('e'), sid:sid, d:d, r:{}, abs:false, note:'' }; S.entries.push(e); } return e; }
+  function pruneEntry(e) { var any = false; for (var k in e.r) { any = true; break; } if (!any && !e.abs && !e.note.trim()) S.entries = S.entries.filter(function (x) { return x !== e; }); }
+  function entryChips(s) {
+    var e = entryOf(s.id, S.date); if (!e) return '<span>—</span>';
+    if (e.abs) return '<span class="abs">fehlt</span>';
+    var h = '';
+    bereicheFor(s, 'probe').forEach(function (b) {
+      var sc = scoreBereich('probe', b, function (c) { var f = e.r[kk(b, c.id)]; return f == null ? null : (S.mode === 'tap' ? npOf(f) : f); });
+      if (sc.val != null) h += '<span>' + esc(B[b].s) + ' ' + finalNP(sc.val) + '</span>';
+    });
+    if (e.note.trim()) h += '<span>✎</span>';
+    return h || '<span>—</span>';
+  }
+  function probeCounts() {
+    var r = perRange(), m = {};
+    S.entries.forEach(function (e) { if (e.abs || !inPer(e.d, r)) return; for (var k in e.r) { m[e.sid] = (m[e.sid] || 0) + 1; break; } });
+    return m;
+  }
+  function probeStuHTML(s, cnt) {
+    var open = s.id === openSid;
+    var h = '<div class="stu' + (open ? ' open' : '') + '" data-sid="' + esc(s.id) + '"><button type="button" class="sh" data-a="open"><span class="nm">' + esc(s.name) + '</span>' +
+      '<span class="chs">' + entryChips(s) + '</span><span class="cnt' + (cnt ? '' : ' zero') + '" title="Proben-Einträge im Zeitraum">' + cnt + '</span></button>';
+    if (open) {
+      var e = entryOf(s.id, S.date);
+      h += '<div class="ed">' + (e && e.abs ? '<p class="absnote">Als fehlend markiert – diese Probe zählt nicht.</p>' : '');
+      var list = bereicheFor(s, 'probe');
+      if (!list.length) h += '<p class="note">Für diese Person sind keine Proben-Kriterien gewählt. Bitte Aufgaben und Kriterien in der Einrichtung festlegen.</p>';
+      list.forEach(function (b) {
+        h += '<div class="bh">' + esc(B[b].n) + '</div>';
+        activeOf(S, 'probe', b).forEach(function (c) { h += critRowHTML('probe', b, c, e ? e.r[kk(b, c.id)] : null); });
+      });
+      h += '<div class="eact"><button type="button" data-a="abs" class="' + (e && e.abs ? 'on' : '') + '">fehlt</button>' +
+        '<input type="text" data-a="note" maxlength="500" placeholder="Bemerkung (optional)" value="' + esc(e ? e.note : '') + '">' +
+        '<button type="button" data-a="clr">Eintrag löschen</button><button type="button" class="primary" data-a="nextstu">Nächste/r ▶</button></div></div>';
+    }
+    return h + '</div>';
+  }
+  function renderProbe() {
+    var cnt = probeCounts();
+    var h = '<div class="sbox"><div class="erfhead"><label>Probe am <input type="date" id="edate" value="' + esc(S.date) + '"></label><button type="button" data-a="today">Heute</button>' +
+      '<span class="note">Zahl rechts = Proben-Einträge im Zeitraum <b>' + esc(perLabel()) + '</b> (änderbar unter „Auswertung“).</span></div></div>';
+    if (!S.students.length) h += '<div class="sbox"><p>Noch keine Teilnehmenden angelegt.</p><button type="button" class="primary" data-a="gosetup">Teilnehmende anlegen</button></div>';
+    else h += '<div class="slist">' + S.students.map(function (s) { return probeStuHTML(s, cnt[s.id] || 0); }).join('') + '</div>';
+    els.probe.innerHTML = h;
+  }
+
+  /* ---------- Premiere ---------- */
+  function premRec(sid, create) { var r = S.prem[sid]; if (!r && create) r = S.prem[sid] = { r:{}, note:'' }; return r; }
+  function premChips(s) {
+    var res = premResult(s), h = '<span>' + esc(tasksLabel(s)) + '</span>';
+    if (res.val == null) return h + '<span>noch nicht bewertet</span>';
+    if (res.open) h += '<span>noch ' + res.open + ' offen</span>';
+    h += '<span class="' + (res.done ? 'ok' : '') + '">' + res.np + ' NP</span>';
+    return h;
+  }
+  function premStuHTML(s) {
+    var open = s.id === openSid, res = premResult(s);
+    var h = '<div class="stu' + (open ? ' open' : '') + '" data-sid="' + esc(s.id) + '"><button type="button" class="sh" data-a="open"><span class="nm">' + esc(s.name) + '</span>' +
+      '<span class="chs">' + premChips(s) + '</span></button>';
+    if (open) {
+      var rec = premRec(s.id) || { r:{}, note:'' };
+      h += '<div class="ed">';
+      if (!res.parts.length) h += '<p class="note">Keine Aufgaben mit Premiere-Kriterien zugeordnet. Bitte in der Einrichtung festlegen.</p>';
+      res.parts.forEach(function (p) {
+        h += '<div class="bh">' + esc(B[p.bid].n) + '<span>Anteil ' + fmt(p.share, 0) + ' % · ' + (p.sc.val == null ? '–' : valText(p.sc.val) + ' → ' + finalNP(p.sc.val) + ' NP') + '</span></div>';
+        p.sc.cs.forEach(function (c) { h += critRowHTML('prem', p.bid, c, rec.r[kk(p.bid, c.id)]); });
+      });
+      h += '<div class="resline"><b>Premiere-Ergebnis:</b> ' + npText(res.np) + (res.open ? ' · <span class="bad">noch ' + res.open + ' Kriterium/Kriterien offen</span>' : '') + '</div>' +
+        '<div class="eact"><textarea data-a="pnote" maxlength="2000" rows="2" placeholder="Rückmeldung zur Premiere (erscheint im Bogen)">' + esc(rec.note) + '</textarea>' +
+        '<button type="button" data-a="pprint">Bogen drucken</button><button type="button" class="primary" data-a="nextstu">Nächste/r ▶</button></div></div>';
+    }
+    return h + '</div>';
+  }
+  function renderPrem() {
+    var h = '<div class="sbox"><div class="row"><b>Premiere' + (S.stueck ? ': ' + esc(S.stueck) : '') + (S.premDate ? ' am ' + de(S.premDate) : '') + '</b>' +
+      (S.mode === 'tap' ? '<label class="inl"><input type="checkbox" id="longdesc"' + (longDesc ? ' checked' : '') + '> Stufenbeschreibungen ausführlich anzeigen</label>' : '') +
+      '<span class="note">Bewertung als Klausurersatz. Bereichsergebnisse werden nach den Aufgaben-Anteilen verrechnet.</span></div></div>';
+    if (!S.students.length) h += '<div class="sbox"><p>Noch keine Teilnehmenden angelegt.</p><button type="button" class="primary" data-a="gosetup">Teilnehmende anlegen</button></div>';
+    else h += '<div class="slist">' + S.students.map(premStuHTML).join('') + '</div>';
+    els.prem.innerHTML = h;
+  }
+
+  function listView(occ) { return occ === 'probe' ? els.probe : els.prem; }
+  function refreshStu(occ, sid, light) {
+    var root = listView(occ), el = root.querySelector('.stu[data-sid="' + sid + '"]'), s = stuById(sid);
+    if (!el || !s) return;
+    if (light) { el.querySelector('.chs').innerHTML = occ === 'probe' ? entryChips(s) : premChips(s); return; }
+    var tmp = document.createElement('div');
+    tmp.innerHTML = occ === 'probe' ? probeStuHTML(s, probeCounts()[sid] || 0) : premStuHTML(s);
+    el.parentNode.replaceChild(tmp.firstChild, el);
+  }
+  function listClick(occ, e) {
+    var b = e.target.closest('[data-a]'); if (!b) return;
+    var a = b.dataset.a;
+    if (a === 'today') { S.date = todayISO(); save(); renderProbe(); return; }
+    if (a === 'gosetup') { setView('setup'); return; }
+    var box = b.closest('.stu'); if (!box) return;
+    var sid = box.dataset.sid;
+    if (a === 'open') {
+      var prev = openSid; openSid = openSid === sid ? null : sid;
+      if (prev && prev !== sid) refreshStu(occ, prev);
+      refreshStu(occ, sid); return;
+    }
+    if (a === 'nextstu') {
+      var i = -1; S.students.forEach(function (s, j) { if (s.id === sid) i = j; });
+      var nx = S.students[i + 1]; openSid = nx ? nx.id : null;
+      refreshStu(occ, sid);
+      if (nx) { refreshStu(occ, nx.id); var el = listView(occ).querySelector('.stu[data-sid="' + nx.id + '"]'); if (el && el.scrollIntoView) el.scrollIntoView({ block:'start' }); window.scrollBy(0, -64); }
+      return;
+    }
+    if (a === 'pprint') { printPremBogen([sid], false); return; }
+    if (a === 'abs' || a === 'clr') {
+      var en = entryOf(sid, S.date);
+      if (a === 'abs') { var e2 = getEntry(sid, S.date); e2.abs = !e2.abs; pruneEntry(e2); }
+      else { if (!en || !confirm('Eintrag vom ' + de(S.date) + ' löschen?')) return; S.entries = S.entries.filter(function (x) { return x !== en; }); }
+      save(); refreshStu(occ, sid); return;
+    }
+    if (a !== 'lv' && a !== 'st' && a !== 'pst') return;
+    var bid = b.dataset.b, c = critObj(S, b.dataset.c), key = kk(bid, c.id);
+    var store = occ === 'probe' ? getEntry(sid, S.date) : premRec(sid, true);
+    var nv = newValue(occ, bid, c, store.r[key], a, +b.dataset.k, +b.dataset.d);
+    if (nv == null) delete store.r[key]; else store.r[key] = Math.max(0, Math.min(1, nv));
+    if (occ === 'probe') pruneEntry(store);
+    save(); refreshStu(occ, sid);
+  }
+  function listInput(occ, e) {
+    var t = e.target;
+    if (t.id === 'edate') { if (isISO(t.value)) { S.date = t.value; save(); renderProbe(); } return; }
+    if (t.id === 'longdesc') { longDesc = t.checked; renderPrem(); return; }
+    var box = t.closest && t.closest('.stu'); if (!box) return;
+    var sid = box.dataset.sid;
+    if (t.dataset.a === 'note') { var en = getEntry(sid, S.date); en.note = t.value.slice(0, 500); pruneEntry(en); save(); refreshStu(occ, sid, true); }
+    else if (t.dataset.a === 'pnote') { premRec(sid, true).note = t.value.slice(0, 2000); save(); }
+    else if (t.dataset.a === 'pv') {
+      var bid = t.dataset.b, c = critObj(S, t.dataset.c), m = Wc(occ, bid, c), key = kk(bid, c.id);
+      var store = occ === 'probe' ? getEntry(sid, S.date) : premRec(sid, true);
+      if (t.value.trim() === '') delete store.r[key];
+      else { var v = Math.max(0, Math.min(m, num(t.value, 0))); store.r[key] = m ? v / m : 0; }
+      if (occ === 'probe') pruneEntry(store);
+      save(); refreshStu(occ, sid, true);
+    }
+  }
+
+  /* ---------- Auswertung ---------- */
+  function ovTable(clickable) {
+    var r = perRange();
+    var h = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Aufgaben</th><th>Proben-<br>Einträge</th><th>Proben</th>';
+    TASKB.forEach(function (b) { if (S.students.some(function (s) { return s.tasks[b] != null; }) && activeOf(S, 'prem', b).length) h += '<th>Premiere<br>' + esc(B[b].s) + '</th>'; });
+    h += '<th>Premiere<br>gesamt</th>' + (S.ges.on ? '<th>Gesamt<br>(' + fmt(S.ges.prem, 0) + ' % Premiere)</th>' : '') + '</tr></thead><tbody>';
+    S.students.forEach(function (s, n) {
+      var po = probeResult(s, r), pr = premResult(s), g = gesResult(pr, po);
+      h += '<tr' + (clickable ? ' data-sid="' + esc(s.id) + '"' : '') + '><td>' + (n + 1) + '</td><td class="l">' + esc(s.name) + '</td><td class="l">' + esc(tasksLabel(s)) + '</td>' +
+        '<td class="' + (po.n ? '' : 'few') + '">' + po.n + (po.abs ? ' (' + po.abs + ' f)' : '') + '</td><td><b>' + (po.np == null ? '' : po.np) + '</b></td>';
+      TASKB.forEach(function (b) {
+        if (!(S.students.some(function (x) { return x.tasks[b] != null; }) && activeOf(S, 'prem', b).length)) return;
+        var p = null; pr.parts.forEach(function (x) { if (x.bid === b) p = x; });
+        h += '<td>' + (p && p.sc.val != null ? finalNP(p.sc.val) + (p.sc.open ? '*' : '') : '') + '</td>';
+      });
+      h += '<td><b>' + (pr.np == null ? '' : pr.np + (pr.open ? '*' : '')) + '</b></td>' + (S.ges.on ? '<td><b>' + (g && g.np != null ? g.np + (g.partial ? '*' : '') : '') + '</b></td>' : '') + '</tr>';
+    });
+    return h + '</tbody></table></div>';
+  }
+  function renderAusw() {
+    var p = S.per;
+    var h = '<div class="sbox"><h3>Auswertung ' + esc(courseName(S)) + '</h3><div class="row"><label class="row"><b>Proben-Zeitraum</b> <select id="per">' +
+      PERIODS.map(function (x) { return '<option value="' + x.id + '"' + (x.id === p.p ? ' selected' : '') + '>' + x.n + '</option>'; }).join('') + '</select></label>';
+    if (p.p === 'custom') h += '<label class="row">von <input type="date" id="pfrom" value="' + esc(p.from) + '"></label><label class="row">bis <input type="date" id="pto" value="' + esc(p.to) + '"></label>';
+    h += '<b>' + esc(perLabel()) + '</b></div><div class="row" style="margin-top:10px">' +
+      '<button type="button" data-a="pov">Übersicht drucken</button><button type="button" data-a="pall">Alle Einzelberichte</button>' +
+      '<button type="button" data-a="ppremall">Alle Premiere-Bögen</button><button type="button" data-a="ppremblank">Leere Premiere-Bögen</button>' +
+      '<button type="button" data-a="pblank">Leere Probenliste</button><button type="button" data-a="praster">Kriterienraster</button>' +
+      '<button type="button" data-a="csv">Tabelle (CSV)</button><button type="button" data-a="exp">Sicherung speichern</button></div></div>';
+    if (!S.students.length) h += '<div class="sbox"><p>Noch keine Teilnehmenden vorhanden.</p></div>';
+    else h += '<div class="sbox">' + ovTable(true) + '<p class="legend">Alle Ergebnisse in Notenpunkten. * = unvollständig bewertet. Gelb: keine Proben-Einträge im Zeitraum. Zeile antippen öffnet den Einzelbericht. ' + esc(legend()) + '</p></div>';
+    els.ausw.innerHTML = h;
+  }
+  function partsTable(occ, parts) {
+    var h = '<table class="ovt"><thead><tr><th>Bereich / Kriterium</th><th>' + (S.mode === 'tap' ? 'Gewichtung' : 'Höchstpunkte') + '</th><th>' + (occ === 'probe' ? 'Durchschnitt' : 'Bewertung') + '</th></tr></thead><tbody>';
+    parts.forEach(function (p) {
+      var sw = sum(p.sc.cs.map(function (c) { return Wc(occ, p.bid, c); })) || 1;
+      h += '<tr><td class="l"><b>' + esc(B[p.bid].n) + '</b> (Anteil ' + fmt(p.share, 0) + ' %)</td><td></td><td><b>' + (p.sc.val == null ? '–' : finalNP(p.sc.val) + ' NP') + '</b></td></tr>';
+      p.sc.cs.forEach(function (c) {
+        var v = p.sc.per[c.id];
+        h += '<tr><td class="l">&nbsp;&nbsp;' + esc(c.n) + '</td><td>' + (S.mode === 'tap' ? fmt(Wc(occ, p.bid, c) / sw * 100, 0) + ' %' : fmt(Wc(occ, p.bid, c))) + '</td><td>' +
+          (v == null ? '–' : S.mode === 'tap' ? fmt(v, occ === 'probe' ? 1 : 0) + ' NP' : fmt(v * Wc(occ, p.bid, c), 1) + ' P') + '</td></tr>';
+      });
+    });
+    return h + '</tbody></table>';
+  }
+  function reportHTML(sid, forPrint) {
+    var s = stuById(sid); if (!s) return '';
+    var po = probeResult(s), pr = premResult(s), g = gesResult(pr, po);
+    var h = '<h1>' + esc(s.name) + ' – ' + esc(courseName(S)) + '</h1><p class="sub">Aufgaben: ' + esc(tasksLabel(s)) + ' · Proben-Zeitraum: ' + esc(perLabel()) + (S.premDate ? ' · Premiere: ' + de(S.premDate) : '') + '</p>';
+    h += '<div class="res"><span>Proben: <b class="big2">' + npText(po.np) + '</b></span><span>Premiere: <b class="big2">' + npText(pr.np) + '</b>' + (pr.open ? ' (unvollständig)' : '') + '</span>' +
+      (g ? '<span>Gesamt: <b class="big2">' + npText(g.np) + '</b>' + (g.partial ? ' (nur ein Teil vorhanden)' : '') + '</span>' : '') + '</div>';
+    h += '<h2>Premiere (Klausurersatz)</h2>' + (pr.parts.length ? partsTable('prem', pr.parts) : '<p>Keine Premiere-Kriterien zugeordnet.</p>') + (pr.note ? '<div class="cmtbox">' + esc(pr.note) + '</div>' : '');
+    h += '<h2>Proben (' + po.n + ' Einträge' + (po.abs ? ', ' + po.abs + '× gefehlt' : '') + ')</h2>' + (po.parts.length ? partsTable('probe', po.parts) : '<p>Keine Proben-Kriterien zugeordnet.</p>');
+    var notes = po.entries.filter(function (e) { return e.note.trim() || e.abs; });
+    if (notes.length) {
+      h += '<table class="ovt" style="margin-top:6px"><thead><tr><th>Datum</th><th>Bemerkung</th></tr></thead><tbody>' +
+        notes.map(function (e) { return '<tr' + (forPrint ? '' : ' data-ed="' + esc(e.d) + '"') + '><td>' + de(e.d) + '</td><td class="l">' + (e.abs ? 'fehlt. ' : '') + esc(e.note) + '</td></tr>'; }).join('') + '</tbody></table>';
+    }
+    return h + '<p class="legend">' + esc(legend()) + '</p>';
+  }
+  function renderEinzel() {
+    els.einzel.innerHTML = '<div class="sbox"><div class="row"><button type="button" data-a="back">◀ Zurück zur Übersicht</button><button type="button" class="primary" data-a="prep">Einzelbericht drucken</button>' +
+      '<button type="button" data-a="pprem">Premiere-Bogen drucken</button></div></div><div class="sbox">' + reportHTML(einzelSid) + '</div>';
+  }
+
+  /* ================= Druck & Export ================= */
+  function doPrint(html) { els.print.innerHTML = html; setTimeout(function () { window.print(); }, 80); }
+  function rasterHTML(occ, bid, vals, fill) {
+    var cs = activeOf(S, occ, bid), sw = sum(cs.map(function (c) { return Wc(occ, bid, c); })) || 1;
+    var h = '<table class="raster' + (fill ? ' fill' : '') + '"><colgroup><col style="width:50mm"><col><col><col><col><col><col style="width:16mm"></colgroup><thead><tr><th>Kriterium</th>';
+    LV_NAMES.forEach(function (n, k) { h += '<th>' + n + '<br><span style="font-weight:normal">' + (S.mode === 'tap' ? NP_LV[k].hi + '–' + NP_LV[k].lo + ' NP' : '') + '</span></th>'; });
+    h += '<th>' + (S.mode === 'tap' ? 'NP' : 'Punkte') + '</th></tr></thead><tbody>';
+    cs.forEach(function (c, i) {
+      var f = vals ? vals[kk(bid, c.id)] : null, k = f == null ? -1 : levelOf(npOf(f));
+      if (S.mode === 'pt' && f != null) k = levelOf(abiNP(f * 100));
+      h += '<tr><td class="cn">' + (i + 1) + ' ' + esc(c.n) + '<br><span style="font-weight:normal">' + (S.mode === 'tap' ? 'Gewichtung ' + fmt(Wc(occ, bid, c) / sw * 100, 0) + ' %' : 'max. ' + fmt(Wc(occ, bid, c)) + ' P') + '</span></td>' +
+        c.d.map(function (t, j) { return '<td' + (j === k ? ' class="hit"' : '') + '>' + esc(t) + '</td>'; }).join('') +
+        '<td class="pt">' + (f == null ? '' : valLabel(f, occ, bid, c)) + '</td></tr>';
+    });
+    return h + '</tbody></table>';
+  }
+  function printPremBogen(sids, blank) {
+    var h = '';
+    if (blank) {
+      TASKB.forEach(function (b) {
+        if (!activeOf(S, 'prem', b).length) return;
+        if (!S.students.some(function (s) { return s.tasks[b] != null; }) && S.students.length) return;
+        h += '<section class="pg"><h1>Bewertung Premiere – ' + esc(B[b].n) + '</h1><div class="hd"><span>Name: </span><span>' + esc(courseName(S)) + '</span><span>Datum: ' + (S.premDate ? de(S.premDate) : '') + '</span></div>' +
+          rasterHTML('prem', b, null, activeOf(S, 'prem', b).length <= 8) + '<div class="hd" style="margin-top:2mm"><span>Bereichsergebnis: ______ NP</span></div><div class="cmtbox">Rückmeldung:</div><p class="legend">' + esc(legend()) + '</p></section>';
+      });
+    } else {
+      sids.forEach(function (sid) {
+        var s = stuById(sid); if (!s) return;
+        var res = premResult(s), rec = S.prem[sid] || { r:{}, note:'' };
+        h += '<section class="pg"><h1>Bewertung Premiere' + (S.stueck ? ' – ' + esc(S.stueck) : '') + '</h1><div class="hd"><span>Name: <b>' + esc(s.name) + '</b></span><span>' + esc(S.name) + '</span><span>Datum: ' + (S.premDate ? de(S.premDate) : '') + '</span><span>Aufgaben: ' + esc(tasksLabel(s)) + '</span></div>';
+        res.parts.forEach(function (p) {
+          h += '<h2>' + esc(B[p.bid].n) + ' – Anteil ' + fmt(p.share, 0) + ' % – Ergebnis: ' + (p.sc.val == null ? '–' : finalNP(p.sc.val) + ' NP') + '</h2>' + rasterHTML('prem', p.bid, rec.r, res.parts.length === 1 && p.sc.cs.length <= 8);
+        });
+        h += '<div class="res"><span>Premiere-Ergebnis (Klausurersatz): <b class="big2">' + npText(res.np) + '</b>' + (res.open ? ' – unvollständig' : '') + '</span></div>' +
+          (rec.note ? '<div class="cmtbox">' + esc(rec.note) + '</div>' : '') + '<p class="legend">' + esc(legend()) + '</p></section>';
+      });
+    }
+    if (!h) { alert('Keine passenden Bögen vorhanden. Bitte Aufgaben und Premiere-Kriterien festlegen.'); return; }
+    doPrint(h);
+  }
+  function printBlankProbe() {
+    var h = '<section class="pg"><h1>Probenliste</h1><p class="sub">' + esc(courseName(S)) + ' · Datum: ____________________ · Szene/Inhalt: ______________________________</p>' +
+      '<table class="blank"><thead><tr><th style="width:8mm">Nr.</th><th style="width:44mm">Name</th><th style="width:34mm">Aufgaben</th>';
+    var cols = [];
+    BIDS.forEach(function (b) { activeOf(S, 'probe', b).forEach(function (c) { if (b === 'probe' || b === 'spiel') cols.push(c.s); }); });
+    cols.forEach(function (c) { h += '<th>' + esc(c) + '</th>'; });
+    h += '<th style="width:10mm">fehlt</th><th style="width:55mm">Bemerkung</th></tr></thead><tbody>';
+    var list = S.students.length ? S.students : new Array(21).join(',').split(',').map(function () { return { name:'', tasks:{} }; });
+    list.forEach(function (s, i) { h += '<tr><td>' + (i + 1) + '</td><td>' + esc(s.name) + '</td><td>' + esc(s.tasks ? tasksLabel(s) : '') + '</td>' + cols.map(function () { return '<td></td>'; }).join('') + '<td></td><td></td></tr>'; });
+    doPrint(h + '</tbody></table><p class="legend">Spalten: Probenarbeit und Schauspiel (Proben-Kriterien). Eintrag in Notenpunkten 15–0.</p></section>');
+  }
+  function printRaster() {
+    var h = '';
+    ['prem', 'probe'].forEach(function (occ) {
+      BIDS.forEach(function (b) {
+        if (!cfgOf(S, occ, b) || !activeOf(S, occ, b).length) return;
+        if (b !== 'probe' && S.students.length && !S.students.some(function (s) { return s.tasks[b] != null; })) return;
+        h += '<section class="pg"><h1>Kriterien ' + OCC[occ] + ' – ' + esc(B[b].n) + '</h1><p class="sub">' + esc(courseName(S)) + '</p>' + rasterHTML(occ, b, null, activeOf(S, occ, b).length <= 8) + '<p class="legend">' + esc(legend()) + '</p></section>';
+      });
+    });
+    doPrint(h);
+  }
+  function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function download(name, text, type) {
+    var blob = new Blob([text], { type:type });
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) { window.navigator.msSaveOrOpenBlob(blob, name); return; }
+    function viaLink() {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    }
+    // iPad/iPhone: über „Teilen“ → „In Dateien sichern“, weil Downloads dort oft nicht ankommen
+    if (isIOS() && window.File && navigator.canShare && navigator.share) {
+      try {
+        var file = new File([blob], name, { type:type });
+        if (navigator.canShare({ files:[file] })) {
+          navigator.share({ files:[file], title:name }).catch(function (err) { if (!err || err.name !== 'AbortError') viaLink(); });
+          return;
+        }
+      } catch (e) {}
+    }
+    viaLink();
+  }
+  function stamp() { return todayISO(); }
+  function fileBase() { return 'theaterkurs_' + S.name.replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g, '_'); }
+  function exportJSON() { exportBackup('theaterkurs_sicherung_' + stamp() + '.json', JSON.stringify(DB, null, 1)); }
+  function exportPlain() {
+    if (!confirm('Unverschlüsselte Sicherung speichern? Diese Datei ist ohne Passwort lesbar. Bitte nur auf einem sicheren Speicher ablegen.')) return;
+    download('theaterkurs_sicherung_' + stamp() + '_unverschluesselt.json', JSON.stringify(DB, null, 1), 'application/json');
+  }
+  function csvCell(x) { var t = String(x == null ? '' : x); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }
+  function exportCSV() {
+    var r = perRange(), rows = [['Kurs', courseName(S), 'Proben-Zeitraum', perLabel()]];
+    var head = ['Nr', 'Name', 'Aufgaben', 'Proben-Einträge', 'gefehlt', 'Proben NP'];
+    TASKB.forEach(function (b) { if (activeOf(S, 'prem', b).length) head.push('Premiere ' + B[b].s + ' NP'); });
+    head.push('Premiere NP', 'Premiere vollständig'); if (S.ges.on) head.push('Gesamt NP'); head.push('Rückmeldung Premiere');
+    rows.push(head);
+    S.students.forEach(function (s, i) {
+      var po = probeResult(s, r), pr = premResult(s), g = gesResult(pr, po);
+      var row = [i + 1, s.name, tasksLabel(s), po.n, po.abs, po.np == null ? '' : po.np];
+      TASKB.forEach(function (b) {
+        if (!activeOf(S, 'prem', b).length) return;
+        var p = null; pr.parts.forEach(function (x) { if (x.bid === b) p = x; });
+        row.push(p && p.sc.val != null ? finalNP(p.sc.val) : '');
+      });
+      row.push(pr.np == null ? '' : pr.np, pr.done ? 'ja' : 'nein'); if (S.ges.on) row.push(g && g.np != null ? g.np : ''); row.push(pr.note);
+      rows.push(row);
+    });
+    download(fileBase() + '_auswertung_' + stamp() + '.csv', '﻿' + rows.map(function (x) { return x.map(csvCell).join(';'); }).join('\r\n'), 'text/csv;charset=utf-8');
+  }
+
+  /* ================= Einrichtung ================= */
+  function chip(a, v, on, t, sm, cls) { return '<button type="button" class="chip' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + t + (sm ? '<small>' + sm + '</small>' : '') + '</button>'; }
+  function renderSetup() {
+    var tap = S.mode === 'tap';
+    var h = '<div class="sbox"><h2>Theaterkurs bewerten – Einrichtung</h2>' +
+      '<p>Legen Sie Kurs, Teilnehmende und Aufgaben fest und wählen Sie für jeden Bereich die Kriterien für Proben und Premiere. Alles lässt sich später ändern.</p>' +
+      '<p class="priv"><b>Datenschutz:</b> Das Programm arbeitet vollständig offline. Alle Eingaben bleiben ausschließlich in diesem Browser auf diesem Gerät.</p>' +
+      '<div class="row"><button type="button" data-a="newc">+ Neuen Kurs / neue Produktion anlegen</button>' + (DB.courses.length > 1 ? '<button type="button" class="danger" data-a="delcourse">Diesen Kurs löschen</button>' : '') +
+      '<button type="button" data-a="load">Sicherung laden</button></div></div>';
+
+    h += '<div class="sbox"><h3><span class="no">1</span> Kurs und Produktion</h3><div class="row2">' +
+      '<label>Kurs<input type="text" data-s="name" maxlength="60" value="' + esc(S.name) + '" placeholder="z. B. Theater Q12"></label>' +
+      '<label>Stück<input type="text" data-s="stueck" maxlength="100" value="' + esc(S.stueck) + '" placeholder="Titel der Inszenierung"></label>' +
+      '<label>Premiere am<input type="date" data-s="premDate" value="' + esc(S.premDate) + '"></label></div></div>';
+
+    h += '<div class="sbox" id="sl"><h3><span class="no">2</span> Teilnehmende und Aufgaben <small>(' + S.students.length + ' Personen)</small></h3>' +
+      '<p class="note">Namen einfügen, einer pro Zeile. Neue Personen erhalten die Aufgabe Schauspiel. Aufgaben antippen zum An- und Abwählen; bei mehreren Aufgaben die Anteile für die Premiere-Note festlegen.</p>' +
+      '<textarea id="names" rows="3" style="width:100%" placeholder="Anna B.&#10;Ben K.&#10;…"></textarea>' +
+      '<div class="row" style="margin-top:8px"><button type="button" class="primary" data-a="addnames">Namen hinzufügen</button><button type="button" data-a="sortnames">Alphabetisch sortieren</button></div><div class="tl">';
+    S.students.forEach(function (s) {
+      var ts = tasksOf(s);
+      h += '<div class="tc"><div class="top"><input type="text" data-sn="' + esc(s.id) + '" maxlength="80" value="' + esc(s.name) + '" aria-label="Name"><button type="button" class="mini" data-a="delstu" data-v="' + esc(s.id) + '">entfernen</button></div><div class="tasks">';
+      TASKB.forEach(function (b) { h += chip('task', esc(s.id) + '|' + b, s.tasks[b] != null, B[b].s, '', 'sm'); });
+      if (ts.length > 1) ts.forEach(function (b) { h += '<label class="share">' + esc(B[b].s) + ' <input type="text" inputmode="decimal" data-share="' + esc(s.id) + '|' + b + '" value="' + fmt(s.tasks[b]) + '"> %</label>'; });
+      h += '</div></div>';
+    });
+    h += '</div></div>';
+
+    var isP = B[curB].probeOnly; if (isP) curOcc = 'probe';
+    var cfg = cfgOf(S, curOcc, curB), cs = critsOf(S, curB), act = activeOf(S, curOcc, curB);
+    h += '<div class="sbox"><h3><span class="no">3</span> Kriterien und Gewichtung je Bereich</h3><p class="lbl">Bereich</p><div class="chips">';
+    BIDS.forEach(function (b) {
+      var n = (cfgOf(S, 'probe', b) ? activeOf(S, 'probe', b).length : 0), m = (cfgOf(S, 'prem', b) ? activeOf(S, 'prem', b).length : 0);
+      h += chip('bsel', b, b === curB, B[b].n, B[b].probeOnly ? 'Proben: ' + n + ' Kriterien' : 'Proben ' + n + ' · Premiere ' + m);
+    });
+    h += '</div><p class="lbl">Bewertungsanlass</p><div class="chips">' + chip('occ', 'probe', curOcc === 'probe', 'Proben', 'laufend, mehrere Einträge') +
+      (isP ? '' : chip('occ', 'prem', curOcc === 'prem', 'Premiere', 'einmalig, Klausurersatz')) + '</div>';
+    h += '<h4>' + esc(B[curB].n) + ' – ' + OCC[curOcc] + ' (' + act.length + ' gewählt)</h4><div class="clist">';
+    var lastG = null;
+    cs.forEach(function (c) {
+      var on = cfg.sel.indexOf(c.id) >= 0;
+      h += '<div class="ckrow"><label class="ck' + (on ? ' on' : '') + '"><input type="checkbox" data-a="crit" data-v="' + esc(c.id) + '"' + (on ? ' checked' : '') + '>' +
+        '<span><b>' + esc(c.n) + '</b>' + (c.g ? ' <i class="gtag">' + esc(c.g) + '</i>' : '') + '<small>' + esc(c.d[0]) + '</small></span></label>' +
+        (c.custom ? '<button type="button" class="mini" data-a="delc" data-v="' + esc(c.id) + '">entfernen</button>' : '') + '</div>';
+      lastG = c.g;
+    });
+    h += '</div><div class="addc"><input type="text" id="cname" maxlength="60" placeholder="Eigenes Kriterium für ' + esc(B[curB].n) + '"><button type="button" data-a="addc">+ Kriterium hinzufügen</button></div>';
+    h += '<p class="lbl">Gewichtung</p><div class="chips">';
+    PRESETS.forEach(function (p) { h += chip('preset', p.id, p.id === cfg.preset, p.n, p.t); });
+    h += '</div><table class="wt"><tr><th>Kriterium</th><th class="c">' + (tap ? 'Gewichtung in %' : 'Höchstpunkte') + '</th><th class="c">Anteil</th></tr>';
+    act.forEach(function (c) {
+      h += '<tr><td>' + esc(c.n) + '</td><td class="c"><input type="number" inputmode="numeric" min="' + (tap ? 0 : 1) + '" step="1" data-w="' + esc(c.id) + '" value="' + (cfg.weights[c.id] || 0) + '"></td><td class="c" data-pc="' + esc(c.id) + '"></td></tr>';
+    });
+    h += '<tr class="wsr"><td>Summe</td><td class="c" id="wsum"></td><td class="c">100 %</td></tr></table>';
+    h += '<details class="txed" id="txed"' + (txOpen ? ' open' : '') + '><summary>Texte der Kriterien in diesem Bereich bearbeiten</summary><p class="note">Änderungen gelten für Proben und Premiere.</p>';
+    cs.forEach(function (c) {
+      var id = esc(c.id);
+      h += '<div class="txc"><label>Name des Kriteriums<input type="text" maxlength="80" data-tx="' + id + '" data-ti="n" value="' + esc(c.n) + '"></label>';
+      LV_NAMES.forEach(function (ln, k) { h += '<label>' + ln + '<textarea rows="2" maxlength="200" data-tx="' + id + '" data-ti="' + k + '">' + esc(c.d[k]) + '</textarea></label>'; });
+      if (S.texts[c.id]) h += '<button type="button" data-a="txreset" data-v="' + id + '">Originaltexte wiederherstellen</button>';
+      h += '</div>';
+    });
+    h += '</details></div>';
+
+    h += '<div class="sbox"><h3><span class="no">4</span> Eingabe und Notenberechnung</h3><p class="note">Notenskala: <b>15–0 Notenpunkte</b>.</p>' +
+      '<p class="lbl">a) Eingabe pro Kriterium</p><div class="chips">' +
+      chip('mode', 'tap', tap, 'Stufe antippen', 'sehr gut 15–13 … mangelhaft/ungenügend 3–0, mit − / + fein einstellen.') +
+      chip('mode', 'pt', !tap, 'Punkteeintrag', 'Punkte pro Kriterium; Umrechnung nach Abiturschlüssel.') + '</div>';
+    if (!tap) {
+      var opt = function (cur) { var o = TOTALS.slice(); if (o.indexOf(cur) < 0) { o.push(cur); o.sort(function (a, b) { return a - b; }); } return o.map(function (t) { return '<option value="' + t + '"' + (t === cur ? ' selected' : '') + '>' + t + ' Punkte</option>'; }).join(''); };
+      h += '<div class="row2" style="margin-top:10px"><label>Höchstpunkte je Bereich – Proben<select data-a="totP">' + opt(S.totP) + '</select></label>' +
+        '<label>Höchstpunkte je Bereich – Premiere<select data-a="totA">' + opt(S.totA) + '</select></label></div>' +
+        '<label class="inl"><input type="checkbox" data-a="half"' + (S.half ? ' checked' : '') + '> halbe Punkte erlauben</label>' +
+        '<p class="note">Abiturschlüssel (KMK): 15 NP ab 95 %, 14 ab 90 %, 13 ab 85 %, 12 ab 80 %, 11 ab 75 %, 10 ab 70 %, 9 ab 65 %, 8 ab 60 %, 7 ab 55 %, 6 ab 50 %, 5 ab 45 %, 4 ab 40 %, 3 ab 33 %, 2 ab 27 %, 1 ab 20 %, 0 darunter. Ohne Rundung.</p>' +
+        '<div class="ktw"><table class="kt"><tr><th>NP</th><th>ab %</th><th>ab Punkten (Proben, ' + S.totP + ')</th><th>ab Punkten (Premiere, ' + S.totA + ')</th></tr>' +
+        [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(function (n) { return '<tr><td>' + n + '</td><td>' + ABI[n] + ' %</td><td>' + fmt(ceilS(S.totP * ABI[n] / 100, stepOf())) + '</td><td>' + fmt(ceilS(S.totA * ABI[n] / 100, stepOf())) + '</td></tr>'; }).join('') + '</table></div>';
+    }
+    h += '<p class="lbl">b) Proben-Ergebnis</p><div class="inl">Anteil „Probenarbeit (alle)“ am Proben-Ergebnis <input type="text" inputmode="decimal" data-a="probeShare" value="' + fmt(S.probeShare) + '"> %' +
+      '<span class="note">(der Rest verteilt sich auf die Aufgabenbereiche)</span></div><div class="chips">' +
+      chip('timew', 'equal', S.timeW === 'equal', 'Alle Proben zählen gleich', 'Einfacher Durchschnitt.') +
+      chip('timew', 'recent', S.timeW === 'recent', 'Spätere Proben zählen mehr', 'Berücksichtigt die Entwicklung (Gewicht 1, 2, 3 …).') + '</div>' +
+      '<p class="lbl">c) Gesamtergebnis (optional)</p><label class="inl"><input type="checkbox" data-a="geson"' + (S.ges.on ? ' checked' : '') + '> Gesamtergebnis aus Premiere und Proben berechnen</label>' +
+      (S.ges.on ? '<div class="inl">Anteil Premiere <input type="text" inputmode="decimal" data-a="gesprem" value="' + fmt(S.ges.prem) + '"> % (Proben: Rest)</div>' : '') +
+      '<p class="lbl">d) Halbjahreswechsel</p><div class="inl">2. Halbjahr beginnt am <input type="text" data-a="hj" maxlength="6" value="' + esc(S.hj.split('-').reverse().join('.') + '.') + '"> <span class="note">(TT.MM., für die Zeitraumauswahl)</span></div></div>';
+
+    h += '<div class="sbox done"><button type="button" class="big primary" data-a="done">Fertig – zu den Proben</button></div>';
+    h += '<div class="sbox"><h3>Daten auf diesem Gerät</h3><p>' + DB.courses.length + ' Kurs(e), ' + sum(DB.courses.map(function (c) { return c.entries.length; })) + ' Proben-Einträge gespeichert. ' +
+      (canStore ? 'Die Daten liegen nur im Browser-Speicher dieses Geräts.' : '<b class="bad">Speichern im Browser ist hier nicht möglich – bitte „Sicherung speichern“ benutzen.</b>') +
+      ' Sichern Sie regelmäßig.</p><div class="row"><button type="button" data-a="exp">Sicherung speichern' + (SEC.on() ? ' (verschlüsselt)' : '') + '</button>' +
+      (SEC.on() ? '<button type="button" data-a="expplain">Sicherung unverschlüsselt speichern</button>' : '') +
+      '<button type="button" data-a="load">Sicherung laden</button><button type="button" class="danger" data-a="wipe">Alle Daten löschen</button></div>' +
+      (PW_UI || SEC.on() ? secHTML() : '') + '</div>';
+    els.setup.innerHTML = h;
+    updSums();
+  }
+  function updSums() {
+    var cfg = cfgOf(S, curOcc, curB); if (!cfg) return;
+    var act = activeOf(S, curOcc, curB), t = sum(act.map(function (c) { return cfg.weights[c.id] || 0; })), tap = S.mode === 'tap';
+    var el = document.getElementById('wsum');
+    if (el) el.innerHTML = fmt(t) + (tap ? ' %' : ' Punkte') + (tap && act.length && Math.abs(t - 100) > 1e-9 ? ' <span class="bad">(nicht 100 – wird anteilig umgerechnet)</span>' : '');
+    act.forEach(function (c) {
+      var td = els.setup.querySelector('[data-pc="' + c.id + '"]'); if (td) td.textContent = fmt(t ? (cfg.weights[c.id] || 0) / t * 100 : 0, 0) + ' %';
+    });
+  }
+  function setupClick(a, v) {
+    if (secClick(a)) return;
+    var cfg = cfgOf(S, curOcc, curB);
+    if (a === 'bsel') { curB = v; if (B[v].probeOnly) curOcc = 'probe'; renderSetup(); }
+    else if (a === 'occ') { curOcc = v; renderSetup(); }
+    else if (a === 'task') {
+      var p = v.split('|'), s = stuById(p[0]); if (!s) return;
+      if (s.tasks[p[1]] != null) delete s.tasks[p[1]]; else s.tasks[p[1]] = 50;
+      if (tasksOf(s).length === 1) s.tasks[tasksOf(s)[0]] = 100;
+      save(); renderSetup();
+    } else if (a === 'addnames') {
+      var ta = document.getElementById('names'), have = {}, added = 0;
+      S.students.forEach(function (s) { have[s.name.trim().toLowerCase()] = 1; });
+      ta.value.split(/\r?\n/).map(function (x) { return x.replace(/\t/g, ' ').trim(); }).filter(Boolean).forEach(function (nm) {
+        if (have[nm.toLowerCase()] || S.students.length >= 200) return;
+        S.students.push({ id:uid('s'), name:nm.slice(0, 80), tasks:{ spiel:100 } }); have[nm.toLowerCase()] = 1; added++;
+      });
+      if (!added) { alert('Keine neuen Namen gefunden. Bitte einen Namen pro Zeile eintippen oder einfügen.'); return; }
+      save(); renderSetup(); var sl = document.getElementById('sl'); if (sl && sl.scrollIntoView) sl.scrollIntoView();
+    } else if (a === 'sortnames') { S.students.sort(function (x, y) { return x.name.localeCompare(y.name, 'de'); }); save(); renderSetup(); }
+    else if (a === 'delstu') {
+      var st = stuById(v);
+      if (!confirm('„' + (st ? st.name : '') + '“ mit allen Proben- und Premiere-Einträgen entfernen?')) return;
+      S.students = S.students.filter(function (x) { return x.id !== v; });
+      S.entries = S.entries.filter(function (e) { return e.sid !== v; }); delete S.prem[v];
+      save(); renderSetup();
+    } else if (a === 'preset') { cfg.preset = v; applyPreset(S, curOcc, curB); save(); renderSetup(); }
+    else if (a === 'mode') {
+      if (v === S.mode) return;
+      if ((S.entries.length || Object.keys(S.prem).length) && !confirm('Eingabeart wechseln? Vorhandene Bewertungen werden anteilig umgerechnet (z. B. 11 von 15 Notenpunkten ≙ 73 % der Höchstpunkte).')) return;
+      S.mode = v; applyAll(S); save(); renderSetup();
+    } else if (a === 'timew') { S.timeW = v; save(); renderSetup(); }
+    else if (a === 'addc') {
+      var nm = document.getElementById('cname').value.trim();
+      if (!nm) { alert('Bitte zuerst einen Namen für das Kriterium eintippen.'); return; }
+      var id = 'c' + Date.now().toString(36);
+      S.custom.push({ id:id, n:nm.slice(0, 60), b:curB }); cfg.sel.push(id);
+      applyPreset(S, curOcc, curB); save(); renderSetup();
+    } else if (a === 'delc') {
+      if (!confirm('Eigenes Kriterium entfernen?')) return;
+      S.custom = S.custom.filter(function (c) { return c.id !== v; });
+      ['probe', 'prem'].forEach(function (o) { var cf = cfgOf(S, o, curB); if (cf) { cf.sel = cf.sel.filter(function (x) { return x !== v; }); delete cf.weights[v]; applyPreset(S, o, curB); } });
+      delete S.texts[v]; save(); renderSetup();
+    } else if (a === 'txreset') { delete S.texts[v]; save(); renderSetup(); }
+    else if (a === 'newc') { var c = freshCourse(); DB.courses.push(c); DB.cur = c.id; S = c; openSid = null; save(); setView('setup'); }
+    else if (a === 'delcourse') {
+      if (!confirm('Kurs „' + courseName(S) + '“ mit allen Bewertungen löschen? Das kann nicht rückgängig gemacht werden.')) return;
+      var gone = S.id; DB.courses = DB.courses.filter(function (x) { return x.id !== gone; }); DB.cur = DB.courses[0].id; S = curCourse(); save(); setView('setup');
+    } else if (a === 'done') { DB.setup = true; save(); setView('probe'); }
+    else if (a === 'load') els.file.click();
+    else if (a === 'exp') exportJSON();
+    else if (a === 'expplain') exportPlain();
+    else if (a === 'wipe') {
+      if (!confirm('Wirklich ALLE Kurse, Teilnehmenden und Bewertungen auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.')) return;
+      clearTimeout(tmr); tmr = null; SEC.wipe(KEY); updLockBtn();
+      DB = freshDB(); S = curCourse(); openSid = null; setView('setup');
+    }
+  }
+
+  /* ================= Start ================= */
+  function init() {
+    ['bar', 'csel', 'setup', 'probe', 'prem', 'ausw', 'einzel', 'print', 'file'].forEach(function (id) { els[id] = document.getElementById(id); });
+    if (!canStore) document.getElementById('warn').hidden = false;
+    setView(DB.setup ? DB.view : 'setup');
+    updLockBtn();
+    document.getElementById('lockbtn').addEventListener('click', lockNow);
+    els.bar.addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (b) { openSid = null; setView(b.dataset.view); } });
+    document.getElementById('helpbtn').addEventListener('click', function () { var h = document.getElementById('help'); h.hidden = !h.hidden; });
+    els.csel.addEventListener('change', function () { DB.cur = els.csel.value; S = curCourse(); openSid = null; save(); setView(DB.view); });
+
+    els.probe.addEventListener('click', function (e) { listClick('probe', e); });
+    els.prem.addEventListener('click', function (e) { listClick('prem', e); });
+    els.probe.addEventListener('input', function (e) { listInput('probe', e); });
+    els.prem.addEventListener('input', function (e) { listInput('prem', e); });
+    els.probe.addEventListener('change', function (e) { if (e.target.dataset.a === 'pv') { var box = e.target.closest('.stu'); if (box) refreshStu('probe', box.dataset.sid); } });
+    els.prem.addEventListener('change', function (e) {
+      if (e.target.id === 'longdesc') { longDesc = e.target.checked; renderPrem(); return; }
+      if (e.target.dataset.a === 'pv') { var box = e.target.closest('.stu'); if (box) refreshStu('prem', box.dataset.sid); }
+    });
+
+    els.ausw.addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-sid]'); if (tr) { einzelSid = tr.dataset.sid; setView('einzel'); return; }
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      var a = b.dataset.a;
+      if (a === 'pov') doPrint('<section class="pg"><h1>Theaterkurs – Übersicht</h1><p class="sub">' + esc(courseName(S)) + ' · Proben-Zeitraum: ' + esc(perLabel()) + '</p>' + ovTable(false) + '<p class="legend">Alle Ergebnisse in Notenpunkten. * = unvollständig. ' + esc(legend()) + '</p></section>');
+      else if (a === 'pall') doPrint(S.students.map(function (s) { return '<section class="pg">' + reportHTML(s.id, true) + '</section>'; }).join(''));
+      else if (a === 'ppremall') printPremBogen(S.students.map(function (s) { return s.id; }), false);
+      else if (a === 'ppremblank') printPremBogen([], true);
+      else if (a === 'pblank') printBlankProbe();
+      else if (a === 'praster') printRaster();
+      else if (a === 'csv') exportCSV();
+      else if (a === 'exp') exportJSON();
+    });
+    els.ausw.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.id === 'per') { S.per.p = t.value; save(); renderAusw(); }
+      else if (t.id === 'pfrom' || t.id === 'pto') { if (t.value && !isISO(t.value)) return; S.per[t.id === 'pfrom' ? 'from' : 'to'] = t.value; save(); renderAusw(); }
+    });
+    els.einzel.addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-ed]');
+      if (tr) { S.date = tr.dataset.ed; openSid = einzelSid; save(); setView('probe'); return; }
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      if (b.dataset.a === 'back') setView('ausw');
+      if (b.dataset.a === 'prep') doPrint('<section class="pg">' + reportHTML(einzelSid, true) + '</section>');
+      if (b.dataset.a === 'pprem') printPremBogen([einzelSid], false);
+    });
+
+    els.setup.addEventListener('click', function (e) {
+      var sm = e.target.closest('summary'); if (sm) { txOpen = !sm.parentNode.open; return; }
+      var b = e.target.closest('button[data-a]'); if (b) setupClick(b.dataset.a, b.dataset.v);
+    });
+    els.setup.addEventListener('change', function (e) {
+      var t = e.target, a = t.dataset.a, cfg = cfgOf(S, curOcc, curB);
+      if (a === 'autolock') { SEC.setAuto(+t.value); flush(); return; }
+      if (a === 'crit') {
+        var id = t.dataset.v;
+        if (t.checked) { if (cfg.sel.indexOf(id) < 0) cfg.sel.push(id); } else cfg.sel = cfg.sel.filter(function (x) { return x !== id; });
+        applyPreset(S, curOcc, curB); save(); renderSetup();
+      } else if (a === 'totP' || a === 'totA') { S[a] = +t.value; applyAll(S); save(); renderSetup(); }
+      else if (a === 'half') { S.half = t.checked; save(); renderSetup(); }
+      else if (a === 'geson') { S.ges.on = t.checked; save(); renderSetup(); }
+      else if (a === 'hj') {
+        var m = /^(\d{1,2})\.(\d{1,2})\.?$/.exec(t.value.trim());
+        if (m && +m[1] >= 1 && +m[1] <= 31 && +m[2] >= 1 && +m[2] <= 12) { S.hj = p2(+m[2]) + '-' + p2(+m[1]); save(); } else alert('Bitte das Datum als TT.MM. eingeben, z. B. 15.02.');
+        renderSetup();
+      } else if (t.dataset.share) renderSetup();
+    });
+    els.setup.addEventListener('input', function (e) {
+      var t = e.target, cfg = cfgOf(S, curOcc, curB);
+      if (t.dataset.s) { S[t.dataset.s] = t.dataset.s === 'premDate' ? (isISO(t.value) ? t.value : '') : t.value; save(); renderCsel(); }
+      else if (t.dataset.sn) { var s = stuById(t.dataset.sn); if (s) { s.name = t.value.slice(0, 80); save(); } }
+      else if (t.dataset.share) { var p = t.dataset.share.split('|'), st = stuById(p[0]); if (st && st.tasks[p[1]] != null) { st.tasks[p[1]] = Math.max(0, Math.min(100, num(t.value, 0))); save(); } }
+      else if (t.dataset.a === 'probeShare') { S.probeShare = Math.max(0, Math.min(100, num(t.value, 40))); save(); }
+      else if (t.dataset.a === 'gesprem') { S.ges.prem = Math.max(0, Math.min(100, num(t.value, 50))); save(); }
+      else if (t.dataset.w !== undefined) {
+        var v = Math.max(0, Math.round(num(t.value, 0))); if (S.mode === 'pt' && v < 1 && t.value !== '') v = 1;
+        cfg.weights[t.dataset.w] = v;
+        if (cfg.preset !== 'eigen') { cfg.preset = 'eigen'; qa(els.setup, '[data-a="preset"]').forEach(function (b) { b.classList.toggle('on', b.dataset.v === 'eigen'); }); }
+        updSums(); save();
+      } else if (t.dataset.tx) {
+        var id = t.dataset.tx; if (!critBase(S, id)) return;
+        var o = S.texts[id] || (S.texts[id] = { n:'', d:['', '', '', '', ''] });
+        if (t.dataset.ti === 'n') o.n = t.value.slice(0, 80); else o.d[+t.dataset.ti] = t.value.slice(0, 200);
+        save();
+      }
+    });
+    els.file.addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        readBackup(r.result, function (raw, found) {
+          var o = null; try { o = sanitizeDB(raw); } catch (err) {}
+          if (!o) { alert('Die Datei konnte nicht gelesen werden. Bitte eine Sicherung aus diesem Programm wählen.'); return; }
+          if (!confirm('Alle aktuellen Daten durch die geladene Sicherung ersetzen?')) return;
+          if (found && !SEC.on()) SEC.adopt(found);
+          DB = o; DB.setup = true; S = curCourse(); openSid = null; flush(); updLockBtn(); setView('probe');
+        });
+      };
+      r.readAsText(f); e.target.value = '';
+    });
+    window.addEventListener('beforeunload', function (e) {
+      if (!canStore && DB.courses.some(function (c) { return c.entries.length || Object.keys(c.prem).length; })) { e.preventDefault(); e.returnValue = ''; }
+    });
+  }
+  function boot() {
+    var raw = load();
+    function start(o) { var d = null; try { d = o ? sanitizeDB(o) : null; } catch (e) {} DB = d || freshDB(); S = curCourse(); init(); }
+    if (raw && SEC.isEnv(raw)) unlockScreen(raw, start); else start(raw);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

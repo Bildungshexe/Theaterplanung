@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bewertung">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#2b2b2b">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Unterrichtsbeiträge – Bewertung</title>
+<style>
+  .homebtn { display:inline-flex; align-items:center; padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; color:#111; text-decoration:none; }
+  body { padding-top:env(safe-area-inset-top); }
+  :root { --acc:#8B1E2D; --light:#F6E9EB; --hit:#F3C9CF; --gray:#E9E9E9; --line:#7f7f7f; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; }
+  body { font-family:Arial, Helvetica, sans-serif; font-size:11pt; color:#111; background:#d9d9d9; touch-action:manipulation; -webkit-text-size-adjust:100%; }
+  button, input, select, textarea { font:inherit; color:#111; }
+  button { cursor:pointer; }
+  input:focus, select:focus, textarea:focus, button:focus-visible { outline:2px solid #3b82f6; outline-offset:0; }
+  [hidden] { display:none !important; }
+  .bad { color:#b00000; font-weight:bold; }
+
+  /* ---------- Kopfleiste ---------- */
+  .bar { position:sticky; top:0; z-index:20; background:#2b2b2b; color:#fff; padding:8px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .bar select { flex:1 1 200px; max-width:360px; }
+  .bar button, .bar select { padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; }
+  .bar button.on { background:var(--acc); color:#fff; border-color:var(--acc); font-weight:bold; }
+  .bar .sp { flex:1 0 0; }
+  button.primary { background:var(--acc) !important; color:#fff !important; border-color:var(--acc) !important; }
+  button.danger { color:#a00; }
+
+  .wrap { max-width:1000px; margin:0 auto; padding:12px 10px 60px; }
+  .wide { max-width:297mm; }
+  .sbox { background:#fff; border-radius:8px; padding:14px 16px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.18); line-height:1.4; }
+  .sbox h2 { margin:0 0 6px; color:var(--acc); font-size:17pt; }
+  .sbox h3 { margin:0 0 8px; font-size:13pt; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sbox h3 small { font-weight:normal; color:#444; font-size:11pt; }
+  .sbox .no { display:inline-flex; width:30px; height:30px; border-radius:50%; background:var(--acc); color:#fff; align-items:center; justify-content:center; font-size:12pt; flex:none; }
+  .sbox p { margin:4px 0 8px; }
+  .note { color:#333; }
+  .sbox button { padding:8px 14px; min-height:44px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .priv { background:#eef6ee; border-left:4px solid #3c7a3c; padding:8px 10px; }
+  .warn { background:#fff3cd; color:#5c4400; border:1px solid #e0c060; max-width:1000px; margin:10px auto 0; padding:10px 14px; border-radius:6px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { text-align:left; border:2px solid #bbb !important; background:#fff; border-radius:8px !important; padding:10px 14px !important; min-width:64px; }
+  .chip small { display:block; color:#444; font-size:10.5pt; margin-top:2px; }
+  .chip.on { border-color:var(--acc) !important; background:var(--light) !important; box-shadow:inset 0 0 0 1px var(--acc); font-weight:bold; }
+  .chip.on small { font-weight:normal; }
+  .lbl { font-weight:bold; margin:12px 0 6px !important; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .row2 label, .stack label { display:flex; flex-direction:column; gap:4px; font-weight:bold; }
+  .sbox input[type=text], .sbox input[type=number], .sbox input[type=date], .sbox select, .sbox textarea { padding:8px 10px; min-height:44px; border:1px solid #888; border-radius:6px; font-weight:normal; background:#fff; }
+  .clist { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .ckrow { display:flex; gap:6px; align-items:stretch; }
+  .ck { flex:1; display:flex; gap:10px; align-items:flex-start; border:1px solid #bbb; border-radius:8px; padding:8px 10px; cursor:pointer; }
+  .ck.on { border-color:var(--acc); background:var(--light); }
+  .ck.off { opacity:.55; }
+  .ck input { width:22px; height:22px; margin:2px 0 0; flex:none; }
+  .ck small { display:block; color:#333; font-size:10.5pt; margin-top:2px; }
+  .tag { font-style:normal; font-size:9.5pt; padding:1px 6px; border-radius:10px; color:#fff; white-space:nowrap; }
+  .tQ { background:#1F6F50; } .tB { background:#5A4FA0; } .tK { background:#B5641A; }
+  .mini { min-height:auto !important; padding:4px 8px !important; font-size:10pt; color:#a00; }
+  .addc { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .addc input { flex:1 1 220px; }
+  table.wt { border-collapse:collapse; width:100%; margin-top:10px; }
+  table.wt th, table.wt td { border:1px solid #bbb; padding:6px 8px; text-align:left; }
+  table.wt .c { text-align:center; }
+  table.wt input { width:90px; text-align:center; }
+  table.wt tr.wsr td { font-weight:bold; background:#f3f3f3; }
+  .keys { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin:8px 0; }
+  .keys label { display:flex; gap:6px; align-items:center; }
+  .keys input { width:84px; text-align:center; }
+  .ktw { overflow-x:auto; margin-top:8px; }
+  table.kt { border-collapse:collapse; }
+  table.kt th, table.kt td { border:1px solid #bbb; padding:4px 10px; text-align:center; }
+  table.kt th { background:#f3f3f3; }
+  .grpin { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:10px; align-items:center; }
+  .grpin label { display:flex; gap:6px; align-items:center; font-weight:bold; }
+  .grpin input { width:80px; text-align:center; }
+  .inl { display:flex; gap:8px; align-items:center; margin:8px 0; }
+  .inl input[type=checkbox] { width:22px; height:22px; }
+  details.txed { margin-top:12px; border:1px solid #bbb; border-radius:8px; padding:8px 12px; }
+  details.txed summary { cursor:pointer; font-weight:bold; min-height:36px; padding-top:6px; }
+  .txc { border-top:1px solid #ddd; padding:10px 0; display:grid; gap:6px; }
+  .txc label { display:flex; flex-direction:column; gap:2px; font-weight:bold; font-size:10.5pt; }
+  .txc input, .txc textarea { font-weight:normal; padding:6px 8px; border:1px solid #888; border-radius:6px; font-size:11pt; }
+  .txc textarea { resize:vertical; min-height:44px; }
+  .txc button { justify-self:start; }
+  .slm { display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; margin-top:10px; }
+  .slm .si { display:flex; gap:6px; align-items:center; }
+  .slm .si span { min-width:26px; text-align:right; color:#555; }
+  .slm .si input { flex:1; min-width:0; }
+  .done { text-align:center; }
+  .big { font-size:14pt; padding:12px 26px !important; min-height:52px !important; }
+
+  /* ---------- Erfassen ---------- */
+  .erfhead { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .erfhead label { display:flex; gap:8px; align-items:center; font-weight:bold; }
+  .slist { display:flex; flex-direction:column; gap:6px; }
+  .stu { background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.18); overflow:hidden; }
+  .stu.open { box-shadow:0 0 0 2px var(--acc), 0 2px 8px rgba(0,0,0,.25); }
+  .sh { display:flex; gap:10px; align-items:center; width:100%; border:none; background:#fff; text-align:left; padding:10px 12px; min-height:52px; }
+  .stu.open .sh { background:var(--light); }
+  .sh .nm { font-weight:bold; flex:0 1 auto; min-width:120px; }
+  .sh .chs { flex:1; display:flex; flex-wrap:wrap; gap:4px; color:#333; font-size:10.5pt; }
+  .sh .chs span { background:#f0f0f0; border-radius:10px; padding:1px 8px; }
+  .sh .chs span.abs { background:#ffe2e2; color:#900; }
+  .sh .cnt { flex:none; font-size:10.5pt; color:#444; background:#eee; border-radius:12px; padding:2px 9px; }
+  .sh .cnt.zero { background:#fff0c2; color:#6a5200; }
+  .ed { padding:6px 12px 12px; border-top:1px solid #ddd; }
+  .er { padding:8px 0; border-bottom:1px solid #eee; }
+  .et { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
+  .et b { flex:1 1 200px; }
+  .et .ev { font-size:15pt; color:var(--acc); font-weight:bold; min-width:34px; text-align:center; }
+  .st { width:44px; height:44px; font-size:16pt; line-height:1; border:1px solid #888; border-radius:6px; background:#fff; padding:0; }
+  .st:disabled { opacity:.3; cursor:default; }
+  .lvs { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; }
+  .lvb { border:1px solid #aaa; border-radius:8px; background:#fff; min-height:52px; padding:4px 2px; text-align:center; font-weight:bold; font-size:13pt; -webkit-tap-highlight-color:transparent; }
+  .lvb small { display:block; font-weight:normal; font-size:9.5pt; color:#444; overflow-wrap:anywhere; hyphens:auto; }
+  .lvb.on { background:var(--hit); border-color:var(--acc); box-shadow:inset 0 0 0 2px var(--acc); }
+  .desc { font-size:10.5pt; color:#333; margin-top:4px; min-height:1em; }
+  .pin { display:flex; gap:8px; align-items:center; }
+  .pin input { width:90px; min-height:44px; text-align:center; font-size:14pt; border:1px solid #888; border-radius:6px; }
+  .eact { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:10px; }
+  .eact button { min-height:44px; padding:8px 14px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .eact button.on { background:#ffe2e2; border-color:#900; color:#900; font-weight:bold; }
+  .eact input { flex:1 1 220px; min-height:44px; padding:8px 10px; border:1px solid #888; border-radius:6px; }
+  .absnote { color:#900; font-weight:bold; margin:6px 0; }
+
+  /* ---------- Auswertung ---------- */
+  .tw { overflow-x:auto; }
+  table.ovt { border-collapse:collapse; width:100%; }
+  table.ovt th, table.ovt td { border:1px solid var(--line); padding:5px 7px; text-align:center; font-size:11pt; }
+  table.ovt th { background:var(--gray); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.ovt td.l { text-align:left; }
+  table.ovt tr[data-sid] { cursor:pointer; }
+  table.ovt tr[data-sid]:hover td { background:#f6f6f6; }
+  table.ovt td.few { background:#fff0c2; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .res { display:flex; flex-wrap:wrap; gap:8px 24px; background:var(--light); border:1px solid var(--line); padding:8px 12px; margin:8px 0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .res b.big2 { font-size:15pt; color:var(--acc); }
+  .legend { font-size:11pt; color:#222; margin-top:6px; }
+
+  /* ---------- Druck ---------- */
+  #print { display:none; }
+  .pg h1 { font-size:15pt; color:var(--acc); margin:0 0 2mm; }
+  .pg .sub { margin:0 0 3mm; }
+  table.raster { border-collapse:collapse; width:100%; table-layout:fixed; }
+  table.raster th, table.raster td { border:1px solid var(--line); padding:1.2mm 1.6mm; vertical-align:top; line-height:1.18; font-size:11pt; }
+  table.raster th { background:var(--gray); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.raster td.cn { background:var(--light); font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  table.blank { border-collapse:collapse; width:100%; }
+  table.blank th, table.blank td { border:1px solid var(--line); padding:1mm 2mm; font-size:11pt; height:8.5mm; }
+  table.blank th { background:var(--gray); height:auto; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  @media screen and (max-width: 760px) {
+    body { font-size:12pt; }
+    .bar { gap:6px; padding:6px; }
+    .bar select { flex-basis:100%; }
+    .bar button { flex:1 1 0; padding:8px 4px; }
+    .row2, .clist, .slm { grid-template-columns:1fr; }
+    .sbox input[type=text], .sbox input[type=number], .sbox input[type=date], .sbox select, .sbox textarea, .eact input, .pin input { font-size:16px; }
+    .wrap { padding:8px 6px 60px; }
+    .sh .nm { min-width:0; flex-basis:100%; }
+    .sh { flex-wrap:wrap; }
+    .lvb { font-size:12pt; }
+  }
+
+  @page { size:A4 landscape; margin:0; }
+  @media print {
+    body { background:#fff; }
+    body > * { display:none !important; }
+    body > #print { display:block !important; }
+    .pg { width:297mm; min-height:209mm; padding:8mm 10mm; break-after:page; page-break-after:always; }
+    .pg:last-child { break-after:auto; page-break-after:auto; }
+    table.ovt tr[data-sid]:hover td { background:transparent; }
+    thead { display:table-header-group; }
+    tr { break-inside:avoid; page-break-inside:avoid; }
+    table.raster.fill { height:160mm; }
+  }
+  /* ---------- Passwortschutz ---------- */
+  .lockov { position:fixed; top:0; left:0; right:0; bottom:0; z-index:100; background:rgba(30,30,30,.94); display:flex; align-items:center; justify-content:center; padding:16px; }
+  .lockbox { background:#fff; border-radius:10px; padding:18px 20px; max-width:460px; width:100%; box-shadow:0 4px 20px rgba(0,0,0,.4); line-height:1.4; }
+  .lockbox h2 { margin:0 0 8px; font-size:15pt; color:var(--acc); }
+  .lockbox p { margin:4px 0 8px; }
+  .lockbox input.pw { width:100%; min-height:46px; font-size:16px; padding:8px 10px; border:1px solid #888; border-radius:6px; margin:6px 0; }
+  .lockbox .show { display:flex; gap:8px; align-items:center; margin:4px 0; }
+  .lockbox .show input { width:20px; height:20px; margin:0; }
+  .lockbox .err { color:#b00000; font-weight:bold; min-height:1.3em; }
+  .lockbox .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .lockbox button { min-height:44px; padding:8px 16px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .lockbox .forgot { margin-top:16px; border-top:1px solid #ddd; padding-top:10px; }
+  .secbox { margin-top:12px; border-top:1px solid #ddd; padding-top:10px; }
+  .secbox .row, .secrow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .secon { color:#1e6b2e; font-weight:bold; }
+  .secoff { color:#8a5a00; font-weight:bold; }
+  @media print { .lockov { display:none !important; } }
+</style>
+</head>
+<body data-view="setup">
+
+<div class="bar" id="bar">
+  <a class="homebtn" href="index.html">⌂ Start</a>
+  <select id="csel" aria-label="Klasse / Kurs wählen"></select>
+  <button data-view="erf">Erfassen</button>
+  <button data-view="ausw">Auswertung</button>
+  <button data-view="setup">Einrichtung</button>
+  <button id="helpbtn">Hilfe</button>
+  <button id="lockbtn" hidden>Sperren</button>
+</div>
+<input type="file" id="file" accept="application/json,.json" style="display:none">
+<div class="warn" id="warn" hidden>Achtung: Dieser Browser erlaubt hier kein Speichern (z. B. privates Fenster oder eingeschränkte Datei-Ansicht). Die Eingaben gehen beim Schließen verloren. Bitte regelmäßig „Sicherung speichern“ benutzen oder die Datei direkt in Chrome, Edge, Firefox oder Safari öffnen.</div>
+
+<div class="wrap" id="help" hidden><div class="sbox">
+  <h3>So funktioniert es</h3>
+  <ol>
+    <li><b>Einrichtung:</b> Jahrgangsstufe, Klasse und Fach wählen, Schülerliste einfügen (ein Name pro Zeile), Kriterien, Schwerpunkt und Notenberechnung festlegen. Weitere Klassen/Kurse legen Sie über „Neue Klasse / neuen Kurs anlegen“ an und wechseln oben in der Auswahlliste.</li>
+    <li><b>Erfassen:</b> Datum wählen (Standard: heute), Namen antippen, pro Kriterium die Stufe antippen oder Punkte eintragen. „fehlt“ markiert Abwesenheit, das Feld „Bemerkung“ hält Beobachtungen fest. „Nächste/r“ springt weiter. Gelb markierte Zahlen zeigen Schüler/innen ohne Eintrag im gewählten Zeitraum.</li>
+    <li><b>Auswertung:</b> Zeitraum wählen (Tag, Woche, Halbjahr, Schuljahr oder frei). Die Note wird aus allen Einträgen des Zeitraums berechnet. Zeile antippen öffnet den Einzelbericht.</li>
+    <li><b>Drucken / PDF:</b> Im Druckfenster „Als PDF speichern“ oder Drucker wählen, A4 quer, Ränder „Keine“, „Hintergrundgrafiken“ einschalten. Es gibt außerdem eine leere Beobachtungsliste und das Kriterienraster für die Klasse.</li>
+  </ol>
+  <h3>Datenschutz</h3>
+  <p>Das Programm arbeitet vollständig offline und ist technisch so gesperrt, dass es keine Verbindung ins Internet aufbauen kann. Alle Eingaben bleiben im Browser dieses Geräts. Für die Erfassung genügen Vornamen oder Kürzel. Sicherungs- und CSV-Dateien wie Notenlisten behandeln (nur dienstliche oder verschlüsselte Geräte). Am Schuljahresende über „Einrichtung“ → „Alle Daten löschen“ entfernen. <b>Empfehlung:</b> Unter „Einrichtung“ → „Daten auf diesem Gerät“ einen Passwortschutz einrichten. Dann sind gespeicherte Daten und Sicherungsdateien mit AES-256 verschlüsselt und ohne Passwort nicht lesbar – auch nicht für andere Dateien oder Programme auf dem Gerät. Ein vergessenes Passwort kann niemand wiederherstellen.</p>
+</div></div>
+
+<main class="wrap" id="setup"></main>
+<main class="wrap" id="erf" hidden></main>
+<main class="wrap wide" id="ausw" hidden></main>
+<main class="wrap wide" id="einzel" hidden></main>
+<div id="print"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= Passwortschutz (AES-GCM 256, Schlüssel per PBKDF2-SHA-256) ================= */
+  var SEC = (function () {
+    var ITER = 400000, key = null, salt = null, iter = ITER, auto = 15, chain = Promise.resolve(), queued = null;
+    function b64(buf) { var s = '', a = new Uint8Array(buf); for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s); }
+    function unb64(s) { var b = atob(s), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+    function ok() {
+      try { return !!(window.crypto && window.crypto.subtle && window.TextEncoder && window.TextDecoder && window.Promise && window.isSecureContext !== false); } catch (e) { return false; }
+    }
+    function derive(pw, s, it) {
+      return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (k) {
+        return crypto.subtle.deriveKey({ name:'PBKDF2', salt:s, iterations:it, hash:'SHA-256' }, k, { name:'AES-GCM', length:256 }, false, ['encrypt', 'decrypt']);
+      });
+    }
+    function seal(text, k, s, it) {
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      return crypto.subtle.encrypt({ name:'AES-GCM', iv:iv }, k, new TextEncoder().encode(text)).then(function (ct) {
+        return JSON.stringify({ enc:'AES-GCM', kdf:'PBKDF2-SHA256', iter:it, salt:b64(s), iv:b64(iv), ct:b64(ct), autolock:auto });
+      });
+    }
+    function isEnv(o) { return !!(o && o.enc === 'AES-GCM' && typeof o.ct === 'string' && typeof o.iv === 'string' && typeof o.salt === 'string'); }
+    function tryEnv(env, pw) {
+      var s = unb64(env.salt), it = Math.max(1000, env.iter | 0);
+      return derive(pw, s, it).then(function (k) {
+        return crypto.subtle.decrypt({ name:'AES-GCM', iv:unb64(env.iv) }, k, unb64(env.ct)).then(function (pt) {
+          return { txt:new TextDecoder().decode(pt), k:k, s:s, it:it, auto:(env.autolock >= 0 ? env.autolock | 0 : 15) };
+        });
+      });
+    }
+    function adopt(r) { key = r.k; salt = r.s; iter = r.it; auto = r.auto; }
+    function setPassword(pw) {
+      var s = crypto.getRandomValues(new Uint8Array(16));
+      return derive(pw, s, ITER).then(function (k) { key = k; salt = s; iter = ITER; });
+    }
+    function write(storeKey, text) {
+      queued = text;
+      chain = chain.then(function () {
+        if (queued === null) return;
+        var t = queued; queued = null;
+        if (!key) { try { localStorage.setItem(storeKey, t); } catch (e) {} return; }
+        return seal(t, key, salt, iter).then(function (env) { try { localStorage.setItem(storeKey, env); } catch (e) {} });
+      }).catch(function () {});
+      return chain;
+    }
+    function wipe(storeKey) {
+      queued = null; key = null; salt = null;
+      chain = chain.then(function () { try { localStorage.removeItem(storeKey); } catch (e) {} });
+      return chain;
+    }
+    return {
+      ok:ok, isEnv:isEnv, tryEnv:tryEnv, adopt:adopt, setPassword:setPassword, write:write, wipe:wipe,
+      clear:function () { key = null; salt = null; },
+      on:function () { return !!key; },
+      auto:function () { return auto; }, setAuto:function (m) { auto = Math.max(0, m | 0); },
+      sealNow:function (text) { return seal(text, key, salt, iter); }
+    };
+  })();
+
+  function pwDialog(o) {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div'); ov.className = 'lockov';
+      ov.innerHTML = '<div class="lockbox" role="dialog" aria-modal="true"><h2></h2><p class="t"></p>' +
+        '<input type="password" class="pw p1" autocomplete="' + (o.twice ? 'new-password' : 'current-password') + '" placeholder="Passwort" aria-label="Passwort">' +
+        (o.twice ? '<input type="password" class="pw p2" autocomplete="new-password" placeholder="Passwort wiederholen" aria-label="Passwort wiederholen">' : '') +
+        '<label class="show"><input type="checkbox" class="sh"> Passwort anzeigen</label><div class="err" role="alert"></div>' +
+        '<div class="btns"><button type="button" class="primary ok"></button>' + (o.cancel ? '<button type="button" class="cn">Abbrechen</button>' : '') + '</div>' +
+        (o.onForgot ? '<div class="forgot"><button type="button" class="danger fg">Passwort vergessen – alle Daten löschen</button></div>' : '') + '</div>';
+      ov.querySelector('h2').textContent = o.title;
+      ov.querySelector('.t').textContent = o.text || '';
+      var okb = ov.querySelector('.ok'), p1 = ov.querySelector('.p1'), p2 = ov.querySelector('.p2'), err = ov.querySelector('.err');
+      okb.textContent = o.okText || 'OK';
+      document.body.appendChild(ov);
+      setTimeout(function () { try { p1.focus(); } catch (e) {} }, 30);
+      function done(v) { if (ov.parentNode) ov.parentNode.removeChild(ov); resolve(v); }
+      function go() {
+        var a = p1.value;
+        if (o.twice) {
+          if (a.length < 8) { err.textContent = 'Bitte mindestens 8 Zeichen verwenden.'; return; }
+          if (a !== p2.value) { err.textContent = 'Die beiden Eingaben stimmen nicht überein.'; return; }
+        } else if (!a) { err.textContent = 'Bitte das Passwort eingeben.'; return; }
+        if (!o.check) { done(a); return; }
+        okb.disabled = true; err.textContent = 'Wird geprüft …';
+        o.check(a).then(function (r) {
+          if (r === true) { done(a); return; }
+          okb.disabled = false; err.textContent = r || 'Falsches Passwort.'; p1.select();
+        });
+      }
+      okb.addEventListener('click', go);
+      ov.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); if (p2 && document.activeElement === p1) p2.focus(); else go(); }
+        if (e.key === 'Escape' && o.cancel) done(null);
+      });
+      ov.querySelector('.sh').addEventListener('change', function (e) {
+        var t = e.target.checked ? 'text' : 'password'; p1.type = t; if (p2) p2.type = t;
+      });
+      if (o.cancel) ov.querySelector('.cn').addEventListener('click', function () { done(null); });
+      if (o.onForgot) ov.querySelector('.fg').addEventListener('click', function () { o.onForgot(); });
+    });
+  }
+  function verifyPw(pw) {
+    var env = null;
+    try { env = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (!SEC.isEnv(env)) return Promise.resolve('Gespeicherte Daten nicht gefunden.');
+    return SEC.tryEnv(env, pw).then(function () { return true; }, function () { return 'Falsches Passwort.'; });
+  }
+  function lockNow() { flush().then(function () { location.reload(); }); }
+  function updLockBtn() { var b = document.getElementById('lockbtn'); if (b) b.hidden = !SEC.on(); }
+  function secHTML() {
+    var h = '<div class="secbox"><h3>Passwortschutz</h3>';
+    if (!canStore) return h + '<p class="note">Nicht verfügbar, weil dieser Browser hier nichts speichert.</p></div>';
+    if (!SEC.ok()) return h + '<p class="bad">Dieser Browser unterstützt keine Verschlüsselung. Bitte einen aktuellen Browser (Chrome, Edge, Firefox, Safari) verwenden.</p></div>';
+    if (!SEC.on()) {
+      return h + '<p><span class="secoff">Aus.</span> Die Daten liegen unverschlüsselt im Browser. Mit Passwortschutz werden gespeicherte Daten und Sicherungsdateien mit AES-256 verschlüsselt; ohne Passwort sind sie nicht lesbar.</p>' +
+        '<div class="secrow"><button type="button" class="primary" data-a="pwset">Passwortschutz einrichten</button></div></div>';
+    }
+    var opts = [[0, 'nie'], [5, 'nach 5 Minuten'], [15, 'nach 15 Minuten'], [30, 'nach 30 Minuten'], [60, 'nach 60 Minuten']];
+    return h + '<p><span class="secon">Aktiv (AES-256).</span> Gespeicherte Daten und Sicherungsdateien sind verschlüsselt. CSV-Tabellen und PDF-Ausdrucke sind <b>nicht</b> verschlüsselt.</p>' +
+      '<div class="secrow"><label class="secrow">Automatisch sperren <select data-a="autolock">' +
+      opts.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === SEC.auto() ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label>' +
+      '<button type="button" data-a="pwlock">Jetzt sperren</button><button type="button" data-a="pwchg">Passwort ändern</button>' +
+      '<button type="button" class="danger" data-a="pwdel">Passwortschutz entfernen</button></div></div>';
+  }
+  function secClick(a) {
+    if (a === 'pwset') {
+      pwDialog({ title:'Passwortschutz einrichten', twice:true, cancel:true, okText:'Schützen',
+        text:'Wählen Sie ein Passwort mit mindestens 8 Zeichen. Wichtig: Ohne dieses Passwort lassen sich die Daten nicht wiederherstellen. Notieren Sie es an einem sicheren Ort.' }).then(function (pw) {
+        if (!pw) return;
+        SEC.setPassword(pw).then(function () { SEC.setAuto(15); return flush(); }).then(function () {
+          updLockBtn(); renderSetup();
+          alert('Der Passwortschutz ist aktiv. Bitte jetzt eine neue Sicherung speichern – ältere Sicherungsdateien sind noch unverschlüsselt und sollten gelöscht werden.');
+        });
+      });
+      return true;
+    }
+    if (a === 'pwchg') {
+      pwDialog({ title:'Passwort ändern', text:'Bitte zuerst das bisherige Passwort eingeben.', cancel:true, okText:'Weiter', check:verifyPw }).then(function (old) {
+        if (!old) return;
+        return pwDialog({ title:'Neues Passwort', twice:true, cancel:true, okText:'Ändern', text:'Neues Passwort mit mindestens 8 Zeichen eingeben.' }).then(function (pw) {
+          if (!pw) return;
+          return SEC.setPassword(pw).then(flush).then(function () { renderSetup(); alert('Das Passwort wurde geändert. Ältere Sicherungsdateien lassen sich weiterhin nur mit dem alten Passwort öffnen.'); });
+        });
+      });
+      return true;
+    }
+    if (a === 'pwdel') {
+      pwDialog({ title:'Passwortschutz entfernen', text:'Zur Bestätigung das Passwort eingeben. Danach werden die Daten wieder unverschlüsselt gespeichert.', cancel:true, okText:'Entfernen', check:verifyPw }).then(function (pw) {
+        if (!pw) return;
+        SEC.clear(); flush().then(function () { updLockBtn(); renderSetup(); });
+      });
+      return true;
+    }
+    if (a === 'pwlock') { lockNow(); return true; }
+    return false;
+  }
+  var lastAct = Date.now();
+  function idleCheck() { if (SEC.on() && SEC.auto() > 0 && Date.now() - lastAct > SEC.auto() * 60000) lockNow(); }
+  ['pointerdown', 'keydown', 'input', 'touchstart', 'wheel'].forEach(function (ev) { document.addEventListener(ev, function () { lastAct = Date.now(); }, true); });
+  setInterval(idleCheck, 15000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') idleCheck(); });
+  function unlockScreen(env, onData) {
+    if (!SEC.ok()) {
+      document.body.innerHTML = '<div style="max-width:600px;margin:40px auto;background:#fff;padding:20px;border-radius:8px;font:12pt Arial">Die gespeicherten Daten sind verschlüsselt, aber dieser Browser unterstützt die Entschlüsselung nicht. Bitte die Datei in einem aktuellen Chrome, Edge, Firefox oder Safari öffnen.</div>';
+      return;
+    }
+    pwDialog({ title:'Gesperrt', okText:'Entsperren', text:'Die Daten auf diesem Gerät sind mit einem Passwort geschützt.',
+      check:function (pw) {
+        return SEC.tryEnv(env, pw).then(function (r) {
+          var o = null; try { o = JSON.parse(r.txt); } catch (e) {}
+          SEC.adopt(r); onData(o); return true;
+        }, function () { return 'Falsches Passwort.'; });
+      },
+      onForgot:function () {
+        if (!confirm('Ohne Passwort lassen sich die Daten nicht entschlüsseln. Alle Daten auf diesem Gerät endgültig löschen?')) return;
+        if (!confirm('Wirklich löschen? Danach können Sie eine (unverschlüsselte oder verschlüsselte) Sicherung neu laden.')) return;
+        SEC.wipe(KEY).then(function () { location.reload(); });
+      } });
+  }
+  function readBackup(text, onObj) {
+    var o = null;
+    try { o = JSON.parse(text); } catch (e) {}
+    if (!o) { alert('Die Datei konnte nicht gelesen werden.'); return; }
+    if (!SEC.isEnv(o)) { onObj(o, null); return; }
+    if (!SEC.ok()) { alert('Diese Sicherung ist verschlüsselt, der Browser unterstützt aber keine Entschlüsselung.'); return; }
+    var found = null;
+    pwDialog({ title:'Sicherung entschlüsseln', cancel:true, okText:'Öffnen', text:'Diese Sicherung ist verschlüsselt. Bitte das Passwort eingeben, mit dem sie erstellt wurde.',
+      check:function (pw) { return SEC.tryEnv(o, pw).then(function (r) { found = r; return true; }, function () { return 'Falsches Passwort.'; }); } }).then(function (pw) {
+      if (!pw || !found) return;
+      var obj = null; try { obj = JSON.parse(found.txt); } catch (e) {}
+      if (!obj) { alert('Die Sicherung ist beschädigt.'); return; }
+      onObj(obj, found);
+    });
+  }
+  function exportBackup(name, text) {
+    if (SEC.on()) SEC.sealNow(text).then(function (env) { download(name.replace(/\.json$/, '_verschluesselt.json'), env, 'application/json'); });
+    else download(name, text, 'application/json');
+  }
+
+  /* ================= Kataloge ================= */
+  var MAX = 12, MIN = 1;
+  var LV_NAMES = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft / ungenügend'];
+  var NP_LV = [ { lo:13, hi:15, def:14 }, { lo:10, hi:12, def:11 }, { lo:7, hi:9, def:8 }, { lo:4, hi:6, def:5 }, { lo:0, hi:3, def:2 } ];
+  var ABI = [0, 20, 27, 33, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95];
+  var TEND = ['6', '5−', '5', '5+', '4−', '4', '4+', '3−', '3', '3+', '2−', '2', '2+', '1−', '1', '1+'];
+  var KEYS = [
+    { id:'abi',   n:'Abiturschlüssel', t:'KMK-Schlüssel der Oberstufe: 4 ab 40 %, 5 ab 20 %.' },
+    { id:'knick', n:'Mit Knick',       t:'Grenzen 4/5 und 5/6 in Prozent festlegen; darüber gleichmäßig.' },
+    { id:'ind',   n:'Individuell',     t:'Jede Grenze selbst eintragen.' }
+  ];
+  var GROUPS = { Q:'Qualität', B:'Beteiligung', K:'Kommunikation & Sprache' };
+  var GENERIC = [
+    'Anforderungen in besonderem Maße erfüllt.',
+    'Anforderungen voll erfüllt.',
+    'Anforderungen im Allgemeinen erfüllt.',
+    'Anforderungen mit Mängeln, im Ganzen aber noch erfüllt.',
+    'Anforderungen nicht oder nur in Ansätzen erfüllt.' ];
+
+  var C = {
+    qual: { n:'Fachliche Qualität der Beiträge', s:'Qualität', g:'Q', d:[
+      'Beiträge durchweg fachlich korrekt, präzise und weiterführend.',
+      'Beiträge überwiegend korrekt und sachdienlich.',
+      'Beiträge im Wesentlichen korrekt, teils ungenau.',
+      'Beiträge häufig ungenau oder lückenhaft.',
+      'Beiträge überwiegend falsch oder ohne Sachbezug.' ] },
+    tiefe: { n:'Gedankliche Tiefe (Anforderungsbereiche)', s:'Tiefe', g:'Q', d:[
+      'Stellt Zusammenhänge her, überträgt Wissen, urteilt begründet (AFB III).',
+      'Erklärt und wendet Wissen auf neue Beispiele an (AFB II).',
+      'Gibt Gelerntes richtig wieder, Ansätze von Erklärungen (AFB I–II).',
+      'Überwiegend reine Wiedergabe, oft nur auf Nachfrage.',
+      'Grundwissen kaum vorhanden.' ] },
+    kont: { n:'Kontinuität der Beteiligung', s:'Beteiligung', g:'B', d:[
+      'Beteiligt sich durchgehend und von sich aus.',
+      'Beteiligt sich regelmäßig.',
+      'Beteiligt sich gelegentlich, teils erst auf Ansprache.',
+      'Beteiligt sich selten, meist nur auf Ansprache.',
+      'Beteiligt sich praktisch nie.' ] },
+    eigen: { n:'Eigeninitiative und Selbstständigkeit', s:'Initiative', g:'B', d:[
+      'Bringt eigene Fragen, Ideen und Lösungswege ein; arbeitet selbstständig.',
+      'Zeigt häufig eigene Ideen; arbeitet weitgehend selbstständig.',
+      'Gelegentlich eigene Ideen; braucht teils Hilfe.',
+      'Selten eigene Ideen; braucht häufig Anleitung.',
+      'Keine Eigeninitiative erkennbar.' ] },
+    team: { n:'Partner- und Gruppenarbeit', s:'Gruppenarbeit', g:'B', d:[
+      'Arbeitet zielgerichtet, übernimmt Verantwortung, unterstützt andere.',
+      'Arbeitet engagiert und kooperativ mit.',
+      'Arbeitet mit, aber mit wechselndem Einsatz.',
+      'Arbeitet wenig mit; lenkt sich oder andere ab.',
+      'Beteiligt sich nicht an der gemeinsamen Arbeit.' ] },
+    vorb: { n:'Vorbereitung und Arbeitsmaterial', s:'Vorbereitung', g:'B', d:[
+      'Stets vorbereitet; Aufgaben und Material vollständig und sorgfältig.',
+      'Meist gut vorbereitet; Material vollständig.',
+      'Überwiegend vorbereitet; kleinere Lücken.',
+      'Häufig unvorbereitet; Material lückenhaft.',
+      'Regelmäßig unvorbereitet.' ] },
+    fachspr: { n:'Fachsprache und Ausdruck', s:'Fachsprache', g:'K', d:[
+      'Drückt sich präzise aus; Fachbegriffe sicher und selbstverständlich.',
+      'Klarer Ausdruck; Fachbegriffe überwiegend richtig.',
+      'Verständlich; Fachbegriffe teils ungenau.',
+      'Oft unpräzise; Fachbegriffe kaum genutzt.',
+      'Kaum verständlich; keine Fachbegriffe.' ] },
+    gespr: { n:'Gesprächsverhalten', s:'Gespräch', g:'K', d:[
+      'Greift Beiträge anderer auf, bringt das Gespräch voran, hört aufmerksam zu.',
+      'Bezieht sich häufig auf andere; hält Gesprächsregeln ein.',
+      'Bezieht sich gelegentlich auf andere; meist regelgerecht.',
+      'Kaum Bezug auf andere; Gesprächsregeln oft nicht beachtet.',
+      'Stört das Gespräch oder beteiligt sich nicht.' ] },
+    praes: { n:'Vorstellen von Ergebnissen', s:'Ergebnisse', g:'K', d:[
+      'Stellt Ergebnisse klar, strukturiert und adressatengerecht vor.',
+      'Stellt Ergebnisse verständlich und geordnet vor.',
+      'Stellt Ergebnisse vor, teils ungeordnet.',
+      'Ergebnisse lückenhaft und schwer nachvollziehbar.',
+      'Kann keine Ergebnisse vorstellen.' ] },
+
+    de_text: { n:'Textverständnis und Textbezug', s:'Textbezug', g:'Q', d:[
+      'Erschließt Texte genau; belegt Aussagen sicher am Text.',
+      'Versteht Texte sicher; belegt meist am Text.',
+      'Versteht Texte im Wesentlichen; Belege selten.',
+      'Versteht Texte lückenhaft; kaum Textbezug.',
+      'Kein Textverständnis erkennbar.' ] },
+    ge_quellen: { n:'Umgang mit Quellen und Darstellungen', s:'Quellen', g:'Q', d:[
+      'Ordnet Quellen sicher ein (Urheber, Zeit, Absicht) und deutet sie.',
+      'Wertet Quellen richtig aus und ordnet sie meist ein.',
+      'Entnimmt Quellen Informationen; kaum Einordnung.',
+      'Liest Quellen ungenau; Fehldeutungen.',
+      'Kein Quellenbezug.' ] },
+    ge_urteil: { n:'Historisches Urteilen', s:'Urteil', g:'Q', d:[
+      'Unterscheidet Sach- und Werturteil; urteilt begründet und perspektivisch.',
+      'Urteilt begründet; berücksichtigt Perspektiven.',
+      'Urteilt, Begründung knapp.',
+      'Pauschale, unbegründete Urteile.',
+      'Kein Urteil.' ] },
+    pug_analyse: { n:'Analyse politischer Fragen', s:'Analyse', g:'Q', d:[
+      'Benennt Problem, Akteure, Interessen und Lösungen präzise; stellt Bezüge her.',
+      'Benennt Akteure und Interessen klar; erklärt Zusammenhänge.',
+      'Nennt Akteure; Analyse eher beschreibend.',
+      'Analyse oberflächlich, teils falsch.',
+      'Keine Analyse.' ] },
+    pug_urteil: { n:'Politisches Urteil und Kontroversität', s:'Urteil', g:'Q', d:[
+      'Urteilt kriteriengeleitet; berücksichtigt Gegenpositionen fair.',
+      'Urteilt begründet; nennt Gegenpositionen.',
+      'Urteil vorhanden, eher einseitig.',
+      'Pauschale Meinung ohne Begründung.',
+      'Kein Urteil.' ] },
+    pug_akt: { n:'Aktualitätsbezug', s:'Aktualität', g:'Q', d:[
+      'Bringt aktuelle Ereignisse sachkundig ein und verknüpft sie mit dem Thema.',
+      'Bringt aktuelle Bezüge passend ein.',
+      'Nennt aktuelle Ereignisse, kaum verknüpft.',
+      'Aktuelle Bezüge selten und ungenau.',
+      'Keine aktuellen Bezüge.' ] },
+    fs_ziel: { n:'Gebrauch der Zielsprache', s:'Zielsprache', g:'K', d:[
+      'Spricht durchgehend in der Zielsprache, auch spontan.',
+      'Spricht überwiegend in der Zielsprache.',
+      'Spricht meist in der Zielsprache, wechselt bei Schwierigkeiten.',
+      'Wechselt häufig ins Deutsche.',
+      'Spricht kaum in der Zielsprache.' ] },
+    fs_mittel: { n:'Sprachliche Mittel und Sprachrichtigkeit', s:'Sprachmittel', g:'K', d:[
+      'Vielfältiger Wortschatz; Strukturen sicher; Fehler stören nicht.',
+      'Angemessener Wortschatz; wenige Fehler.',
+      'Einfacher Wortschatz; Fehler, aber verständlich.',
+      'Begrenzter Wortschatz; Fehler erschweren das Verständnis.',
+      'Kaum verständlich.' ] },
+    fs_aussp: { n:'Aussprache und Intonation', s:'Aussprache', g:'K', d:[
+      'Durchgehend korrekt; natürliche Betonung und Satzmelodie.',
+      'Überwiegend korrekt; Fehler stören nicht.',
+      'Wiederkehrende Fehler, aber verständlich.',
+      'Häufige Fehler; Verständnis teils erschwert.',
+      'Kaum verständlich.' ] },
+    fs_gespr: { n:'Gesprächsfähigkeit', s:'Gespräch', g:'K', d:[
+      'Reagiert spontan und flüssig; nutzt Strategien (Nachfragen, Umschreiben).',
+      'Reagiert meist flüssig; nutzt einfache Strategien.',
+      'Reagiert mit Pausen; Strategien selten.',
+      'Reagiert stockend, oft nur mit Hilfe.',
+      'Kann kaum reagieren.' ] },
+    mi_loes: { n:'Lösungswege und Begründen', s:'Lösungswege', g:'Q', d:[
+      'Findet eigene Lösungswege und begründet sie schlüssig.',
+      'Löst Aufgaben sicher und begründet nachvollziehbar.',
+      'Löst Standardaufgaben; Begründungen knapp.',
+      'Löst Aufgaben nur mit Hilfe; kaum Begründungen.',
+      'Kann Aufgaben auch mit Hilfe nicht lösen.' ] },
+    nw_exp: { n:'Experimentieren und Auswerten', s:'Experiment', g:'Q', d:[
+      'Plant, führt durch und wertet Versuche selbstständig und sachgerecht aus.',
+      'Führt Versuche sicher durch und wertet sie richtig aus.',
+      'Führt Versuche nach Anleitung durch; Auswertung lückenhaft.',
+      'Braucht viel Hilfe; Auswertung fehlerhaft.',
+      'Kann Versuche nicht durchführen oder auswerten.' ] }
+  };
+
+  var FS_LIST = ['qual', 'tiefe', 'kont', 'eigen', 'team', 'vorb', 'fs_ziel', 'fs_mittel', 'fs_aussp', 'fs_gespr', 'praes'];
+  var FS_DEF = ['qual', 'kont', 'fs_ziel', 'fs_mittel', 'fs_aussp', 'fs_gespr'];
+  var SUBJ = {
+    de:  { n:'Deutsch', acc:'#8B1E2D', light:'#F6E9EB', hit:'#F3C9CF', preset:'qual',
+           list:['qual', 'tiefe', 'de_text', 'kont', 'eigen', 'team', 'vorb', 'fachspr', 'gespr', 'praes'], def:['qual', 'tiefe', 'de_text', 'kont', 'fachspr', 'gespr'] },
+    ge:  { n:'Geschichte', acc:'#7A4B1E', light:'#F5EDE4', hit:'#E9CFAF', preset:'qual',
+           list:['qual', 'tiefe', 'ge_quellen', 'ge_urteil', 'kont', 'eigen', 'team', 'vorb', 'fachspr', 'gespr', 'praes'], def:['qual', 'tiefe', 'ge_quellen', 'kont', 'fachspr'] },
+    pug: { n:'Politik und Gesellschaft', acc:'#1F4E79', light:'#E8F0F8', hit:'#BFD6EC', preset:'qual',
+           list:['qual', 'tiefe', 'pug_analyse', 'pug_urteil', 'pug_akt', 'kont', 'eigen', 'team', 'vorb', 'fachspr', 'gespr', 'praes'], def:['qual', 'pug_analyse', 'pug_urteil', 'kont', 'gespr'] },
+    es:  { n:'Spanisch', acc:'#B5401A', light:'#FBECE6', hit:'#F4C7B6', preset:'komm', list:FS_LIST, def:FS_DEF },
+    en:  { n:'Englisch', acc:'#24496B', light:'#E6EEF6', hit:'#BCD0E6', preset:'komm', list:FS_LIST, def:FS_DEF },
+    fr:  { n:'Französisch', acc:'#3B3F8F', light:'#ECECF8', hit:'#C9CAEC', preset:'komm', list:FS_LIST, def:FS_DEF },
+    ma:  { n:'Mathematik', acc:'#2F5D3A', light:'#EAF3EC', hit:'#C3E0CA', preset:'qual',
+           list:['qual', 'tiefe', 'mi_loes', 'kont', 'eigen', 'team', 'vorb', 'fachspr', 'gespr', 'praes'], def:['qual', 'tiefe', 'mi_loes', 'kont', 'fachspr'] },
+    nw:  { n:'Naturwissenschaft', acc:'#1E6B6B', light:'#E4F2F2', hit:'#B8DCDC', preset:'qual',
+           list:['qual', 'tiefe', 'mi_loes', 'nw_exp', 'kont', 'eigen', 'team', 'vorb', 'fachspr', 'gespr', 'praes'], def:['qual', 'tiefe', 'nw_exp', 'kont', 'fachspr'] },
+    x:   { n:'Anderes Fach', acc:'#555555', light:'#EFEFEF', hit:'#D2D2D2', preset:'qual',
+           list:['qual', 'tiefe', 'kont', 'eigen', 'team', 'vorb', 'fachspr', 'gespr', 'praes'], def:['qual', 'tiefe', 'kont', 'fachspr', 'gespr'] }
+  };
+  var PRESETS = [
+    { id:'gleich',  n:'Ausgewogen',                 t:'Alle Kriterien zählen gleich viel.' },
+    { id:'qual',    n:'Schwerpunkt Qualität',       t:'Qualität 60 · Beteiligung 20 · Kommunikation 20', g:{ Q:60, B:20, K:20 } },
+    { id:'bet',     n:'Schwerpunkt Beteiligung',    t:'Qualität 35 · Beteiligung 45 · Kommunikation 20', g:{ Q:35, B:45, K:20 } },
+    { id:'komm',    n:'Schwerpunkt Kommunikation & Sprache', t:'Qualität 30 · Beteiligung 20 · Kommunikation 50', g:{ Q:30, B:20, K:50 } },
+    { id:'bereich', n:'Eigener Schwerpunkt',        t:'Anteile der drei Bereiche selbst festlegen.' },
+    { id:'eigen',   n:'Eigene Gewichtung',          t:'Jedes Kriterium in der Tabelle einzeln festlegen.' }
+  ];
+  var TOTALS = [5, 10, 12, 15, 20, 24, 30, 40, 50, 100];
+  var STUFEN = ['5', '6', '7', '8', '9', '10', '11', '12', '13'];
+  var PERIODS = [
+    { id:'hjcur', n:'Aktuelles Halbjahr' }, { id:'hj1', n:'1. Halbjahr' }, { id:'hj2', n:'2. Halbjahr' },
+    { id:'sj', n:'Ganzes Schuljahr' }, { id:'4w', n:'Letzte 4 Wochen' }, { id:'week', n:'Diese Woche' },
+    { id:'today', n:'Heute' }, { id:'day', n:'Einzelner Tag' }, { id:'custom', n:'Eigener Zeitraum (von – bis)' }, { id:'all', n:'Alle Einträge' }
+  ];
+
+  /* ================= Hilfsfunktionen ================= */
+  function num(x, d) { var n = parseFloat(String(x).replace(',', '.')); return isNaN(n) ? d : n; }
+  function fmt(n, dec) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec === undefined ? 2 : dec }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function sum(a) { var t = 0; for (var i = 0; i < a.length; i++) t += a[i]; return t; }
+  function qa(root, sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); }
+  function str(x, max) { return String(x == null ? '' : x).slice(0, max || 2000); }
+  function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); }
+  function p2(n) { return ('0' + n).slice(-2); }
+  function iso(d) { return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+  function todayISO() { return iso(new Date()); }
+  function parseISO(s) { var a = String(s).split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
+  function addDays(s, n) { var d = parseISO(s); d.setDate(d.getDate() + n); return iso(d); }
+  function de(s) { if (!s) return ''; var a = s.split('-'); return a[2] + '.' + a[1] + '.' + a[0]; }
+  function isISO(s) { return /^\d{4}-\d{2}-\d{2}$/.test(String(s)); }
+  function short(n) { return n.length > 14 ? n.slice(0, 13) + '.' : n; }
+  function stepOf(st) { return st.half ? 0.5 : 1; }
+  function ceilS(x, st) { return Math.ceil(x / st - 1e-9) * st; }
+  function roundS(x, st) { return Math.round(x / st) * st; }
+  function p1(x) { return fmt(Math.round(x * 100) / 100); }
+  function levelOf(np) { return np >= 13 ? 0 : np >= 10 ? 1 : np >= 7 ? 2 : np >= 4 ? 3 : 4; }
+
+  /* ================= Zustand ================= */
+  var KEY = 'unterrichtsbeitraege_v1';
+  var canStore = storageOk();
+  function storageOk() {
+    try { var k = '__t' + Math.random(); localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; } catch (e) { return false; }
+  }
+  function freshCourse(fach, stufe) {
+    fach = SUBJ[fach] ? fach : 'de'; stufe = stufe || '8';
+    var c = { id:uid('k'), stufe:stufe, klasse:'', fach:fach, fachName:SUBJ[fach].n, sel:SUBJ[fach].def.slice(), custom:[], texts:{},
+              preset:SUBJ[fach].preset, groups:{ Q:50, B:30, K:20 }, weights:{},
+              mode:'tap', out: +stufe >= 11 ? 'np' : 'note', total:20, half:true, keyType:'abi', knick:[50, 20],
+              indNote:[85, 70, 55, 40, 20], indNP:ABI.slice(1), timeW:'equal', hj:'02-15',
+              students:[], entries:[], per:{ p:'hjcur', from:'', to:'' }, date:todayISO() };
+    applyPreset(c);
+    return c;
+  }
+  function freshDB() { var c = freshCourse('de', '8'); return { v:1, setup:false, view:'setup', cur:c.id, courses:[c] }; }
+  function load() {
+    if (!canStore) return null;
+    try { var t = localStorage.getItem(KEY); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+  }
+  function pcts(a, n, d) { return (Array.isArray(a) && a.length === n) ? a.map(function (x) { return Math.max(0, Math.min(100, num(x, 0))); }) : d; }
+  function sanitizeCourse(o) {
+    if (!o || typeof o !== 'object' || !SUBJ[o.fach]) return null;
+    var f = freshCourse(o.fach, STUFEN.indexOf(String(o.stufe)) >= 0 ? String(o.stufe) : '8');
+    f.id = str(o.id || f.id, 40); f.klasse = str(o.klasse, 40); f.fachName = str(o.fachName, 40) || SUBJ[o.fach].n;
+    f.custom = (Array.isArray(o.custom) ? o.custom : []).filter(function (c) { return c && c.id && c.n; }).slice(0, 20).map(function (c) {
+      return { id:str(c.id, 40), n:str(c.n, 60), g:GROUPS[c.g] ? c.g : 'Q' };
+    });
+    var known = {}; SUBJ[f.fach].list.concat(f.custom.map(function (c) { return c.id; })).forEach(function (id) { known[id] = 1; });
+    var sel = (Array.isArray(o.sel) ? o.sel : []).filter(function (id) { return known[id]; }).slice(0, MAX);
+    if (sel.length >= MIN) f.sel = sel;
+    if (o.texts && typeof o.texts === 'object') for (var tk in o.texts) {
+      var tx = o.texts[tk];
+      if (known[tk] && tx && typeof tx === 'object') f.texts[tk] = { n:str(tx.n, 80), d:[0, 1, 2, 3, 4].map(function (i) { return str(Array.isArray(tx.d) ? tx.d[i] : '', 200); }) };
+    }
+    f.preset = PRESETS.some(function (p) { return p.id === o.preset; }) ? o.preset : f.preset;
+    if (o.groups && typeof o.groups === 'object') for (var g in GROUPS) f.groups[g] = Math.max(0, num(o.groups[g], f.groups[g]));
+    f.mode = o.mode === 'pt' ? 'pt' : 'tap';
+    f.out = o.out === 'note' ? 'note' : o.out === 'np' ? 'np' : f.out;
+    f.total = Math.max(1, Math.min(1000, Math.round(num(o.total, 20))));
+    f.half = o.half !== false;
+    f.keyType = (o.keyType === 'knick' || o.keyType === 'ind') ? o.keyType : 'abi';
+    f.knick = pcts(o.knick, 2, f.knick); f.indNote = pcts(o.indNote, 5, f.indNote); f.indNP = pcts(o.indNP, 15, f.indNP);
+    f.timeW = o.timeW === 'recent' ? 'recent' : 'equal';
+    f.hj = /^\d{2}-\d{2}$/.test(String(o.hj)) ? o.hj : '02-15';
+    f.weights = {};
+    if (o.weights && typeof o.weights === 'object') for (var k in o.weights) if (known[k]) f.weights[k] = Math.max(0, num(o.weights[k], 0));
+    f.students = (Array.isArray(o.students) ? o.students : []).slice(0, 200).filter(function (s) { return s && s.id; }).map(function (s) {
+      return { id:str(s.id, 40), name:str(s.name, 80) };
+    });
+    var sids = {}; f.students.forEach(function (s) { sids[s.id] = 1; });
+    f.entries = (Array.isArray(o.entries) ? o.entries : []).slice(0, 50000).filter(function (e) { return e && sids[e.sid] && isISO(e.d); }).map(function (e) {
+      var r = {};
+      if (e.r && typeof e.r === 'object') for (var cid in e.r) { var v = num(e.r[cid], NaN); if (!isNaN(v)) r[str(cid, 40)] = Math.max(0, Math.min(1, v)); }
+      return { id:str(e.id || uid('e'), 40), sid:e.sid, d:e.d, r:r, abs:!!e.abs, note:str(e.note, 500) };
+    });
+    var per = o.per || {};
+    f.per = { p: PERIODS.some(function (p) { return p.id === per.p; }) ? per.p : 'hjcur', from: isISO(per.from) ? per.from : '', to: isISO(per.to) ? per.to : '' };
+    f.date = isISO(o.date) ? o.date : todayISO();
+    var anyW = active(f).some(function (c) { return f.weights[c.id] > 0; });
+    if (!anyW) applyPreset(f);
+    return f;
+  }
+  function sanitizeDB(o) {
+    if (!o || o.v !== 1 || !Array.isArray(o.courses)) return null;
+    var cs = o.courses.slice(0, 60).map(sanitizeCourse).filter(Boolean);
+    if (!cs.length) return null;
+    var cur = cs.some(function (c) { return c.id === o.cur; }) ? o.cur : cs[0].id;
+    return { v:1, setup:!!o.setup, view: ['setup', 'erf', 'ausw'].indexOf(o.view) >= 0 ? o.view : 'erf', cur:cur, courses:cs };
+  }
+
+  var DB = null, S = null;
+  var els = {}, openSid = null, txOpen = false, einzelSid = null;
+  function curCourse() { for (var i = 0; i < DB.courses.length; i++) if (DB.courses[i].id === DB.cur) return DB.courses[i]; DB.cur = DB.courses[0].id; return DB.courses[0]; }
+
+  var tmr = null;
+  function flush() { clearTimeout(tmr); tmr = null; if (!canStore || !DB) return Promise.resolve(); return SEC.write(KEY, JSON.stringify(DB)); }
+  function save() { if (!canStore || tmr) return; tmr = setTimeout(flush, 250); }
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+
+  /* ================= Kriterien & Gewichtung ================= */
+  function critBase(st, id) {
+    if (C[id]) { var c = C[id]; return { id:id, n:c.n, s:c.s, g:c.g, d:c.d }; }
+    for (var i = 0; i < st.custom.length; i++) if (st.custom[i].id === id) {
+      var u = st.custom[i];
+      return { id:u.id, n:u.n, s:short(u.n), g:u.g, d:GENERIC, custom:true };
+    }
+    return null;
+  }
+  function critObj(st, id) {
+    var b = critBase(st, id), o = b && st.texts[id];
+    if (!o) return b;
+    var n = (o.n || '').trim();
+    return { id:b.id, n:n || b.n, s:n && n !== b.n ? short(n) : b.s, g:b.g, custom:b.custom,
+             d:b.d.map(function (x, i) { var t = (o.d[i] || '').trim(); return t || x; }) };
+  }
+  function catalog(st) {
+    st = st || S;
+    return SUBJ[st.fach].list.map(function (id) { return critObj(st, id); }).concat(st.custom.map(function (u) { return critObj(st, u.id); }));
+  }
+  function active(st) { st = st || S; return catalog(st).filter(function (c) { return st.sel.indexOf(c.id) >= 0; }); }
+  function W(c) { return S.weights[c.id] || 0; }
+  function presetById(id) { for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].id === id) return PRESETS[i]; return PRESETS[0]; }
+  function distribute(sh, total, minOne) {
+    var s = sum(sh) || 1;
+    var raw = sh.map(function (x) { return x / s * total; });
+    var out = raw.map(Math.floor), rest = total - sum(out);
+    var idx = raw.map(function (x, i) { return i; }).sort(function (a, b) { return (raw[b] - out[b]) - (raw[a] - out[a]); });
+    for (var i = 0; i < rest; i++) out[idx[i % idx.length]]++;
+    if (minOne) out.forEach(function (x, i) {
+      if (x > 0) return;
+      var j = -1; out.forEach(function (y, m) { if (y > 1 && (j < 0 || y > out[j])) j = m; });
+      if (j >= 0) { out[j]--; out[i] = 1; }
+    });
+    return out;
+  }
+  function applyPreset(st) {
+    st = st || S;
+    var cs = active(st); if (!cs.length) return;
+    var T = st.mode === 'tap' ? 100 : st.total, p = presetById(st.preset), sh;
+    if (p.id === 'eigen') {
+      var have = cs.map(function (c) { return st.weights[c.id] > 0 ? st.weights[c.id] : 0; });
+      var pos = have.filter(function (x) { return x > 0; }), avg = pos.length ? sum(pos) / pos.length : 1;
+      sh = have.map(function (x) { return x > 0 ? x : avg; });
+    } else if (p.id === 'gleich') {
+      sh = cs.map(function () { return 1; });
+    } else {
+      var pg = p.id === 'bereich' ? st.groups : p.g, cnt = {}, gs = 0;
+      cs.forEach(function (c) { cnt[c.g] = (cnt[c.g] || 0) + 1; });
+      for (var g in cnt) gs += pg[g] || 0;
+      sh = gs > 0 ? cs.map(function (c) { return (pg[c.g] || 0) / gs / cnt[c.g]; }) : cs.map(function () { return 1; });
+    }
+    var out = distribute(sh, T, st.mode === 'pt');
+    cs.forEach(function (c, i) { st.weights[c.id] = out[i]; });
+  }
+
+  /* ================= Notenschlüssel ================= */
+  function npTh() {
+    if (S.keyType === 'knick') {
+      var a = S.knick[0], b = S.knick[1], t = [0];
+      for (var n = 1; n <= 15; n++) t.push(n >= 4 ? a + (n - 4) * (100 - a) / 12 : b + (n - 1) * (a - b) / 3);
+      return t;
+    }
+    if (S.keyType === 'ind') return [0].concat(S.indNP);
+    return ABI.slice();
+  }
+  function noteTh() {
+    if (S.keyType === 'knick') {
+      var a = S.knick[0];
+      return [1, 2, 3, 4].map(function (i) { return 100 - i * (100 - a) / 4; }).concat([S.knick[1]]);
+    }
+    if (S.keyType === 'ind' && S.out === 'note') return S.indNote.slice();
+    var t = npTh(); return [t[13], t[10], t[7], t[4], t[1]];
+  }
+  function noteNP(np) {
+    if (np >= 13) return { z:1, t:'sehr gut' };
+    if (np >= 10) return { z:2, t:'gut' };
+    if (np >= 7)  return { z:3, t:'befriedigend' };
+    if (np >= 4)  return { z:4, t:'ausreichend' };
+    if (np >= 1)  return { z:5, t:'mangelhaft' };
+    return { z:6, t:'ungenügend' };
+  }
+  function fromPct(p) {
+    if (S.out === 'np') {
+      var t = npTh();
+      for (var n = 15; n >= 1; n--) if (p >= t[n] - 1e-9) return { np:n, z:noteNP(n) };
+      return { np:0, z:noteNP(0) };
+    }
+    var kp = noteTh(), names = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft', 'ungenügend'];
+    for (var i = 0; i < 5; i++) if (p >= kp[i] - 1e-9) return { z:{ z:i + 1, t:names[i] } };
+    return { z:{ z:6, t:names[5] } };
+  }
+  function keyName() { for (var i = 0; i < KEYS.length; i++) if (KEYS[i].id === S.keyType) return KEYS[i].n; return ''; }
+  function legend() {
+    var tw = S.timeW === 'recent' ? ' Spätere Einträge zählen stärker (1., 2., 3. … Eintrag mit Gewicht 1, 2, 3 …).' : ' Alle Einträge im Zeitraum zählen gleich.';
+    if (S.mode === 'tap') {
+      if (S.out === 'np') return 'Stufen: sehr gut 15–13, gut 12–10, befriedigend 9–7, ausreichend 6–4, mangelhaft/ungenügend 3–0 Notenpunkte. Note: 15–13 = 1 · 12–10 = 2 · 9–7 = 3 · 6–4 = 4 · 3–1 = 5 · 0 = 6. Ergebnis = gewichteter Durchschnitt, ab ,5 aufgerundet.' + tw;
+      return 'Stufe = Note, − / + setzt die Tendenz. Ergebnis = gewichteter Durchschnitt (intern 15–0 Punkte, ab ,5 aufgerundet).' + tw;
+    }
+    if (S.out === 'np') {
+      var t = npTh(), a = [];
+      for (var n = 15; n >= 1; n--) a.push(n + ' ab ' + p1(t[n]) + ' %');
+      return keyName() + ' (Notenpunkte): ' + a.join(' · ') + ' · 0 darunter.' + tw;
+    }
+    var kp = noteTh();
+    return keyName() + ': 1 ab ' + p1(kp[0]) + ' % · 2 ab ' + p1(kp[1]) + ' % · 3 ab ' + p1(kp[2]) + ' % · 4 ab ' + p1(kp[3]) + ' % · 5 ab ' + p1(kp[4]) + ' % · 6 darunter.' + tw;
+  }
+
+  /* ================= Zeitraum ================= */
+  function schoolYear(t) { var d = parseISO(t); return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; }
+  function perRange() {
+    var p = S.per, t = todayISO(), sy = schoolYear(t), hjD = (sy + 1) + '-' + S.hj;
+    var syFrom = sy + '-08-01', syTo = (sy + 1) + '-07-31';
+    switch (p.p) {
+      case 'all': return { from:'', to:'' };
+      case 'today': return { from:t, to:t };
+      case 'day': var d0 = p.from || t; return { from:d0, to:d0 };
+      case 'week': var wd = (parseISO(t).getDay() + 6) % 7, mo = addDays(t, -wd); return { from:mo, to:addDays(mo, 6) };
+      case '4w': return { from:addDays(t, -27), to:t };
+      case 'hj1': return { from:syFrom, to:addDays(hjD, -1) };
+      case 'hj2': return { from:hjD, to:syTo };
+      case 'sj': return { from:syFrom, to:syTo };
+      case 'custom': return { from:p.from || '', to:p.to || '' };
+      default: return t < hjD ? { from:syFrom, to:addDays(hjD, -1) } : { from:hjD, to:syTo };
+    }
+  }
+  function perLabel() {
+    var r = perRange();
+    if (!r.from && !r.to) return 'alle Einträge';
+    if (r.from === r.to) return de(r.from);
+    return (r.from ? de(r.from) : 'Anfang') + ' – ' + (r.to ? de(r.to) : 'heute');
+  }
+  function inPer(d, r) { return (!r.from || d >= r.from) && (!r.to || d <= r.to); }
+
+  /* ================= Einträge & Berechnung ================= */
+  function stuById(id) { for (var i = 0; i < S.students.length; i++) if (S.students[i].id === id) return S.students[i]; return null; }
+  function entryOf(sid, d) { for (var i = 0; i < S.entries.length; i++) { var e = S.entries[i]; if (e.sid === sid && e.d === d) return e; } return null; }
+  function getEntry(sid, d) {
+    var e = entryOf(sid, d);
+    if (!e) { e = { id:uid('e'), sid:sid, d:d, r:{}, abs:false, note:'' }; S.entries.push(e); }
+    return e;
+  }
+  function pruneEntry(e) {
+    var any = false; for (var k in e.r) { any = true; break; }
+    if (!any && !e.abs && !e.note.trim()) S.entries = S.entries.filter(function (x) { return x !== e; });
+  }
+  function npOf(f) { return Math.round(f * 15); }
+  function ptsOf(f, c) { return roundS(f * W(c), stepOf(S)); }
+  function valLabel(f, c) {
+    if (f == null) return '–';
+    if (S.mode === 'tap') { var np = npOf(f); return S.out === 'note' ? TEND[np] : String(np); }
+    return fmt(ptsOf(f, c));
+  }
+  function avgLabel(a, c) {
+    if (!a) return '';
+    if (S.mode === 'tap') return S.out === 'note' ? TEND[Math.max(0, Math.min(15, Math.floor(a.avg + 0.5 + 1e-9)))] : fmt(a.avg, 1);
+    return fmt(a.avg * W(c), 1);
+  }
+  function result(sid, r) {
+    r = r || perRange();
+    var cs = active();
+    var es = S.entries.filter(function (e) { return e.sid === sid && inPer(e.d, r); }).sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    var use = es.filter(function (e) { return !e.abs; });
+    var per = {};
+    cs.forEach(function (c) {
+      var sw = 0, sv = 0, n = 0;
+      use.forEach(function (e, i) {
+        var f = e.r[c.id]; if (f == null) return;
+        var w = S.timeW === 'recent' ? i + 1 : 1, v = S.mode === 'tap' ? npOf(f) : f;
+        sv += w * v; sw += w; n++;
+      });
+      per[c.id] = n ? { avg:sv / sw, n:n } : null;
+    });
+    var have = cs.filter(function (c) { return per[c.id]; });
+    var res = { entries:es, n:use.filter(function (e) { var k; for (k in e.r) return true; return false; }).length, abs:es.length - use.length, per:per,
+                missing:cs.filter(function (c) { return !per[c.id]; }) };
+    if (!have.length) return res;
+    var ws = sum(have.map(W)) || 1, x = sum(have.map(function (c) { return W(c) * per[c.id].avg; })) / ws;
+    res.done = true;
+    if (S.mode === 'tap') { res.ex = x; res.np = Math.floor(x + 0.5 + 1e-9); res.z = noteNP(res.np); }
+    else { res.pct = x * 100; var fr = fromPct(res.pct); res.np = fr.np; res.z = fr.z; }
+    return res;
+  }
+  function resCols(r) {
+    var d = !!r.done, c = [];
+    if (S.mode === 'tap') {
+      if (S.out === 'np') c.push(['Ø NP', d ? fmt(r.ex, 1) : ''], ['Notenpunkte', d ? r.np : '']);
+      else c.push(['Tendenz', d ? TEND[r.np] : '']);
+    } else {
+      c.push(['Prozent', d ? fmt(r.pct, 1) : '']);
+      if (S.out === 'np') c.push(['Notenpunkte', d ? r.np : '']);
+    }
+    c.push(['Note', d ? r.z.z : '']);
+    return c;
+  }
+  function hasEntries() { return S.entries.length > 0; }
+
+  /* ================= Ansicht wechseln ================= */
+  function setAccent() {
+    var s = SUBJ[S.fach], r = document.documentElement.style;
+    r.setProperty('--acc', s.acc); r.setProperty('--light', s.light); r.setProperty('--hit', s.hit);
+  }
+  function courseName(c) { return (c.klasse || ('Jgst. ' + c.stufe)) + ' · ' + (c.fachName || SUBJ[c.fach].n); }
+  function renderCsel() {
+    els.csel.innerHTML = DB.courses.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === S.id ? ' selected' : '') + '>' + esc(courseName(c)) + '</option>'; }).join('');
+  }
+  function setView(v) {
+    DB.view = v; save();
+    document.body.dataset.view = v;
+    ['setup', 'erf', 'ausw', 'einzel'].forEach(function (k) { els[k].hidden = k !== v; });
+    qa(els.bar, '[data-view]').forEach(function (b) { b.classList.toggle('on', b.dataset.view === v || (v === 'einzel' && b.dataset.view === 'ausw')); });
+    setAccent(); renderCsel();
+    if (v === 'setup') renderSetup();
+    if (v === 'erf') renderErf();
+    if (v === 'ausw') renderAusw();
+    if (v === 'einzel') renderEinzel();
+    window.scrollTo(0, 0);
+  }
+
+  /* ================= Erfassen ================= */
+  function chipsHTML(sid) {
+    var e = entryOf(sid, S.date);
+    if (!e) return '<span>—</span>';
+    if (e.abs) return '<span class="abs">fehlt</span>';
+    var h = '';
+    active().forEach(function (c) { var f = e.r[c.id]; if (f != null) h += '<span>' + esc(c.s) + ' ' + esc(valLabel(f, c)) + '</span>'; });
+    if (e.note.trim()) h += '<span>✎</span>';
+    return h || '<span>—</span>';
+  }
+  function stuHTML(s, cnt) {
+    var open = s.id === openSid;
+    var h = '<div class="stu' + (open ? ' open' : '') + '" data-sid="' + esc(s.id) + '">' +
+      '<button type="button" class="sh" data-a="open"><span class="nm">' + esc(s.name || '(ohne Namen)') + '</span><span class="chs">' + chipsHTML(s.id) + '</span>' +
+      '<span class="cnt' + (cnt ? '' : ' zero') + '" title="Einträge im Zeitraum ' + esc(perLabel()) + '">' + cnt + '</span></button>';
+    if (open) h += editorHTML(s);
+    return h + '</div>';
+  }
+  function editorHTML(s) {
+    var e = entryOf(s.id, S.date), h = '<div class="ed">';
+    if (e && e.abs) h += '<p class="absnote">Als fehlend markiert – dieser Tag zählt nicht.</p>';
+    active().forEach(function (c) {
+      var f = e ? e.r[c.id] : null, has = f != null;
+      h += '<div class="er"><div class="et"><b>' + esc(c.n) + ' <i class="tag t' + c.g + '">' + GROUPS[c.g] + '</i></b>';
+      if (S.mode === 'tap') {
+        var np = has ? npOf(f) : null, k = has ? levelOf(np) : -1, L = has ? NP_LV[k] : null;
+        h += '<button type="button" class="st" data-a="st" data-c="' + esc(c.id) + '" data-d="-1" aria-label="weniger"' + (!has || np <= L.lo ? ' disabled' : '') + '>−</button>' +
+             '<span class="ev">' + esc(valLabel(f, c)) + '</span>' +
+             '<button type="button" class="st" data-a="st" data-c="' + esc(c.id) + '" data-d="1" aria-label="mehr"' + (!has || np >= L.hi ? ' disabled' : '') + '>+</button></div><div class="lvs">';
+        for (var j = 0; j < 5; j++) {
+          var big = S.out === 'note' ? (j === 4 ? '5/6' : String(j + 1)) : NP_LV[j].hi + '–' + NP_LV[j].lo;
+          h += '<button type="button" class="lvb' + (j === k ? ' on' : '') + '" data-a="lv" data-c="' + esc(c.id) + '" data-k="' + j + '" title="' + esc(c.d[j]) + '">' + big + '<small>' + LV_NAMES[j].replace(' / ungenügend', '/ung.') + '</small></button>';
+        }
+        h += '</div><div class="desc">' + (has ? esc(c.d[k]) : '') + '</div>';
+      } else {
+        h += '<span>max. ' + fmt(W(c)) + ' P</span></div><div class="pin">' +
+             '<button type="button" class="st" data-a="pst" data-c="' + esc(c.id) + '" data-d="-1" aria-label="weniger">−</button>' +
+             '<input type="text" inputmode="decimal" data-a="pv" data-c="' + esc(c.id) + '" value="' + (has ? fmt(ptsOf(f, c)) : '') + '" placeholder="–" aria-label="Punkte ' + esc(c.n) + '">' +
+             '<button type="button" class="st" data-a="pst" data-c="' + esc(c.id) + '" data-d="1" aria-label="mehr">+</button><span>von ' + fmt(W(c)) + '</span></div>';
+      }
+      h += '</div>';
+    });
+    h += '<div class="eact"><button type="button" data-a="abs" class="' + (e && e.abs ? 'on' : '') + '">fehlt</button>' +
+      '<input type="text" data-a="note" maxlength="500" placeholder="Bemerkung (optional)" value="' + esc(e ? e.note : '') + '">' +
+      '<button type="button" data-a="clr">Eintrag löschen</button>' +
+      '<button type="button" class="primary" data-a="nextstu">Nächste/r ▶</button></div></div>';
+    return h;
+  }
+  function counts() {
+    var r = perRange(), m = {};
+    S.entries.forEach(function (e) {
+      if (e.abs || !inPer(e.d, r)) return;
+      var any = false; for (var k in e.r) { any = true; break; }
+      if (any) m[e.sid] = (m[e.sid] || 0) + 1;
+    });
+    return m;
+  }
+  function renderErf() {
+    var cnt = counts();
+    var h = '<div class="sbox"><div class="erfhead"><label>Datum <input type="date" id="edate" value="' + esc(S.date) + '"></label>' +
+      '<button type="button" data-a="today">Heute</button><span class="note">Zahl rechts = Einträge im Zeitraum <b>' + esc(perLabel()) + '</b> (änderbar unter „Auswertung“).</span></div></div>';
+    if (!S.students.length) {
+      h += '<div class="sbox"><p>Für diese Klasse ist noch keine Schülerliste angelegt.</p><button type="button" class="primary" data-a="gosetup">Schülerliste anlegen</button></div>';
+    } else {
+      h += '<div class="slist">' + S.students.map(function (s) { return stuHTML(s, cnt[s.id] || 0); }).join('') + '</div>';
+    }
+    els.erf.innerHTML = h;
+  }
+  function refreshStu(sid, keepFocus) {
+    var el = els.erf.querySelector('.stu[data-sid="' + sid + '"]'), s = stuById(sid);
+    if (!el || !s) return;
+    if (keepFocus) { el.querySelector('.chs').innerHTML = chipsHTML(sid); return; }
+    var tmp = document.createElement('div'); tmp.innerHTML = stuHTML(s, counts()[sid] || 0);
+    el.parentNode.replaceChild(tmp.firstChild, el);
+  }
+  function setVal(sid, cid, f) {
+    var e = getEntry(sid, S.date);
+    if (f == null) delete e.r[cid]; else e.r[cid] = Math.max(0, Math.min(1, f));
+    pruneEntry(e); save();
+  }
+  function erfClick(e) {
+    var b = e.target.closest('[data-a]'); if (!b) return;
+    var a = b.dataset.a;
+    if (a === 'today') { S.date = todayISO(); save(); renderErf(); return; }
+    if (a === 'gosetup') { setView('setup'); return; }
+    var box = b.closest('.stu'); if (!box) return;
+    var sid = box.dataset.sid, c = b.dataset.c ? critObj(S, b.dataset.c) : null, en = entryOf(sid, S.date);
+    if (a === 'open') {
+      var prev = openSid; openSid = openSid === sid ? null : sid;
+      if (prev && prev !== sid) refreshStu(prev);
+      refreshStu(sid);
+      if (openSid) { var el = els.erf.querySelector('.stu[data-sid="' + sid + '"]'); if (el && el.scrollIntoView) el.scrollIntoView({ block:'nearest' }); }
+      return;
+    }
+    if (a === 'lv') {
+      var k = +b.dataset.k, f = en ? en.r[c.id] : null;
+      setVal(sid, c.id, (f != null && levelOf(npOf(f)) === k) ? null : NP_LV[k].def / 15);
+    } else if (a === 'st') {
+      var f2 = en && en.r[c.id]; if (f2 == null) return;
+      var np = npOf(f2), L = NP_LV[levelOf(np)];
+      setVal(sid, c.id, Math.max(L.lo, Math.min(L.hi, np + (+b.dataset.d))) / 15);
+    } else if (a === 'pst') {
+      var m = W(c), st = stepOf(S), f3 = en ? en.r[c.id] : null;
+      var v = f3 == null ? (+b.dataset.d > 0 ? st : 0) : Math.max(0, Math.min(m, ptsOf(f3, c) + (+b.dataset.d) * st));
+      setVal(sid, c.id, m ? v / m : 0);
+    } else if (a === 'abs') {
+      var e2 = getEntry(sid, S.date); e2.abs = !e2.abs; pruneEntry(e2); save();
+    } else if (a === 'clr') {
+      if (!en) return;
+      if (!confirm('Eintrag vom ' + de(S.date) + ' löschen?')) return;
+      S.entries = S.entries.filter(function (x) { return x !== en; }); save();
+    } else if (a === 'nextstu') {
+      var i = -1; S.students.forEach(function (s, j) { if (s.id === sid) i = j; });
+      var nx = S.students[i + 1];
+      openSid = nx ? nx.id : null;
+      refreshStu(sid);
+      if (nx) { refreshStu(nx.id); var el2 = els.erf.querySelector('.stu[data-sid="' + nx.id + '"]'); if (el2 && el2.scrollIntoView) el2.scrollIntoView({ block:'start' }); window.scrollBy(0, -64); }
+      return;
+    } else return;
+    refreshStu(sid);
+  }
+  function erfInput(e) {
+    var t = e.target;
+    if (t.id === 'edate') { if (isISO(t.value)) { S.date = t.value; save(); renderErf(); } return; }
+    var box = t.closest && t.closest('.stu'); if (!box) return;
+    var sid = box.dataset.sid;
+    if (t.dataset.a === 'note') {
+      var en = getEntry(sid, S.date); en.note = t.value.slice(0, 500); pruneEntry(en); save(); refreshStu(sid, true);
+    } else if (t.dataset.a === 'pv') {
+      var c = critObj(S, t.dataset.c), m = W(c);
+      if (t.value.trim() === '') setVal(sid, c.id, null);
+      else { var v = Math.max(0, Math.min(m, num(t.value, 0))); setVal(sid, c.id, m ? v / m : 0); }
+      refreshStu(sid, true);
+    }
+  }
+
+  /* ================= Auswertung ================= */
+  function ovTable(clickable) {
+    var cs = active(), r = perRange(), sw = sum(cs.map(W)) || 1;
+    var h = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Einträge</th><th>fehlt</th>';
+    cs.forEach(function (c, i) {
+      h += '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (S.mode === 'tap' ? fmt(W(c) / sw * 100, 0) + ' %' : 'max ' + fmt(W(c))) + ')</th>';
+    });
+    resCols({}).forEach(function (x) { h += '<th>' + esc(x[0]) + '</th>'; });
+    h += '</tr></thead><tbody>';
+    S.students.forEach(function (s, n) {
+      var res = result(s.id, r);
+      h += '<tr' + (clickable ? ' data-sid="' + esc(s.id) + '"' : '') + '><td>' + (n + 1) + '</td><td class="l">' + esc(s.name) + '</td>' +
+        '<td class="' + (res.n ? '' : 'few') + '">' + res.n + '</td><td>' + (res.abs || '') + '</td>';
+      cs.forEach(function (c) { h += '<td>' + avgLabel(res.per[c.id], c) + '</td>'; });
+      var rc = resCols(res);
+      rc.forEach(function (x, i) { h += '<td>' + (i === rc.length - 1 ? '<b>' + x[1] + '</b>' : esc(x[1])) + '</td>'; });
+      h += '</tr>';
+    });
+    return h + '</tbody></table></div>';
+  }
+  function renderAusw() {
+    var p = S.per;
+    var h = '<div class="sbox"><h3>Auswertung ' + esc(courseName(S)) + '</h3><div class="row"><label class="row"><b>Zeitraum</b> <select id="per">' +
+      PERIODS.map(function (x) { return '<option value="' + x.id + '"' + (x.id === p.p ? ' selected' : '') + '>' + x.n + '</option>'; }).join('') + '</select></label>';
+    if (p.p === 'day') h += '<label class="row">Tag <input type="date" id="pfrom" value="' + esc(p.from || todayISO()) + '"></label>';
+    if (p.p === 'custom') h += '<label class="row">von <input type="date" id="pfrom" value="' + esc(p.from) + '"></label><label class="row">bis <input type="date" id="pto" value="' + esc(p.to) + '"></label>';
+    h += '<b>' + esc(perLabel()) + '</b></div>' +
+      '<div class="row" style="margin-top:10px"><button type="button" data-a="pov">Übersicht drucken</button><button type="button" data-a="pall">Alle Einzelberichte drucken</button>' +
+      '<button type="button" data-a="pblank">Leere Beobachtungsliste</button><button type="button" data-a="praster">Kriterienraster drucken</button>' +
+      '<button type="button" data-a="csv">Tabelle (CSV)</button><button type="button" data-a="csve">Alle Einträge (CSV)</button><button type="button" data-a="exp">Sicherung speichern</button></div></div>';
+    if (!S.students.length) h += '<div class="sbox"><p>Noch keine Schülerliste vorhanden.</p></div>';
+    else h += '<div class="sbox">' + ovTable(true) + '<p class="legend">' + esc(legend()) + ' Gelb: kein Eintrag im Zeitraum. Zeile antippen öffnet den Einzelbericht.</p></div>';
+    els.ausw.innerHTML = h;
+  }
+  function reportHTML(sid, forPrint) {
+    var s = stuById(sid); if (!s) return '';
+    var cs = active(), res = result(sid), sw = sum(cs.map(W)) || 1;
+    var h = '<h1>' + esc(s.name) + ' – Unterrichtsbeiträge</h1><p class="sub">' + esc(courseName(S)) + ' · Zeitraum: ' + esc(perLabel()) + '</p>';
+    h += '<div class="res">';
+    resCols(res).forEach(function (x) { h += '<span>' + esc(x[0]) + ': <b class="big2">' + (x[1] === '' ? '–' : esc(x[1])) + (x[0] === 'Note' && res.done ? ' (' + res.z.t + ')' : '') + '</b></span>'; });
+    h += '<span>Einträge: <b>' + res.n + '</b>' + (res.abs ? ' · fehlt: ' + res.abs : '') + '</span></div>';
+    if (res.missing.length && res.done) h += '<p class="note">Ohne Eintrag im Zeitraum (nicht gewertet): ' + res.missing.map(function (c) { return esc(c.n); }).join(', ') + '</p>';
+    h += '<table class="ovt"><thead><tr><th>Kriterium</th><th>' + (S.mode === 'tap' ? 'Gewichtung' : 'Höchstpunkte') + '</th><th>Einträge</th><th>Durchschnitt</th></tr></thead><tbody>';
+    cs.forEach(function (c) {
+      var a = res.per[c.id];
+      h += '<tr><td class="l">' + esc(c.n) + '</td><td>' + (S.mode === 'tap' ? fmt(W(c) / sw * 100, 0) + ' %' : fmt(W(c))) + '</td><td>' + (a ? a.n : 0) + '</td><td>' + (avgLabel(a, c) || '–') + '</td></tr>';
+    });
+    h += '</tbody></table><h3 style="margin:12px 0 6px">Einzelne Einträge</h3>';
+    if (!res.entries.length) h += '<p>Keine Einträge im Zeitraum.</p>';
+    else {
+      h += '<table class="ovt"><thead><tr><th>Datum</th>' + cs.map(function (c, i) { return '<th>' + (i + 1) + ' ' + esc(c.s) + '</th>'; }).join('') + '<th>Bemerkung</th></tr></thead><tbody>';
+      res.entries.forEach(function (e) {
+        h += '<tr' + (forPrint ? '' : ' data-ed="' + esc(e.d) + '"') + '><td>' + de(e.d) + '</td>';
+        if (e.abs) h += '<td colspan="' + cs.length + '">fehlt</td>';
+        else cs.forEach(function (c) { var f = e.r[c.id]; h += '<td>' + (f == null ? '' : esc(valLabel(f, c))) + '</td>'; });
+        h += '<td class="l">' + esc(e.note) + '</td></tr>';
+      });
+      h += '</tbody></table>';
+    }
+    return h + '<p class="legend">' + esc(legend()) + '</p>';
+  }
+  function renderEinzel() {
+    els.einzel.innerHTML = '<div class="sbox"><div class="row"><button type="button" data-a="back">◀ Zurück zur Übersicht</button><button type="button" class="primary" data-a="prep">Einzelbericht drucken</button>' +
+      '<span class="note">Datum in der Tabelle antippen, um den Eintrag zu bearbeiten.</span></div></div><div class="sbox">' + reportHTML(einzelSid) + '</div>';
+  }
+
+  /* ================= Druck & Export ================= */
+  function doPrint(html) {
+    els.print.innerHTML = html;
+    setTimeout(function () { window.print(); }, 80);
+  }
+  function headLine() { return esc(courseName(S)) + ' · Zeitraum: ' + esc(perLabel()); }
+  function printOverview() { doPrint('<section class="pg"><h1>Unterrichtsbeiträge – Übersicht</h1><p class="sub">' + headLine() + '</p>' + ovTable(false) + '<p class="legend">' + esc(legend()) + '</p></section>'); }
+  function printReports(ids) { doPrint(ids.map(function (id) { return '<section class="pg">' + reportHTML(id, true) + '</section>'; }).join('')); }
+  function printBlank() {
+    var cs = active();
+    var h = '<section class="pg"><h1>Beobachtungsliste Unterrichtsbeiträge</h1><p class="sub">' + esc(courseName(S)) + ' · Datum: ____________________ · Stunde/Thema: __________________________________</p>' +
+      '<table class="blank"><thead><tr><th style="width:8mm">Nr.</th><th style="width:48mm">Name</th>' + cs.map(function (c) { return '<th>' + esc(c.s) + '</th>'; }).join('') + '<th style="width:12mm">fehlt</th><th style="width:60mm">Bemerkung</th></tr></thead><tbody>';
+    var list = S.students.length ? S.students : new Array(25).join(',').split(',').map(function () { return { name:'' }; });
+    list.forEach(function (s, i) { h += '<tr><td>' + (i + 1) + '</td><td>' + esc(s.name) + '</td>' + cs.map(function () { return '<td></td>'; }).join('') + '<td></td><td></td></tr>'; });
+    h += '</tbody></table><p class="legend">' + (S.mode === 'tap' ? (S.out === 'note' ? 'Eintrag als Note mit Tendenz (z. B. 2+).' : 'Eintrag in Notenpunkten 15–0.') : 'Eintrag in Punkten (Höchstpunkte: ' + cs.map(function (c) { return esc(c.s) + ' ' + fmt(W(c)); }).join(', ') + ').') + '</p></section>';
+    doPrint(h);
+  }
+  function printRaster() {
+    var cs = active(), sw = sum(cs.map(W)) || 1;
+    var h = '<section class="pg"><h1>Kriterien für Unterrichtsbeiträge</h1><p class="sub">' + esc(courseName(S)) + '</p><table class="raster' + (cs.length <= 8 ? ' fill' : '') + '"><colgroup><col style="width:54mm"><col><col><col><col><col></colgroup><thead><tr><th>Kriterium</th>';
+    LV_NAMES.forEach(function (n, k) { h += '<th>' + n + '<br><span style="font-weight:normal">' + (S.mode === 'tap' ? (S.out === 'note' ? (k === 4 ? 'Note 5/6' : 'Note ' + (k + 1)) : NP_LV[k].hi + '–' + NP_LV[k].lo + ' NP') : '') + '</span></th>'; });
+    h += '</tr></thead><tbody>';
+    cs.forEach(function (c, i) {
+      h += '<tr><td class="cn">' + (i + 1) + ' ' + esc(c.n) + '<br><span style="font-weight:normal">' + (S.mode === 'tap' ? 'Gewichtung ' + fmt(W(c) / sw * 100, 0) + ' %' : 'max. ' + fmt(W(c)) + ' Punkte') + '</span></td>' +
+        c.d.map(function (t) { return '<td>' + esc(t) + '</td>'; }).join('') + '</tr>';
+    });
+    doPrint(h + '</tbody></table><p class="legend">' + esc(legend()) + '</p></section>');
+  }
+  function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function download(name, text, type) {
+    var blob = new Blob([text], { type:type });
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) { window.navigator.msSaveOrOpenBlob(blob, name); return; }
+    function viaLink() {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    }
+    // iPad/iPhone: über „Teilen“ → „In Dateien sichern“, weil Downloads dort oft nicht ankommen
+    if (isIOS() && window.File && navigator.canShare && navigator.share) {
+      try {
+        var file = new File([blob], name, { type:type });
+        if (navigator.canShare({ files:[file] })) {
+          navigator.share({ files:[file], title:name }).catch(function (err) { if (!err || err.name !== 'AbortError') viaLink(); });
+          return;
+        }
+      } catch (e) {}
+    }
+    viaLink();
+  }
+  function stamp() { return todayISO(); }
+  function fileBase() { return 'unterrichtsbeitraege_' + courseName(S).replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g, '_'); }
+  function exportJSON() { exportBackup('unterrichtsbeitraege_sicherung_' + stamp() + '.json', JSON.stringify(DB, null, 1)); }
+  function csvCell(x) {
+    var t = String(x == null ? '' : x);
+    if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+    return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+  function csvOut(name, rows) { download(name, '﻿' + rows.map(function (r) { return r.map(csvCell).join(';'); }).join('\r\n'), 'text/csv;charset=utf-8'); }
+  function exportCSV() {
+    var cs = active(), r = perRange(), rows = [];
+    rows.push(['Klasse/Kurs', courseName(S), 'Zeitraum', perLabel()]);
+    rows.push(['Nr', 'Name', 'Einträge', 'fehlt'].concat(cs.map(function (c) { return c.n; }), resCols({}).map(function (x) { return x[0]; })));
+    S.students.forEach(function (s, i) {
+      var res = result(s.id, r);
+      rows.push([i + 1, s.name, res.n, res.abs].concat(cs.map(function (c) { return avgLabel(res.per[c.id], c); }), resCols(res).map(function (x) { return x[1]; })));
+    });
+    csvOut(fileBase() + '_auswertung_' + stamp() + '.csv', rows);
+  }
+  function exportEntriesCSV() {
+    var cs = active(), rows = [['Datum', 'Name', 'fehlt'].concat(cs.map(function (c) { return c.n; }), ['Bemerkung'])];
+    S.entries.slice().sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; }).forEach(function (e) {
+      var s = stuById(e.sid); if (!s) return;
+      rows.push([de(e.d), s.name, e.abs ? 'ja' : ''].concat(cs.map(function (c) { var f = e.r[c.id]; return f == null ? '' : valLabel(f, c); }), [e.note]));
+    });
+    csvOut(fileBase() + '_eintraege_' + stamp() + '.csv', rows);
+  }
+
+  /* ================= Einrichtung ================= */
+  function chip(a, v, on, t, sm) { return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + t + (sm ? '<small>' + sm + '</small>' : '') + '</button>'; }
+  function renderSetup() {
+    setAccent();
+    var cs = catalog(), act = active(), n = act.length, tap = S.mode === 'tap', outN = S.out === 'note';
+    var h = '<div class="sbox"><h2>Unterrichtsbeiträge bewerten – Einrichtung</h2>' +
+      '<p>Legen Sie für jede Klasse bzw. jeden Kurs fest, was und wie bewertet wird. Alles lässt sich später wieder ändern; vorhandene Einträge bleiben erhalten.</p>' +
+      '<p class="priv"><b>Datenschutz:</b> Das Programm arbeitet vollständig offline. Alle Eingaben bleiben ausschließlich in diesem Browser auf diesem Gerät; es werden keine Daten übertragen.</p>' +
+      '<div class="row"><b>Aktuell: ' + esc(courseName(S)) + '</b><button type="button" data-a="newc">+ Neue Klasse / neuen Kurs anlegen</button>' +
+      (DB.courses.length > 1 ? '<button type="button" class="danger" data-a="delcourse">Diese Klasse löschen</button>' : '') +
+      '<button type="button" data-a="load">Sicherung laden</button></div></div>';
+
+    h += '<div class="sbox"><h3><span class="no">1</span> Klasse und Fach</h3><p class="lbl">Jahrgangsstufe</p><div class="chips">';
+    STUFEN.forEach(function (s) { h += chip('stufe', s, s === S.stufe, s); });
+    h += '</div><div class="row2" style="margin-top:10px"><label>Klasse / Kurs<input type="text" data-s="klasse" maxlength="40" placeholder="z. B. 8b oder Q12 Kurs 2" value="' + esc(S.klasse) + '"></label>' +
+      '<label>Fachbezeichnung<input type="text" data-s="fachName" maxlength="40" value="' + esc(S.fachName) + '"></label></div><p class="lbl">Fach (bestimmt die Kriterienauswahl)</p><div class="chips">';
+    for (var f in SUBJ) h += chip('fach', f, f === S.fach, SUBJ[f].n);
+    h += '</div></div>';
+
+    h += '<div class="sbox" id="sl"><h3><span class="no">2</span> Schülerliste <small>(' + S.students.length + ' Namen)</small></h3>' +
+      '<p class="note">Namen einfügen, einer pro Zeile (z. B. aus einer Liste kopieren). Vornamen oder Kürzel genügen.</p>' +
+      '<textarea id="names" rows="4" style="width:100%" placeholder="Anna B.&#10;Ben K.&#10;…"></textarea>' +
+      '<div class="row" style="margin-top:8px"><button type="button" class="primary" data-a="addnames">Namen hinzufügen</button><button type="button" data-a="sortnames">Alphabetisch sortieren</button></div>';
+    if (S.students.length) {
+      h += '<div class="slm">';
+      S.students.forEach(function (s, i) {
+        h += '<div class="si"><span>' + (i + 1) + '</span><input type="text" data-sn="' + esc(s.id) + '" maxlength="80" value="' + esc(s.name) + '" aria-label="Name"><button type="button" class="mini" data-a="delstu" data-v="' + esc(s.id) + '">entfernen</button></div>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+
+    h += '<div class="sbox"><h3><span class="no">3</span> Kriterien auswählen <small>(' + n + ' gewählt, ' + MIN + ' bis ' + MAX + ' möglich)</small></h3>' +
+      '<p class="note">Antippen zum An- und Abwählen. Klein darunter steht die Beschreibung für „sehr gut“. Bereiche: ' +
+      '<i class="tag tQ">Qualität</i> <i class="tag tB">Beteiligung</i> <i class="tag tK">Kommunikation & Sprache</i></p><div class="clist">';
+    cs.forEach(function (c) {
+      var on = S.sel.indexOf(c.id) >= 0, dis = !on && n >= MAX;
+      h += '<div class="ckrow"><label class="ck' + (on ? ' on' : '') + (dis ? ' off' : '') + '"><input type="checkbox" data-a="crit" data-v="' + esc(c.id) + '"' + (on ? ' checked' : '') + (dis ? ' disabled' : '') + '>' +
+           '<span><b>' + esc(c.n) + '</b> <i class="tag t' + c.g + '">' + GROUPS[c.g] + '</i><small>' + esc(c.d[0]) + '</small></span></label>' +
+           (c.custom ? '<button type="button" class="mini" data-a="delc" data-v="' + esc(c.id) + '">entfernen</button>' : '') + '</div>';
+    });
+    h += '</div><div class="addc"><input type="text" id="cname" maxlength="60" placeholder="Eigenes Kriterium, z. B. Kreativität">' +
+      '<select id="cgrp" aria-label="Bereich"><option value="Q">Qualität</option><option value="B">Beteiligung</option><option value="K">Kommunikation & Sprache</option></select>' +
+      '<button type="button" data-a="addc">+ Kriterium hinzufügen</button></div>';
+    h += '<details class="txed" id="txed"' + (txOpen ? ' open' : '') + '><summary>Texte der gewählten Kriterien bearbeiten</summary>' +
+      '<p class="note">Name und Stufenbeschreibungen anpassen. Änderungen gelten sofort für die ganze Klasse.</p>';
+    act.forEach(function (c) {
+      var id = esc(c.id);
+      h += '<div class="txc"><label>Name des Kriteriums<input type="text" maxlength="80" data-tx="' + id + '" data-ti="n" value="' + esc(c.n) + '"></label>';
+      LV_NAMES.forEach(function (ln, k) { h += '<label>' + ln + '<textarea rows="2" maxlength="200" data-tx="' + id + '" data-ti="' + k + '">' + esc(c.d[k]) + '</textarea></label>'; });
+      if (S.texts[c.id]) h += '<button type="button" data-a="txreset" data-v="' + id + '">Originaltexte wiederherstellen</button>';
+      h += '</div>';
+    });
+    h += '</details></div>';
+
+    h += '<div class="sbox"><h3><span class="no">4</span> Schwerpunkt der Bewertung</h3><div class="chips">';
+    PRESETS.forEach(function (p) { h += chip('preset', p.id, p.id === S.preset, p.n, p.t); });
+    h += '</div>';
+    if (S.preset === 'bereich') {
+      var present = {}; act.forEach(function (c) { present[c.g] = 1; });
+      h += '<div class="grpin">';
+      for (var g in GROUPS) if (present[g]) h += '<label><i class="tag t' + g + '">' + GROUPS[g] + '</i><input type="text" inputmode="decimal" data-gr="' + g + '" value="' + fmt(S.groups[g]) + '"> %</label>';
+      h += '<span id="grsum"></span></div>';
+    }
+    h += '<table class="wt"><tr><th>Kriterium</th><th class="c">' + (tap ? 'Gewichtung in %' : 'Höchstpunkte') + '</th><th class="c">Anteil</th></tr>';
+    act.forEach(function (c) {
+      h += '<tr><td>' + esc(c.n) + ' <i class="tag t' + c.g + '">' + GROUPS[c.g] + '</i></td><td class="c"><input type="number" inputmode="numeric" min="' + (tap ? 0 : 1) + '" step="1" data-w="' + esc(c.id) + '" value="' + W(c) + '"></td><td class="c" data-pc="' + esc(c.id) + '"></td></tr>';
+    });
+    h += '<tr class="wsr"><td>Summe</td><td class="c" id="wsum"></td><td class="c">100 %</td></tr></table>' +
+      '<p class="note">Innerhalb eines Bereichs zählen die Kriterien gleich. Wer in der Tabelle selbst Werte einträgt, wechselt automatisch zu „Eigene Gewichtung“.</p></div>';
+
+    h += '<div class="sbox"><h3><span class="no">5</span> Eingabe und Notenberechnung</h3>' +
+      '<p class="lbl">a) Eingabe pro Kriterium</p><div class="chips">' +
+      chip('mode', 'tap', tap, 'Antippen', 'Stufe antippen (sehr gut … mangelhaft), mit − / + fein einstellen.') +
+      chip('mode', 'pt', !tap, 'Punkteeintrag', 'Punkte pro Kategorie eintragen; der Notenschlüssel ergibt die Note.') + '</div>' +
+      '<p class="lbl">b) Notenskala</p><div class="chips">' +
+      chip('out', 'note', outN, 'Noten 1–6', tap ? 'Feinwerte als Tendenz (2+, 2, 2−).' : 'z. B. Jahrgangsstufen 5–10.') +
+      chip('out', 'np', !outN, 'Notenpunkte 15–0', 'Oberstufe.') + '</div>';
+    if (!tap) {
+      var opts = TOTALS.slice(); if (opts.indexOf(S.total) < 0) { opts.push(S.total); opts.sort(function (a, b) { return a - b; }); }
+      h += '<div class="stack" style="margin-top:10px"><label>Höchstpunktzahl pro Eintrag (alle Kriterien zusammen)<select data-a="total">' +
+        opts.map(function (t) { return '<option value="' + t + '"' + (t === S.total ? ' selected' : '') + '>' + t + ' Punkte</option>'; }).join('') + '</select></label></div>' +
+        '<label class="inl"><input type="checkbox" data-a="half"' + (S.half ? ' checked' : '') + '> halbe Punkte erlauben</label>' +
+        '<p class="lbl">c) Notenschlüssel</p><div class="chips">';
+      KEYS.forEach(function (k) { h += chip('key', k.id, S.keyType === k.id, k.n, k.t); });
+      h += '</div>';
+      if (S.keyType === 'knick') {
+        h += '<div class="keys"><label>Grenze 4/5: Note 4 ab <input type="text" inputmode="decimal" data-kn="0" value="' + fmt(S.knick[0]) + '"> %</label>' +
+             '<label>Grenze 5/6: Note 5 ab <input type="text" inputmode="decimal" data-kn="1" value="' + fmt(S.knick[1]) + '"> %</label></div>' +
+             '<p class="note">Oberhalb der Grenze 4/5 werden die Noten 1–4 (bzw. 15–4 Punkte) gleichmäßig verteilt, zwischen den Grenzen die Note 5 (bzw. 3–1 Punkte).</p>';
+      } else if (S.keyType === 'ind') {
+        h += '<div class="keys">';
+        if (outN) for (var i = 0; i < 5; i++) h += '<label>Note ' + (i + 1) + ' ab <input type="text" inputmode="decimal" data-in="' + i + '" value="' + fmt(S.indNote[i]) + '"> %</label>';
+        else for (var p = 15; p >= 1; p--) h += '<label>' + p + ' NP ab <input type="text" inputmode="decimal" data-ip="' + (p - 1) + '" value="' + fmt(S.indNP[p - 1]) + '"> %</label>';
+        h += '<span>' + (outN ? 'Note 6' : '0 NP') + ' darunter</span></div><button type="button" data-a="indcopy">Werte aus dem Abiturschlüssel übernehmen</button>';
+      } else {
+        h += '<p class="note">KMK-Schlüssel: 15 NP ab 95 %, 14 ab 90 %, 13 ab 85 %, 12 ab 80 %, 11 ab 75 %, 10 ab 70 %, 9 ab 65 %, 8 ab 60 %, 7 ab 55 %, 6 ab 50 %, 5 ab 45 %, 4 ab 40 %, 3 ab 33 %, 2 ab 27 %, 1 ab 20 %. Bitte mit der aktuellen Vorgabe abgleichen; bei Abweichung „Individuell“ wählen.</p>';
+      }
+      h += '<p class="note" id="keymsg"></p><div class="ktw" id="keytab"></div>';
+    }
+    h += '<p class="lbl">' + (tap ? 'c' : 'd') + ') Mehrere Einträge im Zeitraum</p><div class="chips">' +
+      chip('timew', 'equal', S.timeW === 'equal', 'Alle Einträge zählen gleich', 'Einfacher Durchschnitt.') +
+      chip('timew', 'recent', S.timeW === 'recent', 'Spätere Einträge zählen mehr', 'Berücksichtigt die Lernentwicklung (Gewicht 1, 2, 3 …).') + '</div>' +
+      '<p class="lbl">' + (tap ? 'd' : 'e') + ') Halbjahreswechsel</p><div class="row"><label class="row">Das 2. Halbjahr beginnt am <input type="text" data-a="hj" maxlength="6" style="width:90px" value="' + esc(S.hj.split('-').reverse().join('.') + '.') + '"></label>' +
+      '<span class="note">(Format TT.MM., z. B. 15.02.; gilt für die Zeitraumauswahl „1./2. Halbjahr“)</span></div></div>';
+
+    h += '<div class="sbox done"><button type="button" class="big primary" data-a="done">Fertig – zum Erfassen</button></div>';
+    h += '<div class="sbox"><h3>Daten auf diesem Gerät</h3><p>' + DB.courses.length + ' Klasse(n)/Kurs(e), ' +
+      sum(DB.courses.map(function (c) { return c.entries.length; })) + ' Einträge gespeichert. ' +
+      (canStore ? 'Die Daten liegen nur im Browser-Speicher dieses Geräts.' : '<b class="bad">Speichern im Browser ist hier nicht möglich – bitte „Sicherung speichern“ benutzen.</b>') +
+      ' Wird der Browserverlauf gelöscht, sind sie weg. Sichern Sie deshalb regelmäßig.</p>' +
+      '<div class="row"><button type="button" data-a="exp">Sicherung speichern</button><button type="button" data-a="load">Sicherung laden</button><button type="button" class="danger" data-a="wipe">Alle Daten löschen</button></div>' + secHTML() + '</div>';
+
+    els.setup.innerHTML = h;
+    updSums(); keyCheck();
+  }
+  function updSums() {
+    var act = active(), t = sum(act.map(W)), tap = S.mode === 'tap';
+    var el = document.getElementById('wsum');
+    if (el) el.innerHTML = fmt(t) + (tap ? ' %' : ' Punkte') + (tap && Math.abs(t - 100) > 1e-9 ? ' <span class="bad">(nicht 100 – wird anteilig umgerechnet)</span>' : '');
+    act.forEach(function (c) {
+      var td = els.setup.querySelector('[data-pc="' + c.id + '"]');
+      if (td) td.textContent = fmt(t ? W(c) / t * 100 : 0, 0) + ' %';
+      var inp = els.setup.querySelector('[data-w="' + c.id + '"]');
+      if (inp && document.activeElement !== inp) inp.value = W(c);
+    });
+    var gs = document.getElementById('grsum');
+    if (gs) {
+      var present = {}, s = 0; act.forEach(function (c) { present[c.g] = 1; });
+      for (var g in present) s += S.groups[g] || 0;
+      gs.innerHTML = 'Summe ' + fmt(s) + ' %' + (Math.abs(s - 100) > 1e-9 ? ' <span class="bad">(nicht 100 – wird anteilig umgerechnet)</span>' : '');
+    }
+  }
+  function keyCheck() {
+    if (S.mode !== 'pt') return true;
+    var ok = true, msg = '';
+    if (S.keyType === 'knick') {
+      ok = S.knick[0] > S.knick[1] && S.knick[0] < 100 && S.knick[1] > 0;
+      msg = 'Die Grenze 4/5 muss über der Grenze 5/6 liegen (beide zwischen 0 und 100 %).';
+    } else if (S.keyType === 'ind') {
+      var a = S.out === 'note' ? S.indNote : S.indNP.slice().reverse();
+      for (var i = 1; i < a.length; i++) if (!(a[i] < a[i - 1])) ok = false;
+      if (!(a[a.length - 1] > 0) || !(a[0] <= 100)) ok = false;
+      msg = 'Die Grenzen müssen von oben nach unten kleiner werden (zwischen 0 und 100 %).';
+    }
+    var el = document.getElementById('keymsg');
+    if (el) el.innerHTML = ok ? '' : '<span class="bad">' + msg + '</span>';
+    var kt = document.getElementById('keytab');
+    if (kt) {
+      var tot = sum(active().map(W)), st = stepOf(S), rows = [];
+      if (S.out === 'np') { var t = npTh(); for (var n = 15; n >= 1; n--) rows.push([n + ' NP', t[n]]); rows.push(['0 NP', null]); }
+      else { var k = noteTh(); for (var j = 0; j < 5; j++) rows.push(['Note ' + (j + 1), k[j]]); rows.push(['Note 6', null]); }
+      kt.innerHTML = ok ? '<table class="kt"><tr><th>Ergebnis</th><th>ab Prozent</th><th>ab Punkten (von ' + fmt(tot) + ', ein Eintrag)</th></tr>' +
+        rows.map(function (r) {
+          return '<tr><td>' + r[0] + '</td><td>' + (r[1] === null ? 'darunter' : p1(r[1]) + ' %') + '</td><td>' + (r[1] === null ? 'darunter' : fmt(ceilS(tot * r[1] / 100, st))) + '</td></tr>';
+        }).join('') + '</table>' : '';
+    }
+    return ok;
+  }
+  function setupClick(a, v) {
+    if (secClick(a)) return;
+    if (a === 'stufe') {
+      var oldDef = +S.stufe >= 11 ? 'np' : 'note';
+      S.stufe = v;
+      if (!hasEntries() && S.out === oldDef) S.out = +v >= 11 ? 'np' : 'note';
+      save(); renderSetup(); renderCsel();
+    } else if (a === 'fach') {
+      if (v === S.fach) return;
+      if (hasEntries() && !confirm('Fach wechseln? Die Kriterienauswahl wird neu gesetzt. Vorhandene Einträge bleiben nur für Kriterien sichtbar, die in beiden Fächern vorkommen.')) return;
+      var defName = !S.fachName || S.fachName === SUBJ[S.fach].n;
+      var keep = S.sel.filter(function (id) { return !C[id]; });
+      S.fach = v; S.sel = SUBJ[v].def.concat(keep).slice(0, MAX); S.preset = SUBJ[v].preset;
+      if (defName) S.fachName = SUBJ[v].n;
+      applyPreset(); save(); renderSetup(); renderCsel();
+    } else if (a === 'addnames') {
+      var ta = document.getElementById('names'), have = {};
+      S.students.forEach(function (s) { have[s.name.trim().toLowerCase()] = 1; });
+      var added = 0;
+      ta.value.split(/\r?\n/).map(function (x) { return x.replace(/\t/g, ' ').trim(); }).filter(Boolean).forEach(function (nm) {
+        if (have[nm.toLowerCase()] || S.students.length >= 200) return;
+        S.students.push({ id:uid('s'), name:nm.slice(0, 80) }); have[nm.toLowerCase()] = 1; added++;
+      });
+      if (!added) { alert('Keine neuen Namen gefunden. Bitte einen Namen pro Zeile eintippen oder einfügen.'); return; }
+      save(); renderSetup(); var sl = document.getElementById('sl'); if (sl && sl.scrollIntoView) sl.scrollIntoView();
+    } else if (a === 'sortnames') {
+      S.students.sort(function (x, y) { return x.name.localeCompare(y.name, 'de'); }); save(); renderSetup();
+    } else if (a === 'delstu') {
+      var s = stuById(v), ne = S.entries.filter(function (e) { return e.sid === v; }).length;
+      if (!confirm('„' + (s ? s.name : '') + '“ entfernen?' + (ne ? ' Dabei werden auch ' + ne + ' Einträge gelöscht.' : ''))) return;
+      S.students = S.students.filter(function (x) { return x.id !== v; });
+      S.entries = S.entries.filter(function (e) { return e.sid !== v; });
+      save(); renderSetup();
+    } else if (a === 'preset') {
+      S.preset = v; applyPreset(); save(); renderSetup();
+    } else if (a === 'mode') {
+      if (v === S.mode) return;
+      if (hasEntries() && !confirm('Eingabeart wechseln? Vorhandene Einträge werden anteilig umgerechnet (z. B. 11 von 15 Notenpunkten ≙ 73 % der Höchstpunkte).')) return;
+      S.mode = v; applyPreset(); save(); renderSetup();
+    } else if (a === 'out') {
+      S.out = v; save(); renderSetup();
+    } else if (a === 'key') {
+      if (v === S.keyType) return;
+      if (v === 'ind') {
+        S.indNote = noteTh().map(function (x) { return Math.round(x * 100) / 100; });
+        S.indNP = npTh().slice(1).map(function (x) { return Math.round(x * 100) / 100; });
+      }
+      S.keyType = v; save(); renderSetup();
+    } else if (a === 'indcopy') {
+      S.indNote = [85, 70, 55, 40, 20]; S.indNP = ABI.slice(1); save(); renderSetup();
+    } else if (a === 'timew') {
+      S.timeW = v; save(); renderSetup();
+    } else if (a === 'addc') {
+      var nm2 = document.getElementById('cname').value.trim(), g = document.getElementById('cgrp').value;
+      if (!nm2) { alert('Bitte zuerst einen Namen für das Kriterium eintippen.'); return; }
+      if (active().length >= MAX) { alert('Es sind bereits ' + MAX + ' Kriterien gewählt. Bitte zuerst eines abwählen.'); return; }
+      var id = uid('c'); S.custom.push({ id:id, n:nm2.slice(0, 60), g:g }); S.sel.push(id);
+      applyPreset(); save(); renderSetup();
+    } else if (a === 'delc') {
+      if (!confirm('Eigenes Kriterium entfernen?')) return;
+      S.custom = S.custom.filter(function (c) { return c.id !== v; });
+      S.sel = S.sel.filter(function (id) { return id !== v; });
+      if (!active().length) S.sel = SUBJ[S.fach].def.slice();
+      delete S.weights[v]; delete S.texts[v];
+      applyPreset(); save(); renderSetup();
+    } else if (a === 'txreset') {
+      delete S.texts[v]; save(); renderSetup();
+    } else if (a === 'newc') {
+      var c = freshCourse(S.fach, S.stufe);
+      DB.courses.push(c); DB.cur = c.id; S = c; openSid = null; save(); setView('setup');
+    } else if (a === 'delcourse') {
+      if (!confirm('Klasse/Kurs „' + courseName(S) + '“ mit allen ' + S.entries.length + ' Einträgen löschen? Das kann nicht rückgängig gemacht werden.')) return;
+      var gone = S.id;
+      DB.courses = DB.courses.filter(function (x) { return x.id !== gone; });
+      DB.cur = DB.courses[0].id; S = curCourse(); save(); setView('setup');
+    } else if (a === 'done') {
+      if (S.mode === 'pt' && !keyCheck()) { alert('Bitte den Notenschlüssel prüfen (siehe rote Meldung in Schritt 5).'); return; }
+      DB.setup = true; save(); setView('erf');
+    } else if (a === 'load') {
+      els.file.click();
+    } else if (a === 'exp') {
+      exportJSON();
+    } else if (a === 'wipe') {
+      if (!confirm('Wirklich ALLE Klassen, Schülerlisten und Einträge auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.')) return;
+      clearTimeout(tmr); tmr = null;
+      SEC.wipe(KEY); updLockBtn();
+      DB = freshDB(); S = curCourse(); openSid = null; setView('setup');
+    }
+  }
+
+  /* ================= Start ================= */
+  function init() {
+    ['bar', 'csel', 'setup', 'erf', 'ausw', 'einzel', 'print', 'file'].forEach(function (id) { els[id] = document.getElementById(id); });
+    if (!canStore) document.getElementById('warn').hidden = false;
+    setView(DB.setup ? (DB.view === 'setup' ? 'setup' : DB.view) : 'setup');
+    updLockBtn();
+    document.getElementById('lockbtn').addEventListener('click', lockNow);
+
+    els.bar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view);
+    });
+    document.getElementById('helpbtn').addEventListener('click', function () { var h = document.getElementById('help'); h.hidden = !h.hidden; });
+    els.csel.addEventListener('change', function () {
+      DB.cur = els.csel.value; S = curCourse(); openSid = null; save(); setView(DB.view === 'einzel' ? 'ausw' : DB.view);
+    });
+
+    els.erf.addEventListener('click', erfClick);
+    els.erf.addEventListener('input', erfInput);
+    els.erf.addEventListener('change', function (e) {
+      if (e.target.dataset.a === 'pv') { var box = e.target.closest('.stu'); if (box) refreshStu(box.dataset.sid); }
+    });
+
+    els.ausw.addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-sid]');
+      if (tr) { einzelSid = tr.dataset.sid; setView('einzel'); return; }
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      var a = b.dataset.a;
+      if (a === 'pov') printOverview();
+      else if (a === 'pall') printReports(S.students.map(function (s) { return s.id; }));
+      else if (a === 'pblank') printBlank();
+      else if (a === 'praster') printRaster();
+      else if (a === 'csv') exportCSV();
+      else if (a === 'csve') exportEntriesCSV();
+      else if (a === 'exp') exportJSON();
+    });
+    els.ausw.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.id === 'per') { S.per.p = t.value; if (t.value === 'day' && !S.per.from) S.per.from = todayISO(); save(); renderAusw(); }
+      else if (t.id === 'pfrom' || t.id === 'pto') {
+        if (t.value && !isISO(t.value)) return;
+        S.per[t.id === 'pfrom' ? 'from' : 'to'] = t.value; save(); renderAusw();
+      }
+    });
+    els.einzel.addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-ed]');
+      if (tr) { S.date = tr.dataset.ed; openSid = einzelSid; save(); setView('erf'); var el = els.erf.querySelector('.stu.open'); if (el && el.scrollIntoView) el.scrollIntoView(); return; }
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      if (b.dataset.a === 'back') setView('ausw');
+      if (b.dataset.a === 'prep') printReports([einzelSid]);
+    });
+
+    els.setup.addEventListener('click', function (e) {
+      var sm = e.target.closest('summary');
+      if (sm) { txOpen = !sm.parentNode.open; return; }
+      var b = e.target.closest('button[data-a]'); if (!b) return;
+      setupClick(b.dataset.a, b.dataset.v);
+    });
+    els.setup.addEventListener('change', function (e) {
+      var t = e.target, a = t.dataset.a;
+      if (a === 'autolock') { SEC.setAuto(+t.value); flush(); return; }
+      if (a === 'crit') {
+        var id = t.dataset.v;
+        if (t.checked) { if (active().length >= MAX) { t.checked = false; return; } S.sel.push(id); }
+        else {
+          if (active().length <= MIN) { t.checked = true; alert('Mindestens ' + MIN + ' Kriterium muss gewählt bleiben.'); return; }
+          S.sel = S.sel.filter(function (x) { return x !== id; });
+        }
+        applyPreset(); save(); renderSetup();
+      } else if (a === 'total') {
+        S.total = +t.value; applyPreset(); save(); renderSetup();
+      } else if (a === 'half') {
+        S.half = t.checked; save(); keyCheck();
+      } else if (a === 'hj') {
+        var m = /^(\d{1,2})\.(\d{1,2})\.?$/.exec(t.value.trim());
+        if (m && +m[1] >= 1 && +m[1] <= 31 && +m[2] >= 1 && +m[2] <= 12) { S.hj = p2(+m[2]) + '-' + p2(+m[1]); save(); }
+        else alert('Bitte das Datum als TT.MM. eingeben, z. B. 15.02.');
+        renderSetup();
+      }
+    });
+    els.setup.addEventListener('input', function (e) {
+      var t = e.target;
+      if (t.dataset.s) { S[t.dataset.s] = t.value; save(); renderCsel(); }
+      else if (t.dataset.sn) { var s = stuById(t.dataset.sn); if (s) { s.name = t.value.slice(0, 80); save(); } }
+      else if (t.dataset.w !== undefined) {
+        var v = Math.max(0, Math.round(num(t.value, 0)));
+        if (S.mode === 'pt' && v < 1 && t.value !== '') v = 1;
+        S.weights[t.dataset.w] = v;
+        if (S.preset !== 'eigen') {
+          S.preset = 'eigen';
+          qa(els.setup, '[data-a="preset"]').forEach(function (b) { b.classList.toggle('on', b.dataset.v === 'eigen'); });
+          qa(els.setup, '.grpin').forEach(function (el) { el.parentNode.removeChild(el); });
+        }
+        if (S.mode === 'pt') S.total = Math.max(1, sum(active().map(W)));
+        updSums(); keyCheck(); save();
+      } else if (t.dataset.gr) {
+        S.groups[t.dataset.gr] = Math.max(0, num(t.value, 0)); applyPreset(); updSums(); keyCheck(); save();
+      } else if (t.dataset.kn !== undefined) {
+        S.knick[+t.dataset.kn] = Math.max(0, Math.min(100, num(t.value, 0))); keyCheck(); save();
+      } else if (t.dataset.in !== undefined) {
+        S.indNote[+t.dataset.in] = Math.max(0, Math.min(100, num(t.value, 0))); keyCheck(); save();
+      } else if (t.dataset.ip !== undefined) {
+        S.indNP[+t.dataset.ip] = Math.max(0, Math.min(100, num(t.value, 0))); keyCheck(); save();
+      } else if (t.dataset.tx) {
+        var id = t.dataset.tx; if (!critBase(S, id)) return;
+        var o = S.texts[id] || (S.texts[id] = { n:'', d:['', '', '', '', ''] });
+        if (t.dataset.ti === 'n') o.n = t.value.slice(0, 80); else o.d[+t.dataset.ti] = t.value.slice(0, 200);
+        save();
+      }
+    });
+
+    els.file.addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        readBackup(r.result, function (raw, found) {
+          var o = null; try { o = sanitizeDB(raw); } catch (err) {}
+          if (!o) { alert('Die Datei konnte nicht gelesen werden. Bitte eine Sicherung aus diesem Programm wählen.'); return; }
+          if (!confirm('Alle aktuellen Daten durch die geladene Sicherung ersetzen?')) return;
+          if (found && !SEC.on()) SEC.adopt(found);
+          DB = o; DB.setup = true; S = curCourse(); openSid = null; flush(); updLockBtn(); setView('erf');
+        });
+      };
+      r.readAsText(f); e.target.value = '';
+    });
+    window.addEventListener('beforeunload', function (e) {
+      if (!canStore && DB.courses.some(function (c) { return c.entries.length; })) { e.preventDefault(); e.returnValue = ''; }
+    });
+  }
+  function boot() {
+    var raw = load();
+    function start(o) { var d = null; try { d = o ? sanitizeDB(o) : null; } catch (e) {} DB = d || freshDB(); S = curCourse(); init(); }
+    if (raw && SEC.isEnv(raw)) unlockScreen(raw, start); else start(raw);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

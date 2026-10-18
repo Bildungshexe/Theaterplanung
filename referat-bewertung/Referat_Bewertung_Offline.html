@@ -1341,13 +1341,27 @@
     if (mode === 'all' && state.withov) b.classList.add('with-ov');
     setTimeout(function () { window.print(); }, 60);
   }
+  function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
   function download(name, text, type) {
     var blob = new Blob([text], { type:type });
     if (window.navigator && window.navigator.msSaveOrOpenBlob) { window.navigator.msSaveOrOpenBlob(blob, name); return; }
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = name;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    function viaLink() {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    }
+    // iPad/iPhone: über „Teilen“ → „In Dateien sichern“, weil Downloads dort oft nicht ankommen
+    if (isIOS() && window.File && navigator.canShare && navigator.share) {
+      try {
+        var file = new File([blob], name, { type:type });
+        if (navigator.canShare({ files:[file] })) {
+          navigator.share({ files:[file], title:name }).catch(function (err) { if (!err || err.name !== 'AbortError') viaLink(); });
+          return;
+        }
+      } catch (e) {}
+    }
+    viaLink();
   }
   function stamp() { return new Date().toISOString().slice(0, 10); }
   function fileBase() { return 'referat_' + state.fach + '_' + (state.kurs || 'kurs').replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g, '_'); }

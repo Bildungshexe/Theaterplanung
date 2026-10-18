@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bewertung">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#2b2b2b">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Referat – Bewertungsbogen</title>
+<style>
+  .homebtn { display:inline-flex; align-items:center; padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; color:#111; text-decoration:none; }
+  body { padding-top:env(safe-area-inset-top); }
+  :root { --acc:#8B1E2D; --light:#F6E9EB; --hit:#F3C9CF; --gray:#E9E9E9; --line:#7f7f7f; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color:#111; background:#d9d9d9; touch-action: manipulation; -webkit-text-size-adjust:100%; }
+  button, input, select, textarea { font: inherit; color:#111; }
+  button { cursor:pointer; }
+  input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 0; }
+  [hidden] { display:none !important; }
+
+  /* ---------- Leisten (nur Bildschirm) ---------- */
+  .bar { position: sticky; top:0; z-index:10; background:#2b2b2b; color:#fff; padding:8px 10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .bar .brand { font-weight:bold; margin-right:6px; max-width:40ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar select { flex:1 1 180px; max-width:340px; }
+  .bar button, .bar select, .actions button { padding:8px 12px; min-height:44px; border-radius:6px; border:1px solid #777; background:#fff; }
+  .bar button:active, .actions button:active { background:#e4e4e4; }
+  button.primary { background:var(--acc) !important; color:#fff !important; border-color:var(--acc) !important; }
+  button.danger { color:#a00; }
+  .actions { background:#3a3a3a; padding:6px 10px 8px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; color:#fff; }
+  .actions .grp { display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding-right:8px; margin-right:2px; border-right:1px solid #666; }
+  .actions .grp:last-child { border-right:none; }
+  .actions label { display:flex; gap:6px; align-items:center; }
+  .actions input[type=checkbox] { width:20px; height:20px; }
+  body[data-view=setup] .bar, body[data-view=setup] .actions, body[data-view=setup] .stage { display:none; }
+  body:not([data-view=setup]) .setup { display:none; }
+
+  .warn { background:#fff3cd; color:#5c4400; border:1px solid #e0c060; max-width:297mm; margin:10px auto 0; padding:10px 14px; border-radius:6px; }
+  .help { background:#fff; max-width:297mm; margin:10px auto 0; padding:12px 18px; border-radius:6px; line-height:1.45; }
+  .help h3 { margin:4px 0 6px; color:var(--acc); }
+  .help ol { margin:0 0 8px; padding-left:22px; }
+  .hint { max-width:297mm; margin:10px auto 0; color:#333; padding:0 6px; line-height:1.4; }
+  .stage { padding:12px 10px 40px; }
+
+  /* ---------- Einrichtung ---------- */
+  .setup { max-width:900px; margin:0 auto; padding:12px 10px 60px; }
+  .sbox { background:#fff; border-radius:8px; padding:14px 16px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.18); line-height:1.4; }
+  .sbox h2 { margin:0 0 6px; color:var(--acc); font-size:17pt; }
+  .sbox h3 { margin:0 0 8px; font-size:13pt; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sbox h3 small { font-weight:normal; color:#444; font-size:11pt; }
+  .sbox .no { display:inline-flex; width:30px; height:30px; border-radius:50%; background:var(--acc); color:#fff; align-items:center; justify-content:center; font-size:12pt; flex:none; }
+  .sbox p { margin:4px 0 8px; }
+  .sbox .note { color:#333; }
+  .sbox button { padding:8px 14px; min-height:44px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .priv { background:#eef6ee; border-left:4px solid #3c7a3c; padding:8px 10px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { text-align:left; border:2px solid #bbb !important; background:#fff; border-radius:8px !important; padding:10px 14px !important; min-width:150px; }
+  .chip small { display:block; color:#444; font-size:10.5pt; margin-top:2px; }
+  .chip.on { border-color:var(--acc) !important; background:var(--light) !important; box-shadow: inset 0 0 0 1px var(--acc); font-weight:bold; }
+  .chip.on small { font-weight:normal; }
+  .row2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .row2 label, .stack label { display:flex; flex-direction:column; gap:4px; font-weight:bold; }
+  .sbox input[type=text], .sbox input[type=number], .sbox select { padding:8px 10px; min-height:44px; border:1px solid #888; border-radius:6px; font-weight:normal; background:#fff; }
+  .clist { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+  .ckrow { display:flex; gap:6px; align-items:stretch; }
+  .ck { flex:1; display:flex; gap:10px; align-items:flex-start; border:1px solid #bbb; border-radius:8px; padding:8px 10px; cursor:pointer; }
+  .ck.on { border-color:var(--acc); background:var(--light); }
+  .ck.off { opacity:.55; }
+  .ck input { width:22px; height:22px; margin:2px 0 0; flex:none; }
+  .ck small { display:block; color:#333; font-size:10.5pt; margin-top:2px; }
+  .tag { font-style:normal; font-size:9.5pt; padding:1px 6px; border-radius:10px; color:#fff; white-space:nowrap; }
+  .tI { background:#1F6F50; } .tP { background:#5A4FA0; } .tS { background:#B5641A; }
+  .mini { min-height:auto !important; padding:4px 8px !important; font-size:10pt; color:#a00; }
+  .addc { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .addc input { flex:1 1 220px; }
+  table.wt { border-collapse:collapse; width:100%; margin-top:10px; }
+  table.wt th, table.wt td { border:1px solid #bbb; padding:6px 8px; text-align:left; }
+  table.wt td.c, table.wt th.c { text-align:center; }
+  table.wt input { width:90px; text-align:center; }
+  table.wt tr.wsr td { font-weight:bold; background:#f3f3f3; }
+  .bad { color:#b00000; font-weight:bold; }
+  .keys { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin:8px 0; }
+  .keys label { display:flex; gap:6px; align-items:center; }
+  .keys input { width:76px; text-align:center; }
+  .inl { display:flex; gap:8px; align-items:center; margin:8px 0; }
+  .inl input { width:22px; height:22px; }
+  .done { text-align:center; }
+  .lbl { font-weight:bold; margin:12px 0 6px !important; }
+  .keys input { width:84px; }
+  .ktw { overflow-x:auto; margin-top:8px; }
+  table.kt { border-collapse:collapse; }
+  table.kt th, table.kt td { border:1px solid #bbb; padding:4px 10px; text-align:center; }
+  table.kt th { background:#f3f3f3; }
+  .grpin { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:10px; align-items:center; }
+  .grpin label { display:flex; gap:6px; align-items:center; font-weight:bold; }
+  .grpin input { width:80px; text-align:center; }
+  details.txed { margin-top:12px; border:1px solid #bbb; border-radius:8px; padding:8px 12px; }
+  details.txed summary { cursor:pointer; font-weight:bold; min-height:36px; display:list-item; padding-top:6px; }
+  .txc { border-top:1px solid #ddd; padding:10px 0; display:grid; gap:6px; }
+  .txc label { display:flex; flex-direction:column; gap:2px; font-weight:bold; font-size:10.5pt; }
+  .txc input, .txc textarea { font-weight:normal; padding:6px 8px; border:1px solid #888; border-radius:6px; font-size:11pt; }
+  .txc textarea { resize:vertical; min-height:44px; }
+  .txc button { justify-self:start; }
+  .big { font-size:14pt; padding:12px 26px !important; min-height:52px !important; }
+
+  /* ---------- Bogen (Grundform = A4-Tabelle) ---------- */
+  .sheet, .ov { background:#fff; margin:0 auto 14px; padding:6mm 8mm; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  .sheet { display:none; grid-template-rows: auto 1fr auto auto auto; gap:1.6mm; }
+  body[data-view=sheet] .sheet.active { display:grid; }
+  .sheet.blank { display:none !important; }
+  .ov { display:none; }
+  body[data-view=ov] .ov { display:block; }
+
+  .head { display:grid; grid-template-columns: auto 1fr 2fr 0.8fr 32mm; gap:2mm 4mm; align-items:end; }
+  .head h1 { margin:0; font-size:14pt; color:var(--acc); white-space:nowrap; }
+  .fld { display:flex; gap:2mm; align-items:baseline; border-bottom:1px solid var(--line); min-height:6.5mm; }
+  .fld b { white-space:nowrap; }
+  .fld input { flex:1; min-width:10mm; border:none; background:transparent; padding:1mm 0; outline-offset:0; }
+  .fld .kursv { flex:1; }
+
+  .grid { display:grid; grid-template-columns: 46mm repeat(5, 1fr); border-top:1px solid var(--line); border-left:1px solid var(--line); min-height:0; }
+  .grid > div { border-right:1px solid var(--line); border-bottom:1px solid var(--line); padding:1mm 1.6mm; line-height:1.17; hyphens:auto; -webkit-hyphens:auto; overflow:hidden; min-height:0; }
+  .gh { background:var(--gray); font-weight:bold; text-align:center; display:flex; flex-direction:column; justify-content:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .gh span { font-weight:normal; }
+  .crit { background:var(--light); display:flex; flex-direction:column; gap:1mm; justify-content:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .crit .cn { font-weight:bold; }
+  .crit .np { display:flex; align-items:center; gap:1.5mm; flex-wrap:wrap; }
+  .crit .nv { min-width:9mm; text-align:center; font-size:15pt; color:var(--acc); }
+  .crit button.st { width:10mm; height:10mm; min-width:40px; min-height:40px; padding:0; font-size:15pt; line-height:1; border:1px solid var(--line); border-radius:4px; background:#fff; }
+  .crit button.st:active { background:#e4e4e4; }
+  .crit button.st:disabled { opacity:.3; cursor:default; }
+
+  .lv { cursor:pointer; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color: transparent; }
+  .lv:hover { background:#f7f7f7; }
+  .lv:focus-visible { outline:2px solid #3b82f6; outline-offset:-2px; }
+  .lv.hit { background:var(--hit); box-shadow: inset 0 0 0 .8mm var(--acc); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  .sum { display:grid; grid-template-columns: repeat(3, auto) 1fr; border:1px solid var(--line); }
+  .sum > div { padding:1.2mm 3mm; border-right:1px solid var(--line); background:var(--gray); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .sum > div:last-child { border-right:none; color:#444; }
+  .sum b.big { font-size:13pt; color:var(--acc); }
+  .cmt { display:flex; gap:2mm; border:1px solid var(--line); padding:1mm 2mm; height:16mm; }
+  .cmt textarea { flex:1; border:none; resize:none; background:transparent; line-height:1.2; padding:0; }
+  .cmtp { display:none; flex:1; white-space:pre-wrap; overflow:hidden; line-height:1.2; }
+  .foot { font-size:11pt; color:#222; }
+
+  /* ---------- Übersicht ---------- */
+  .ov h1 { font-size:15pt; color:var(--acc); margin:0 0 3mm; }
+  .ov .tw { overflow-x:auto; }
+  .ov table { border-collapse:collapse; width:100%; }
+  .ov th, .ov td { border:1px solid var(--line); padding:2mm 2.5mm; text-align:center; font-size:11pt; }
+  .ov th { background:var(--gray); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .ov td.l { text-align:left; }
+  .ov tr[data-i] { cursor:pointer; }
+  .ov tr[data-i]:hover td { background:#f6f6f6; }
+  .ov .ovnote { margin-top:3mm; }
+
+  /* ---------- Bildschirm: breit ---------- */
+  @media screen {
+    .sheet, .ov { width:100%; max-width:297mm; }
+    @media (min-width: 821px) { .sheet { min-height:190mm; } }
+  }
+  /* ---------- Bildschirm: schmal (Handy) ---------- */
+  @media screen and (max-width: 820px) {
+    body { font-size:12pt; }
+    .bar .brand { display:none; }
+    .bar select { max-width:none; }
+    .row2, .clist { grid-template-columns: 1fr; }
+    .sbox input[type=text], .sbox input[type=number], .sbox select, .fld input, .cmt textarea { font-size:16px; }
+    .stage { padding:8px 6px 40px; }
+    .sheet { padding:12px; }
+    .head { grid-template-columns: 1fr; gap:8px; }
+    .head h1 { white-space:normal; font-size:15pt; }
+    .fld { min-height:44px; align-items:center; }
+    .grid { display:block; border:none; }
+    .grid > .gh { display:none; }
+    .grid > div { border-left:1px solid var(--line); }
+    .crit { margin-top:16px; border-top:1px solid var(--line); border-radius:8px 8px 0 0; padding:8px 10px !important; }
+    .crit .cn { font-size:13pt; }
+    .lv { padding:10px 12px !important; min-height:48px; }
+    .lv::before { content: attr(data-l); display:block; font-weight:bold; font-size:10.5pt; color:var(--acc); margin-bottom:2px; }
+    .grid > div.lv.last { border-radius:0 0 8px 8px; }
+    .sum { grid-template-columns: 1fr 1fr; margin-top:12px; }
+    .sum > div { border-bottom:1px solid var(--line); }
+    .sum > div:last-child { grid-column: 1 / -1; }
+    .cmt { flex-direction:column; height:auto; }
+    .cmt textarea { min-height:90px; border:1px solid #ccc; border-radius:4px; padding:6px; }
+    .ov { padding:12px; }
+  }
+
+  /* ---------- Druck ---------- */
+  @page { size: A4 landscape; margin: 0; }
+  @media print {
+    body { background:#fff; }
+    .bar, .actions, .setup, .help, .warn, .hint { display:none !important; }
+    .stage { padding:0; }
+    .sheet, .ov { box-shadow:none; margin:0; width:297mm; max-width:none; padding:6mm 8mm; }
+    .sheet { height:auto; min-height:209mm; }
+    .ov { min-height:209mm; }
+    .sheet ~ .sheet, .ov { break-before: page; page-break-before: always; }
+    .lv:hover { background:transparent; }
+    .lv.hit:hover { background:var(--hit); }
+    .crit button.st { display:none !important; }
+    .sheet { padding:5mm 7mm; gap:1.2mm; }
+    .grid > div { line-height:1.12; padding:0.8mm 1.4mm; }
+    .gh { line-height:1.1 !important; }
+    .crit { flex-direction:row; flex-wrap:wrap; align-content:center; align-items:baseline; justify-content:flex-start; gap:0.3mm 2mm; }
+    .crit .cn { flex-basis:100%; }
+    .crit .np { display:inline-flex; gap:1mm; }
+    .crit .nv { font-size:12pt; min-width:0; text-align:left; }
+    .crit .wl { display:inline; }
+    .sum > div { padding:0.8mm 3mm; }
+    .cmt { height:13mm; }
+    .fld input::placeholder { color:transparent; }
+    .cmt textarea { display:none; }
+    .cmtp { display:block; }
+    .ov tr[data-i]:hover td { background:transparent; }
+    .sheet, .ov { display:none !important; }
+    body.print-one .sheet.active { display:grid !important; }
+    body.print-all .sheet:not(.blank) { display:grid !important; }
+    body.print-all.with-ov .ov, body.print-ov .ov { display:block !important; }
+    body.print-blank .sheet.blank { display:grid !important; }
+  }
+  /* ---------- Passwortschutz ---------- */
+  .lockov { position:fixed; top:0; left:0; right:0; bottom:0; z-index:100; background:rgba(30,30,30,.94); display:flex; align-items:center; justify-content:center; padding:16px; }
+  .lockbox { background:#fff; border-radius:10px; padding:18px 20px; max-width:460px; width:100%; box-shadow:0 4px 20px rgba(0,0,0,.4); line-height:1.4; }
+  .lockbox h2 { margin:0 0 8px; font-size:15pt; color:var(--acc); }
+  .lockbox p { margin:4px 0 8px; }
+  .lockbox input.pw { width:100%; min-height:46px; font-size:16px; padding:8px 10px; border:1px solid #888; border-radius:6px; margin:6px 0; }
+  .lockbox .show { display:flex; gap:8px; align-items:center; margin:4px 0; }
+  .lockbox .show input { width:20px; height:20px; margin:0; }
+  .lockbox .err { color:#b00000; font-weight:bold; min-height:1.3em; }
+  .lockbox .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .lockbox button { min-height:44px; padding:8px 16px; border-radius:6px; border:1px solid #888; background:#fff; }
+  .lockbox .forgot { margin-top:16px; border-top:1px solid #ddd; padding-top:10px; }
+  .secbox { margin-top:12px; border-top:1px solid #ddd; padding-top:10px; }
+  .secbox .row, .secrow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .secon { color:#1e6b2e; font-weight:bold; }
+  .secoff { color:#8a5a00; font-weight:bold; }
+  @media print { .lockov { display:none !important; } }
+</style>
+</head>
+<body data-view="setup">
+
+<div class="bar" id="bar">
+  <a class="homebtn" href="index.html">⌂ Start</a>
+  <span class="brand" id="brand"></span>
+  <button id="prev" title="Vorheriger Bogen" aria-label="Vorheriger Bogen">◀</button>
+  <select id="sel" aria-label="Bogen auswählen"></select>
+  <button id="next" title="Nächster Bogen" aria-label="Nächster Bogen">▶</button>
+  <button id="add" class="primary">+ Schüler/in</button>
+</div>
+<div class="actions" id="actions">
+  <span class="grp"><button id="setbtn">Einrichtung</button><button id="ovbtn">Übersicht</button><button id="helpbtn">Hilfe</button><button id="lockbtn" hidden>Sperren</button></span>
+  <span class="grp"><button id="pone">Drucken: dieser Bogen</button><button id="pall">Drucken: alle Bögen</button><label><input type="checkbox" id="withov"> mit Übersicht</label><button id="pblank">Leerer Bogen</button><button id="pov">Übersicht drucken</button></span>
+  <span class="grp"><button id="exp">Sichern</button><button id="imp">Laden</button><button id="csv">Tabelle (CSV)</button><button id="del" class="danger">Bogen löschen</button></span>
+</div>
+<input type="file" id="file" accept="application/json,.json" style="display:none">
+
+<div class="warn" id="warn" hidden>Achtung: Dieser Browser erlaubt hier kein Speichern (z. B. privates Fenster oder eingeschränkte Datei-Ansicht). Die Eingaben gehen beim Schließen verloren. Bitte regelmäßig „Sichern“ benutzen oder die Datei direkt in Chrome, Edge, Firefox oder Safari öffnen.</div>
+
+<div class="help" id="help" hidden>
+  <h3>So funktioniert es</h3>
+  <ol>
+    <li><b>Einrichtung:</b> Fach, Kriterien, Schwerpunkt und Punkte wählen. Das geht jederzeit erneut über „Einrichtung“.</li>
+    <li><b>Bogen anlegen:</b> Mit „+ Schüler/in“ einen neuen Bogen anlegen, Name und Thema eintragen. Mit ◀ ▶ oder der Auswahlliste zwischen den Bögen wechseln.</li>
+    <li><b>Bewerten:</b> Pro Kriterium die passende Beschreibung antippen. Nochmal antippen hebt die Auswahl auf. Mit − und + den Wert innerhalb der Stufe fein einstellen.</li>
+    <li><b>Note:</b> Sie erscheint automatisch, sobald alle Kriterien bewertet sind.</li>
+    <li><b>Drucken / PDF:</b> Im Druckfenster „Als PDF speichern“ oder einen Drucker wählen, A4 quer, Ränder „Keine“, „Hintergrundgrafiken“ einschalten. „Leerer Bogen“ druckt eine Vorlage zum Ausfüllen von Hand.</li>
+    <li><b>Übersicht / CSV:</b> „Übersicht“ zeigt alle Ergebnisse. „Tabelle (CSV)“ erzeugt eine Datei für Excel oder LibreOffice.</li>
+  </ol>
+  <h3>Datenschutz</h3>
+  <p>Das Programm arbeitet vollständig offline und ist technisch so gesperrt, dass es keine Verbindung ins Internet aufbauen kann. Alle Eingaben bleiben ausschließlich im Browser dieses Geräts. Sicherungs- und CSV-Dateien enthalten personenbezogene Daten. Behandeln Sie sie wie Notenlisten: nur auf dienstlichen oder verschlüsselten Geräten speichern. Löschen Sie die Daten am Schuljahresende über „Einrichtung“ → „Alle Daten löschen“. Auf gemeinsam genutzten Geräten sollten Sie nach der Arbeit sichern und dann löschen. <b>Empfehlung:</b> Unter „Einrichtung“ → „Daten auf diesem Gerät“ einen Passwortschutz einrichten. Dann sind gespeicherte Daten und Sicherungsdateien mit AES-256 verschlüsselt und ohne Passwort nicht lesbar – auch nicht für andere Dateien oder Programme auf dem Gerät. Ein vergessenes Passwort kann niemand wiederherstellen.</p>
+</div>
+
+<main class="setup" id="setup"></main>
+<div class="stage" id="stage"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= Passwortschutz (AES-GCM 256, Schlüssel per PBKDF2-SHA-256) ================= */
+  var SEC = (function () {
+    var ITER = 400000, key = null, salt = null, iter = ITER, auto = 15, chain = Promise.resolve(), queued = null;
+    function b64(buf) { var s = '', a = new Uint8Array(buf); for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s); }
+    function unb64(s) { var b = atob(s), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+    function ok() {
+      try { return !!(window.crypto && window.crypto.subtle && window.TextEncoder && window.TextDecoder && window.Promise && window.isSecureContext !== false); } catch (e) { return false; }
+    }
+    function derive(pw, s, it) {
+      return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (k) {
+        return crypto.subtle.deriveKey({ name:'PBKDF2', salt:s, iterations:it, hash:'SHA-256' }, k, { name:'AES-GCM', length:256 }, false, ['encrypt', 'decrypt']);
+      });
+    }
+    function seal(text, k, s, it) {
+      var iv = crypto.getRandomValues(new Uint8Array(12));
+      return crypto.subtle.encrypt({ name:'AES-GCM', iv:iv }, k, new TextEncoder().encode(text)).then(function (ct) {
+        return JSON.stringify({ enc:'AES-GCM', kdf:'PBKDF2-SHA256', iter:it, salt:b64(s), iv:b64(iv), ct:b64(ct), autolock:auto });
+      });
+    }
+    function isEnv(o) { return !!(o && o.enc === 'AES-GCM' && typeof o.ct === 'string' && typeof o.iv === 'string' && typeof o.salt === 'string'); }
+    function tryEnv(env, pw) {
+      var s = unb64(env.salt), it = Math.max(1000, env.iter | 0);
+      return derive(pw, s, it).then(function (k) {
+        return crypto.subtle.decrypt({ name:'AES-GCM', iv:unb64(env.iv) }, k, unb64(env.ct)).then(function (pt) {
+          return { txt:new TextDecoder().decode(pt), k:k, s:s, it:it, auto:(env.autolock >= 0 ? env.autolock | 0 : 15) };
+        });
+      });
+    }
+    function adopt(r) { key = r.k; salt = r.s; iter = r.it; auto = r.auto; }
+    function setPassword(pw) {
+      var s = crypto.getRandomValues(new Uint8Array(16));
+      return derive(pw, s, ITER).then(function (k) { key = k; salt = s; iter = ITER; });
+    }
+    function write(storeKey, text) {
+      queued = text;
+      chain = chain.then(function () {
+        if (queued === null) return;
+        var t = queued; queued = null;
+        if (!key) { try { localStorage.setItem(storeKey, t); } catch (e) {} return; }
+        return seal(t, key, salt, iter).then(function (env) { try { localStorage.setItem(storeKey, env); } catch (e) {} });
+      }).catch(function () {});
+      return chain;
+    }
+    function wipe(storeKey) {
+      queued = null; key = null; salt = null;
+      chain = chain.then(function () { try { localStorage.removeItem(storeKey); } catch (e) {} });
+      return chain;
+    }
+    return {
+      ok:ok, isEnv:isEnv, tryEnv:tryEnv, adopt:adopt, setPassword:setPassword, write:write, wipe:wipe,
+      clear:function () { key = null; salt = null; },
+      on:function () { return !!key; },
+      auto:function () { return auto; }, setAuto:function (m) { auto = Math.max(0, m | 0); },
+      sealNow:function (text) { return seal(text, key, salt, iter); }
+    };
+  })();
+
+  function pwDialog(o) {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div'); ov.className = 'lockov';
+      ov.innerHTML = '<div class="lockbox" role="dialog" aria-modal="true"><h2></h2><p class="t"></p>' +
+        '<input type="password" class="pw p1" autocomplete="' + (o.twice ? 'new-password' : 'current-password') + '" placeholder="Passwort" aria-label="Passwort">' +
+        (o.twice ? '<input type="password" class="pw p2" autocomplete="new-password" placeholder="Passwort wiederholen" aria-label="Passwort wiederholen">' : '') +
+        '<label class="show"><input type="checkbox" class="sh"> Passwort anzeigen</label><div class="err" role="alert"></div>' +
+        '<div class="btns"><button type="button" class="primary ok"></button>' + (o.cancel ? '<button type="button" class="cn">Abbrechen</button>' : '') + '</div>' +
+        (o.onForgot ? '<div class="forgot"><button type="button" class="danger fg">Passwort vergessen – alle Daten löschen</button></div>' : '') + '</div>';
+      ov.querySelector('h2').textContent = o.title;
+      ov.querySelector('.t').textContent = o.text || '';
+      var okb = ov.querySelector('.ok'), p1 = ov.querySelector('.p1'), p2 = ov.querySelector('.p2'), err = ov.querySelector('.err');
+      okb.textContent = o.okText || 'OK';
+      document.body.appendChild(ov);
+      setTimeout(function () { try { p1.focus(); } catch (e) {} }, 30);
+      function done(v) { if (ov.parentNode) ov.parentNode.removeChild(ov); resolve(v); }
+      function go() {
+        var a = p1.value;
+        if (o.twice) {
+          if (a.length < 8) { err.textContent = 'Bitte mindestens 8 Zeichen verwenden.'; return; }
+          if (a !== p2.value) { err.textContent = 'Die beiden Eingaben stimmen nicht überein.'; return; }
+        } else if (!a) { err.textContent = 'Bitte das Passwort eingeben.'; return; }
+        if (!o.check) { done(a); return; }
+        okb.disabled = true; err.textContent = 'Wird geprüft …';
+        o.check(a).then(function (r) {
+          if (r === true) { done(a); return; }
+          okb.disabled = false; err.textContent = r || 'Falsches Passwort.'; p1.select();
+        });
+      }
+      okb.addEventListener('click', go);
+      ov.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); if (p2 && document.activeElement === p1) p2.focus(); else go(); }
+        if (e.key === 'Escape' && o.cancel) done(null);
+      });
+      ov.querySelector('.sh').addEventListener('change', function (e) {
+        var t = e.target.checked ? 'text' : 'password'; p1.type = t; if (p2) p2.type = t;
+      });
+      if (o.cancel) ov.querySelector('.cn').addEventListener('click', function () { done(null); });
+      if (o.onForgot) ov.querySelector('.fg').addEventListener('click', function () { o.onForgot(); });
+    });
+  }
+  function verifyPw(pw) {
+    var env = null;
+    try { env = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (!SEC.isEnv(env)) return Promise.resolve('Gespeicherte Daten nicht gefunden.');
+    return SEC.tryEnv(env, pw).then(function () { return true; }, function () { return 'Falsches Passwort.'; });
+  }
+  function lockNow() { flush().then(function () { location.reload(); }); }
+  function updLockBtn() { var b = document.getElementById('lockbtn'); if (b) b.hidden = !SEC.on(); }
+  function secHTML() {
+    var h = '<div class="secbox"><h3>Passwortschutz</h3>';
+    if (!canStore) return h + '<p class="note">Nicht verfügbar, weil dieser Browser hier nichts speichert.</p></div>';
+    if (!SEC.ok()) return h + '<p class="bad">Dieser Browser unterstützt keine Verschlüsselung. Bitte einen aktuellen Browser (Chrome, Edge, Firefox, Safari) verwenden.</p></div>';
+    if (!SEC.on()) {
+      return h + '<p><span class="secoff">Aus.</span> Die Daten liegen unverschlüsselt im Browser. Mit Passwortschutz werden gespeicherte Daten und Sicherungsdateien mit AES-256 verschlüsselt; ohne Passwort sind sie nicht lesbar.</p>' +
+        '<div class="secrow"><button type="button" class="primary" data-a="pwset">Passwortschutz einrichten</button></div></div>';
+    }
+    var opts = [[0, 'nie'], [5, 'nach 5 Minuten'], [15, 'nach 15 Minuten'], [30, 'nach 30 Minuten'], [60, 'nach 60 Minuten']];
+    return h + '<p><span class="secon">Aktiv (AES-256).</span> Gespeicherte Daten und Sicherungsdateien sind verschlüsselt. CSV-Tabellen und PDF-Ausdrucke sind <b>nicht</b> verschlüsselt.</p>' +
+      '<div class="secrow"><label class="secrow">Automatisch sperren <select data-a="autolock">' +
+      opts.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === SEC.auto() ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></label>' +
+      '<button type="button" data-a="pwlock">Jetzt sperren</button><button type="button" data-a="pwchg">Passwort ändern</button>' +
+      '<button type="button" class="danger" data-a="pwdel">Passwortschutz entfernen</button></div></div>';
+  }
+  function secClick(a) {
+    if (a === 'pwset') {
+      pwDialog({ title:'Passwortschutz einrichten', twice:true, cancel:true, okText:'Schützen',
+        text:'Wählen Sie ein Passwort mit mindestens 8 Zeichen. Wichtig: Ohne dieses Passwort lassen sich die Daten nicht wiederherstellen. Notieren Sie es an einem sicheren Ort.' }).then(function (pw) {
+        if (!pw) return;
+        SEC.setPassword(pw).then(function () { SEC.setAuto(15); return flush(); }).then(function () {
+          updLockBtn(); renderSetup();
+          alert('Der Passwortschutz ist aktiv. Bitte jetzt eine neue Sicherung speichern – ältere Sicherungsdateien sind noch unverschlüsselt und sollten gelöscht werden.');
+        });
+      });
+      return true;
+    }
+    if (a === 'pwchg') {
+      pwDialog({ title:'Passwort ändern', text:'Bitte zuerst das bisherige Passwort eingeben.', cancel:true, okText:'Weiter', check:verifyPw }).then(function (old) {
+        if (!old) return;
+        return pwDialog({ title:'Neues Passwort', twice:true, cancel:true, okText:'Ändern', text:'Neues Passwort mit mindestens 8 Zeichen eingeben.' }).then(function (pw) {
+          if (!pw) return;
+          return SEC.setPassword(pw).then(flush).then(function () { renderSetup(); alert('Das Passwort wurde geändert. Ältere Sicherungsdateien lassen sich weiterhin nur mit dem alten Passwort öffnen.'); });
+        });
+      });
+      return true;
+    }
+    if (a === 'pwdel') {
+      pwDialog({ title:'Passwortschutz entfernen', text:'Zur Bestätigung das Passwort eingeben. Danach werden die Daten wieder unverschlüsselt gespeichert.', cancel:true, okText:'Entfernen', check:verifyPw }).then(function (pw) {
+        if (!pw) return;
+        SEC.clear(); flush().then(function () { updLockBtn(); renderSetup(); });
+      });
+      return true;
+    }
+    if (a === 'pwlock') { lockNow(); return true; }
+    return false;
+  }
+  var lastAct = Date.now();
+  function idleCheck() { if (SEC.on() && SEC.auto() > 0 && Date.now() - lastAct > SEC.auto() * 60000) lockNow(); }
+  ['pointerdown', 'keydown', 'input', 'touchstart', 'wheel'].forEach(function (ev) { document.addEventListener(ev, function () { lastAct = Date.now(); }, true); });
+  setInterval(idleCheck, 15000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') idleCheck(); });
+  function unlockScreen(env, onData) {
+    if (!SEC.ok()) {
+      document.body.innerHTML = '<div style="max-width:600px;margin:40px auto;background:#fff;padding:20px;border-radius:8px;font:12pt Arial">Die gespeicherten Daten sind verschlüsselt, aber dieser Browser unterstützt die Entschlüsselung nicht. Bitte die Datei in einem aktuellen Chrome, Edge, Firefox oder Safari öffnen.</div>';
+      return;
+    }
+    pwDialog({ title:'Gesperrt', okText:'Entsperren', text:'Die Daten auf diesem Gerät sind mit einem Passwort geschützt.',
+      check:function (pw) {
+        return SEC.tryEnv(env, pw).then(function (r) {
+          var o = null; try { o = JSON.parse(r.txt); } catch (e) {}
+          SEC.adopt(r); onData(o); return true;
+        }, function () { return 'Falsches Passwort.'; });
+      },
+      onForgot:function () {
+        if (!confirm('Ohne Passwort lassen sich die Daten nicht entschlüsseln. Alle Daten auf diesem Gerät endgültig löschen?')) return;
+        if (!confirm('Wirklich löschen? Danach können Sie eine (unverschlüsselte oder verschlüsselte) Sicherung neu laden.')) return;
+        SEC.wipe(KEY).then(function () { location.reload(); });
+      } });
+  }
+  function readBackup(text, onObj) {
+    var o = null;
+    try { o = JSON.parse(text); } catch (e) {}
+    if (!o) { alert('Die Datei konnte nicht gelesen werden.'); return; }
+    if (!SEC.isEnv(o)) { onObj(o, null); return; }
+    if (!SEC.ok()) { alert('Diese Sicherung ist verschlüsselt, der Browser unterstützt aber keine Entschlüsselung.'); return; }
+    var found = null;
+    pwDialog({ title:'Sicherung entschlüsseln', cancel:true, okText:'Öffnen', text:'Diese Sicherung ist verschlüsselt. Bitte das Passwort eingeben, mit dem sie erstellt wurde.',
+      check:function (pw) { return SEC.tryEnv(o, pw).then(function (r) { found = r; return true; }, function () { return 'Falsches Passwort.'; }); } }).then(function (pw) {
+      if (!pw || !found) return;
+      var obj = null; try { obj = JSON.parse(found.txt); } catch (e) {}
+      if (!obj) { alert('Die Sicherung ist beschädigt.'); return; }
+      onObj(obj, found);
+    });
+  }
+  function exportBackup(name, text) {
+    if (SEC.on()) SEC.sealNow(text).then(function (env) { download(name.replace(/\.json$/, '_verschluesselt.json'), env, 'application/json'); });
+    else download(name, text, 'application/json');
+  }
+
+  /* ================= Kataloge ================= */
+  var MAX = 12, MIN = 1;
+  // KMK-Notenschlüssel (Oberstufe/Abitur): Mindestprozent je Notenpunkt, Index = Notenpunkte
+  var ABI = [0, 20, 27, 33, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95];
+  var TEND = ['6', '5−', '5', '5+', '4−', '4', '4+', '3−', '3', '3+', '2−', '2', '2+', '1−', '1', '1+'];
+  var KEYS = [
+    { id:'abi',   n:'Abiturschlüssel', t:'KMK-Schlüssel der Oberstufe: 4 ab 40 %, 5 ab 20 %.' },
+    { id:'knick', n:'Mit Knick',       t:'Grenzen 4/5 und 5/6 in Prozent festlegen; darüber gleichmäßig.' },
+    { id:'ind',   n:'Individuell',     t:'Jede Grenze selbst eintragen.' }
+  ];
+  var LV_NAMES = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft / ungenügend'];
+  var NP_LV = [ { lo:13, hi:15, def:14 }, { lo:10, hi:12, def:11 }, { lo:7, hi:9, def:8 }, { lo:4, hi:6, def:5 }, { lo:0, hi:3, def:2 } ];
+  var GROUPS = { I:'Inhalt', P:'Präsentation', S:'Sprache' };
+  var GENERIC = [
+    'Anforderungen in besonderem Maße erfüllt.',
+    'Anforderungen voll erfüllt.',
+    'Anforderungen im Allgemeinen erfüllt.',
+    'Anforderungen mit Mängeln, im Ganzen aber noch erfüllt.',
+    'Anforderungen nicht oder nur in Ansätzen erfüllt.' ];
+
+  var C = {
+    /* --- fachübergreifend --- */
+    sach: { n:'Sachkenntnis und Inhalt', s:'Inhalt', g:'I', d:[
+      'Thema umfassend, fachlich korrekt und auf das Wesentliche konzentriert.',
+      'Thema korrekt und weitgehend vollständig erfasst.',
+      'Im Wesentlichen korrekt; Lücken oder Nebensächliches.',
+      'Lückenhaft, teils fehlerhaft; Wesentliches fehlt.',
+      'Thema verfehlt oder grob fehlerhaft.' ] },
+    quellen: { n:'Recherche und Quellenangaben', s:'Recherche', g:'I', d:[
+      'Vielfältige, seriöse Quellen, kritisch geprüft und korrekt angegeben.',
+      'Geeignete Quellen, überwiegend korrekt angegeben.',
+      'Wenige oder einseitige Quellen; Angaben lückenhaft.',
+      'Fragwürdige Quellen; kaum Angaben.',
+      'Keine Quellen angegeben.' ] },
+    eigen: { n:'Eigenständigkeit', s:'Eigenst.', g:'I', d:[
+      'Eigene Schwerpunkte, Thesen oder Beispiele; deutlich über Vorlagen hinaus.',
+      'Erkennbar eigene Verarbeitung; einzelne eigene Akzente.',
+      'Überwiegend Wiedergabe von Vorlagen; wenig Eigenes.',
+      'Weitgehend übernommen; kaum eigene Verarbeitung.',
+      'Vollständig übernommen; keine eigene Leistung erkennbar.' ] },
+    fragen: { n:'Umgang mit Fragen / Diskussion', s:'Fragen', g:'I', d:[
+      'Beantwortet Fragen souverän und fachkundig; regt Diskussion an.',
+      'Beantwortet Fragen sicher; kleinere Unsicherheiten.',
+      'Beantwortet einfache Fragen; bei Nachfragen unsicher.',
+      'Beantwortet Fragen nur teilweise oder ungenau.',
+      'Kann keine Fragen beantworten.' ] },
+    aufbau: { n:'Aufbau und Struktur', s:'Aufbau', g:'P', d:[
+      'Klare, logische Gliederung; Einstieg weckt Interesse; Schluss bündelt Ergebnisse.',
+      'Nachvollziehbare Gliederung; Einleitung und Schluss passend.',
+      'Gliederung erkennbar, Übergänge teils unklar; Einleitung/Schluss knapp.',
+      'Gliederung kaum erkennbar; Sprünge; Einleitung oder Schluss fehlen.',
+      'Ungeordnet, kein roter Faden erkennbar.' ] },
+    vortrag: { n:'Vortragsweise', s:'Vortrag', g:'P', d:[
+      'Frei und lebendig; Blickkontakt, Tempo, Lautstärke und Körpersprache sicher.',
+      'Weitgehend frei; meist Blickkontakt; gut verständlich.',
+      'Teils abgelesen; Blickkontakt wechselhaft; Tempo oder Lautstärke schwanken.',
+      'Überwiegend abgelesen; kaum Blickkontakt; schwer zu folgen.',
+      'Vollständig abgelesen, unverständlich oder abgebrochen.' ] },
+    medien: { n:'Medien und Visualisierung', s:'Medien', g:'P', d:[
+      'Medien übersichtlich, funktional und gezielt eingesetzt; stützen den Vortrag.',
+      'Medien übersichtlich und hilfreich; kleine Schwächen in der Gestaltung.',
+      'Medien vorhanden, teils überladen oder lose mit dem Vortrag verbunden.',
+      'Medien unübersichtlich, fehlerhaft oder kaum genutzt.',
+      'Keine oder ungeeignete Medien.' ] },
+    handout: { n:'Handout / Thesenpapier', s:'Handout', g:'P', d:[
+      'Kompakt, korrekt, mit Kernaussagen und vollständigen Quellenangaben.',
+      'Übersichtlich und korrekt; Quellen weitgehend angegeben.',
+      'Brauchbar, aber lückenhaft oder zu ausführlich; Quellen unvollständig.',
+      'Unübersichtlich oder fehlerhaft; kaum Quellenangaben.',
+      'Fehlt oder unbrauchbar.' ] },
+    zeit: { n:'Zeitmanagement', s:'Zeit', g:'P', d:[
+      'Zeitrahmen genau eingehalten; Teile sinnvoll gewichtet.',
+      'Zeitrahmen eingehalten; leichte Ungleichgewichte.',
+      'Geringe Über- oder Unterschreitung; einzelne Teile zu lang/kurz.',
+      'Deutliche Über- oder Unterschreitung.',
+      'Zeitrahmen grob verfehlt.' ] },
+    sprache: { n:'Sprache und Fachsprache', s:'Sprache', g:'S', d:[
+      'Präzise, sachlich, abwechslungsreich; Fachbegriffe sicher und erklärt.',
+      'Angemessener Ausdruck; Fachbegriffe überwiegend sicher.',
+      'Verständlich, teils umgangssprachlich; Fachbegriffe ungenau.',
+      'Unpräzise, oft umgangssprachlich; Fachbegriffe fehlen oder falsch.',
+      'Kaum verständlich; keine Fachsprache.' ] },
+
+    /* --- Deutsch --- */
+    d_text: { n:'Textarbeit und Deutung', s:'Textarbeit', g:'I', d:[
+      'Text/Werk präzise erschlossen; Deutung differenziert und mit Zitaten belegt.',
+      'Sichere Analyse; Deutung überwiegend am Text belegt.',
+      'Analyse eher beschreibend; Belege nur vereinzelt.',
+      'Inhaltswiedergabe statt Analyse; kaum Belege.',
+      'Keine Analyse oder Fehldeutungen.' ] },
+    d_kontext: { n:'Kontext (Autor/in, Epoche, Gattung)', s:'Kontext', g:'I', d:[
+      'Epoche, Autor/in und Gattung sicher und funktional mit dem Thema verknüpft.',
+      'Kontext zutreffend und passend einbezogen.',
+      'Kontext genannt, aber kaum mit dem Thema verknüpft.',
+      'Kontext lückenhaft oder fehlerhaft.',
+      'Kein Kontext.' ] },
+
+    /* --- Geschichte --- */
+    g_sach: { n:'Sachkenntnis und Einordnung', s:'Sachkenntnis', g:'I', d:[
+      'Ereignisse, Daten, Akteure korrekt; Ursachen und Folgen klar verknüpft.',
+      'Fakten korrekt; Zusammenhänge überwiegend erklärt.',
+      'Fakten im Wesentlichen korrekt; Zusammenhänge kaum erklärt.',
+      'Lückenhaft, teils fehlerhaft; Chronologie unsicher.',
+      'Grob fehlerhaft oder Thema verfehlt.' ] },
+    g_quellen: { n:'Umgang mit Quellen und Darstellungen', s:'Quellenarbeit', g:'I', d:[
+      'Quellen gezielt gewählt und kritisch eingeordnet (Urheber, Zeit, Absicht).',
+      'Quellen passend genutzt und meist eingeordnet.',
+      'Quellen genutzt, aber kaum kritisch geprüft.',
+      'Quellen nur als Illustration oder falsch verstanden.',
+      'Kein Quellenbezug.' ] },
+    g_persp: { n:'Multiperspektivität und Kontroversität', s:'Perspektiven', g:'I', d:[
+      'Verschiedene Perspektiven und Deutungen differenziert dargestellt.',
+      'Mehrere Perspektiven berücksichtigt.',
+      'Andere Perspektiven nur angedeutet.',
+      'Überwiegend einseitige Darstellung.',
+      'Einseitig und wertend; keine Perspektiven.' ] },
+    g_urteil: { n:'Sach- und Werturteil', s:'Urteil', g:'I', d:[
+      'Begründetes Urteil; Sach- und Werturteil klar getrennt; Gegenwartsbezug.',
+      'Begründetes Urteil; Maßstäbe überwiegend klar.',
+      'Urteil vorhanden, Begründung knapp.',
+      'Urteil pauschal oder unbegründet.',
+      'Kein Urteil.' ] },
+
+    /* --- Politik und Gesellschaft --- */
+    p_sach: { n:'Sachkenntnis (Begriffe, Institutionen, Fakten)', s:'Sachkenntnis', g:'I', d:[
+      'Sachverhalt umfassend, aktuell und korrekt; Fachbegriffe sicher.',
+      'Korrekt, weitgehend vollständig; aktuelle Bezüge.',
+      'Im Wesentlichen korrekt; Lücken; wenig aktuell.',
+      'Lückenhaft, teils fehlerhaft.',
+      'Grob fehlerhaft oder Thema verfehlt.' ] },
+    p_analyse: { n:'Analyse (Problem, Akteure, Interessen)', s:'Analyse', g:'I', d:[
+      'Problem, Akteure, Interessen und Lösungswege präzise herausgearbeitet.',
+      'Akteure und Interessen klar benannt; Zusammenhänge erklärt.',
+      'Akteure genannt; Analyse eher beschreibend.',
+      'Analyse oberflächlich, teils falsch.',
+      'Keine Analyse.' ] },
+    p_kontro: { n:'Kontroversität und Ausgewogenheit', s:'Kontroversität', g:'I', d:[
+      'Kontroverse Positionen ausgewogen und fair dargestellt.',
+      'Verschiedene Positionen dargestellt; leichte Unwucht.',
+      'Gegenpositionen nur kurz erwähnt.',
+      'Überwiegend einseitige Darstellung.',
+      'Einseitig; Meinung als Tatsache dargestellt.' ] },
+    p_urteil: { n:'Politisches Urteil', s:'Urteil', g:'I', d:[
+      'Eigenes Urteil kriteriengeleitet (z. B. Legitimität, Effizienz) und abgewogen.',
+      'Begründetes Urteil mit erkennbaren Kriterien.',
+      'Urteil vorhanden, Begründung knapp.',
+      'Pauschales, kaum begründetes Urteil.',
+      'Kein Urteil.' ] },
+    p_mat: { n:'Auswertung von Statistiken und Materialien', s:'Material', g:'I', d:[
+      'Statistiken/Materialien korrekt gelesen, kritisch eingeordnet und erklärt.',
+      'Materialien korrekt ausgewertet und erklärt.',
+      'Materialien gezeigt, aber kaum ausgewertet.',
+      'Materialien teils falsch gelesen.',
+      'Kein Materialbezug.' ] },
+
+    /* --- Spanisch --- */
+    e_inhalt: { n:'Inhalt und Landeskunde', s:'Inhalt', g:'I', d:[
+      'Thema fundiert und korrekt; landeskundliche Bezüge differenziert.',
+      'Thema korrekt; landeskundliche Bezüge passend.',
+      'Im Wesentlichen korrekt; Bezüge eher allgemein.',
+      'Lückenhaft, teils fehlerhaft.',
+      'Thema verfehlt.' ] },
+    e_fluss: { n:'Sprechfluss und freies Sprechen', s:'Sprechfluss', g:'S', d:[
+      'Frei und flüssig; sichere Redemittel und Überleitungen; kaum Pausen.',
+      'Weitgehend frei und flüssig; kurze Pausen.',
+      'Teils abgelesen; gelegentliches Stocken.',
+      'Überwiegend abgelesen; häufiges Stocken.',
+      'Vollständig abgelesen oder abgebrochen.' ] },
+    e_aussp: { n:'Aussprache und Intonation', s:'Aussprache', g:'S', d:[
+      'Durchgehend korrekt; natürliche Betonung und Satzmelodie.',
+      'Überwiegend korrekt; Fehler stören das Verständnis nicht.',
+      'Wiederkehrende Fehler, aber verständlich; teils deutsch geprägt.',
+      'Häufige Fehler; Verständnis teils erschwert.',
+      'Kaum verständlich.' ] },
+    e_korr: { n:'Sprachliche Korrektheit', s:'Korrektheit', g:'S', d:[
+      'Auch komplexe Strukturen (z. B. Modus, Zeiten) sicher; kaum Fehler.',
+      'Weitgehend korrekt; Fehler bei komplexen Strukturen.',
+      'Einfache Strukturen korrekt; wiederkehrende Fehler.',
+      'Viele Fehler, auch bei Grundstrukturen.',
+      'Fehler verhindern das Verständnis.' ] },
+    e_wort: { n:'Wortschatz und Ausdruck', s:'Wortschatz', g:'S', d:[
+      'Differenziert, themenspezifisch, idiomatisch; neue Wörter für die Klasse erklärt.',
+      'Angemessen und themenbezogen; neue Wörter meist erklärt.',
+      'Einfach, teils wiederholend; Umschreibungen.',
+      'Begrenzt; Germanismen; Verständnishilfen fehlen.',
+      'Sehr begrenzt; häufig Deutsch.' ] }
+  };
+
+  var SUBJ = {
+    de:  { n:'Deutsch', acc:'#8B1E2D', light:'#F6E9EB', hit:'#F3C9CF', preset:'inhalt',
+           list:['sach','d_text','d_kontext','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','sprache'],
+           def:['sach','d_text','aufbau','vortrag','medien','sprache'] },
+    ge:  { n:'Geschichte', acc:'#7A4B1E', light:'#F5EDE4', hit:'#E9CFAF', preset:'inhalt',
+           list:['g_sach','g_quellen','g_persp','g_urteil','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','sprache'],
+           def:['g_sach','g_quellen','g_urteil','aufbau','vortrag','medien'] },
+    pug: { n:'Politik und Gesellschaft', acc:'#1F4E79', light:'#E8F0F8', hit:'#BFD6EC', preset:'inhalt',
+           list:['p_sach','p_analyse','p_kontro','p_urteil','p_mat','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','sprache'],
+           def:['p_sach','p_analyse','p_kontro','p_urteil','aufbau','vortrag'] },
+    es:  { n:'Spanisch', acc:'#B5401A', light:'#FBECE6', hit:'#F4C7B6', preset:'sprache',
+           list:['e_inhalt','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','e_fluss','e_aussp','e_korr','e_wort'],
+           def:['e_inhalt','aufbau','e_fluss','e_aussp','e_korr','e_wort'] },
+    x:   { n:'Anderes Fach', acc:'#2F5D3A', light:'#EAF3EC', hit:'#C3E0CA', preset:'inhalt',
+           list:['sach','quellen','eigen','fragen','aufbau','vortrag','medien','handout','zeit','sprache'],
+           def:['sach','quellen','aufbau','vortrag','medien','sprache'] }
+  };
+
+  var PRESETS = [
+    { id:'gleich',  n:'Ausgewogen',               t:'Alle Kriterien zählen gleich viel.' },
+    { id:'inhalt',  n:'Schwerpunkt Inhalt',       t:'Inhalt 60 · Präsentation 25 · Sprache 15', g:{ I:60, P:25, S:15 } },
+    { id:'praes',   n:'Schwerpunkt Präsentation', t:'Inhalt 35 · Präsentation 45 · Sprache 20', g:{ I:35, P:45, S:20 } },
+    { id:'sprache', n:'Schwerpunkt Sprache',      t:'Inhalt 30 · Präsentation 20 · Sprache 50', g:{ I:30, P:20, S:50 } },
+    { id:'bereich', n:'Eigener Schwerpunkt',      t:'Anteile für Inhalt, Präsentation und Sprache selbst festlegen.' },
+    { id:'eigen',   n:'Eigene Gewichtung',        t:'Jedes Kriterium in der Tabelle einzeln festlegen.' }
+  ];
+  var TOTALS = [10, 15, 20, 24, 30, 40, 50, 60, 100];
+
+  /* ================= Zustand ================= */
+  var KEY = 'referat_bewertung_v1';
+  var canStore = storageOk();
+  var state = null;
+  var els = {};
+
+  function storageOk() {
+    try { var k = '__t' + Math.random(); localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; } catch (e) { return false; }
+  }
+  function today() {
+    var d = new Date();
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+  }
+  function newStudent() {
+    return { id:'s' + Date.now() + Math.floor(Math.random() * 1000), name:'', thema:'', datum:today(), cmt:'', r:{} };
+  }
+  function fresh() {
+    var f = { v:2, setup:false, fach:'de', titel:'Referat Deutsch', kurs:'', sel:SUBJ.de.def.slice(), custom:[], preset:SUBJ.de.preset,
+              groups:{ I:50, P:30, S:20 }, texts:{},
+              mode:'np', out:'np', total:30, half:true, keyType:'abi', knick:[50, 20],
+              indNote:[85, 70, 55, 40, 20], indNP:ABI.slice(1),
+              weights:{}, withov:false, cur:0, students:[ newStudent() ] };
+    applyPreset(f);
+    return f;
+  }
+  function load() {
+    if (!canStore) return null;
+    try { var t = localStorage.getItem(KEY); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+  }
+  var tmr = null, txOpen = false;
+  function flush() {
+    clearTimeout(tmr); tmr = null;
+    if (!canStore || !state) return Promise.resolve();
+    return SEC.write(KEY, JSON.stringify(state));
+  }
+  function save() {
+    if (!canStore || tmr) return;
+    tmr = setTimeout(flush, 250);
+  }
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(); });
+  function str(x, max) { return String(x == null ? '' : x).slice(0, max || 2000); }
+  function sanitize(o) {
+    if (!o || (o.v !== 1 && o.v !== 2) || !Array.isArray(o.students) || !SUBJ[o.fach]) return null;
+    var f = fresh();
+    f.setup = !!o.setup; f.fach = o.fach; f.titel = str(o.titel, 120); f.kurs = str(o.kurs, 120);
+    f.custom = (Array.isArray(o.custom) ? o.custom : []).filter(function (c) { return c && c.id && c.n; }).slice(0, 20).map(function (c) {
+      return { id:str(c.id, 40), n:str(c.n, 60), g: GROUPS[c.g] ? c.g : 'I' };
+    });
+    var known = {}; SUBJ[f.fach].list.concat(f.custom.map(function (c) { return c.id; })).forEach(function (id) { known[id] = 1; });
+    f.sel = (Array.isArray(o.sel) ? o.sel : []).filter(function (id) { return known[id]; }).slice(0, MAX);
+    f.preset = PRESETS.some(function (p) { return p.id === o.preset; }) ? o.preset : 'gleich';
+    f.mode = o.mode === 'pt' ? 'pt' : 'np';
+    f.total = Math.max(1, Math.min(1000, Math.round(num(o.total, 30))));
+    f.half = o.half !== false;
+    f.out = o.out === 'note' ? 'note' : 'np';
+    f.keyType = (o.keyType === 'knick' || o.keyType === 'ind') ? o.keyType : 'abi';
+    function pcts(a, n, d) { return (Array.isArray(a) && a.length === n) ? a.map(function (x) { return Math.max(0, Math.min(100, num(x, 0))); }) : d; }
+    f.knick = pcts(o.knick, 2, f.knick);
+    f.indNote = pcts(o.indNote, 5, f.indNote);
+    f.indNP = pcts(o.indNP, 15, f.indNP);
+    if (o.groups && typeof o.groups === 'object') for (var gk in GROUPS) f.groups[gk] = Math.max(0, num(o.groups[gk], f.groups[gk]));
+    if (o.texts && typeof o.texts === 'object') for (var tk in o.texts) {
+      var tx = o.texts[tk];
+      if (known[tk] && tx && typeof tx === 'object') f.texts[tk] = { n:str(tx.n, 80), d:[0, 1, 2, 3, 4].map(function (i) { return str(Array.isArray(tx.d) ? tx.d[i] : '', 200); }) };
+    }
+    f.weights = {};
+    if (o.weights && typeof o.weights === 'object') for (var k in o.weights) if (known[k]) f.weights[k] = Math.max(0, num(o.weights[k], 0));
+    f.withov = !!o.withov;
+    f.students = o.students.slice(0, 500).map(function (s) {
+      var r = {};
+      if (s && s.r && typeof s.r === 'object') for (var cid in s.r) {
+        var x = s.r[cid];
+        if (x && x.k >= 0 && x.k <= 4) r[str(cid, 40)] = { k: x.k | 0, v: num(x.v, 0) };
+      }
+      return { id:str(s && s.id || ('s' + Math.random()), 40), name:str(s && s.name, 120), thema:str(s && s.thema, 200),
+               datum:str(s && s.datum, 30), cmt:str(s && s.cmt, 3000), r:r };
+    });
+    if (!f.students.length) f.students.push(newStudent());
+    f.cur = Math.min(Math.max(0, o.cur | 0), f.students.length - 1);
+    if (f.sel.length < MIN) { f.sel = SUBJ[f.fach].def.slice(); }
+    if (!f.titel) f.titel = 'Referat ' + SUBJ[f.fach].n;
+    var anyW = active(f).some(function (c) { return f.weights[c.id] > 0; });
+    if (!anyW) applyPreset(f);
+    return f;
+  }
+
+  /* ================= Hilfsfunktionen ================= */
+  function num(x, d) { var n = parseFloat(String(x).replace(',', '.')); return isNaN(n) ? d : n; }
+  function fmt(n, dec) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec === undefined ? 2 : dec }); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  function sum(a) { var t = 0; for (var i = 0; i < a.length; i++) t += a[i]; return t; }
+  function byId(id) { for (var i = 0; i < state.students.length; i++) if (state.students[i].id === id) return state.students[i]; return null; }
+  function qa(root, sel) { return Array.prototype.slice.call(root.querySelectorAll(sel)); }
+
+  function short(n) { return n.length > 14 ? n.slice(0, 13) + '.' : n; }
+  function critObj(st, id) {
+    var b = critBase(st, id), o = b && st.texts && st.texts[id];
+    if (!o) return b;
+    var n = (o.n || '').trim();
+    return { id:b.id, n:n || b.n, s:n && n !== b.n ? short(n) : b.s, g:b.g, custom:b.custom, base:b,
+             d:b.d.map(function (x, i) { var t = (o.d[i] || '').trim(); return t || x; }) };
+  }
+  function critBase(st, id) {
+    if (C[id]) { var c = C[id]; return { id:id, n:c.n, s:c.s, g:c.g, d:c.d }; }
+    for (var i = 0; i < st.custom.length; i++) if (st.custom[i].id === id) {
+      var u = st.custom[i];
+      return { id:u.id, n:u.n, s:short(u.n), g:u.g, d:GENERIC, custom:true };
+    }
+    return null;
+  }
+  function catalog(st) {
+    st = st || state;
+    return SUBJ[st.fach].list.map(function (id) { return critObj(st, id); })
+      .concat(st.custom.map(function (u) { return critObj(st, u.id); }));
+  }
+  function active(st) {
+    st = st || state;
+    return catalog(st).filter(function (c) { return st.sel.indexOf(c.id) >= 0; });
+  }
+  function W(c) { return state.weights[c.id] || 0; }
+  function presetById(id) { for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i].id === id) return PRESETS[i]; return PRESETS[0]; }
+
+  // Ganze Zahlen mit fester Summe (Methode des größten Rests)
+  function distribute(sh, total, minOne) {
+    var s = sum(sh) || 1;
+    var raw = sh.map(function (x) { return x / s * total; });
+    var out = raw.map(Math.floor);
+    var rest = total - sum(out);
+    var idx = raw.map(function (x, i) { return i; }).sort(function (a, b) { return (raw[b] - out[b]) - (raw[a] - out[a]); });
+    for (var i = 0; i < rest; i++) out[idx[i % idx.length]]++;
+    if (minOne) out.forEach(function (x, i) {
+      if (x > 0) return;
+      var j = -1; out.forEach(function (y, m) { if (y > 1 && (j < 0 || y > out[j])) j = m; });
+      if (j >= 0) { out[j]--; out[i] = 1; }
+    });
+    return out;
+  }
+  function applyPreset(st) {
+    st = st || state;
+    var cs = active(st); if (!cs.length) return;
+    var T = st.mode === 'np' ? 100 : st.total;
+    var p = presetById(st.preset), sh;
+    if (p.id === 'eigen') {
+      var have = cs.map(function (c) { return st.weights[c.id] > 0 ? st.weights[c.id] : 0; });
+      var pos = have.filter(function (x) { return x > 0; });
+      var avg = pos.length ? sum(pos) / pos.length : 1;
+      sh = have.map(function (x) { return x > 0 ? x : avg; });
+    } else if (!p.g) {
+      sh = cs.map(function () { return 1; });
+    } else {
+      var pg = p.id === 'bereich' ? st.groups : p.g, cnt = {}, gs = 0;
+      cs.forEach(function (c) { cnt[c.g] = (cnt[c.g] || 0) + 1; });
+      for (var g in cnt) gs += pg[g] || 0;
+      sh = gs > 0 ? cs.map(function (c) { return (pg[c.g] || 0) / gs / cnt[c.g]; }) : cs.map(function () { return 1; });
+    }
+    var out = distribute(sh, T, st.mode === 'pt');
+    cs.forEach(function (c, i) { st.weights[c.id] = out[i]; });
+  }
+
+  /* ================= Berechnung ================= */
+  function stepSize() { return state.mode === 'np' ? 1 : (state.half ? 0.5 : 1); }
+  function ceilS(x, st) { return Math.ceil(x / st - 1e-9) * st; }
+  function roundS(x, st) { return Math.round(x / st) * st; }
+  function range(c, k) {
+    if (state.mode === 'np') return NP_LV[k];
+    var m = W(c), st = stepSize(), kp = noteTh();
+    var lower = k < 4 ? kp[k] : 0, upper = k === 0 ? 100 : kp[k - 1];
+    var lo = Math.max(0, ceilS(m * lower / 100, st));
+    var hi = k === 0 ? m : Math.min(m, ceilS(m * upper / 100, st) - st);
+    var mid = k === 0 ? (lower + 100) / 2 : k === 4 ? (kp[4] + kp[3]) / 2 : (lower + upper) / 2;
+    var def = Math.max(lo, Math.min(hi, roundS(m * mid / 100, st)));
+    if (lo > hi) { def = Math.max(0, Math.min(m, roundS(m * mid / 100, st))); lo = hi = def; }
+    return { lo:lo, hi:hi, def:def };
+  }
+  function normalize(s) {
+    var st = stepSize();
+    active().forEach(function (c) {
+      var x = s.r[c.id]; if (!x) return;
+      var rg = range(c, x.k);
+      if (x.v < rg.lo - 1e-9 || x.v > rg.hi + 1e-9 || Math.abs(x.v / st - Math.round(x.v / st)) > 1e-9) x.v = rg.def;
+    });
+  }
+  function noteNP(np) {
+    if (np >= 13) return { z:1, t:'sehr gut' };
+    if (np >= 10) return { z:2, t:'gut' };
+    if (np >= 7)  return { z:3, t:'befriedigend' };
+    if (np >= 4)  return { z:4, t:'ausreichend' };
+    if (np >= 1)  return { z:5, t:'mangelhaft' };
+    return { z:6, t:'ungenügend' };
+  }
+  // Mindestprozent je Notenpunkt (Index 0–15)
+  function npTh(st) {
+    st = st || state;
+    if (st.keyType === 'knick') {
+      var a = st.knick[0], b = st.knick[1], t = [0];
+      for (var n = 1; n <= 15; n++) t.push(n >= 4 ? a + (n - 4) * (100 - a) / 12 : b + (n - 1) * (a - b) / 3);
+      return t;
+    }
+    if (st.keyType === 'ind') return [0].concat(st.indNP);
+    return ABI.slice();
+  }
+  // Mindestprozent für die Noten 1–5
+  function noteTh(st) {
+    st = st || state;
+    if (st.keyType === 'knick') {
+      var a = st.knick[0];
+      return [1, 2, 3, 4].map(function (i) { return 100 - i * (100 - a) / 4; }).concat([st.knick[1]]);
+    }
+    if (st.keyType === 'ind' && st.out === 'note') return st.indNote.slice();
+    var t = npTh(st);
+    return [t[13], t[10], t[7], t[4], t[1]];
+  }
+  function fromPct(p) {
+    if (state.out === 'np') {
+      var t = npTh();
+      for (var n = 15; n >= 1; n--) if (p >= t[n] - 1e-9) return { np:n, z:noteNP(n) };
+      return { np:0, z:noteNP(0) };
+    }
+    var kp = noteTh(), names = ['sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft', 'ungenügend'];
+    for (var i = 0; i < 5; i++) if (p >= kp[i] - 1e-9) return { z:{ z:i + 1, t:names[i] } };
+    return { z:{ z:6, t:names[5] } };
+  }
+  function keyName() { for (var i = 0; i < KEYS.length; i++) if (KEYS[i].id === state.keyType) return KEYS[i].n; return ''; }
+  function p1(x) { return fmt(Math.round(x * 100) / 100); }
+  function valLabel(v) { return state.mode === 'np' && state.out === 'note' ? TEND[v] : fmt(v); }
+  function calc(s) {
+    normalize(s);
+    var cs = active(), open = 0, got = 0, wv = 0, ws = 0, mx = 0;
+    cs.forEach(function (c) {
+      var x = s.r[c.id];
+      mx += W(c);
+      if (!x) { open++; return; }
+      got += x.v; wv += x.v * W(c); ws += W(c);
+    });
+    var res = { open:open, any: open < cs.length, got:got, max:mx };
+    if (open > 0) return res;
+    res.done = true;
+    if (state.mode === 'np') {
+      res.ex = ws ? wv / ws : 0;
+      res.np = Math.floor(res.ex + 0.5 + 1e-9);
+      res.z = noteNP(res.np);
+    } else {
+      res.pct = mx ? got / mx * 100 : 0;
+      var fr = fromPct(res.pct);
+      res.np = fr.np; res.z = fr.z;
+    }
+    return res;
+  }
+  function bandLabel(k) {
+    if (state.mode === 'np') return state.out === 'np' ? NP_LV[k].hi + '–' + NP_LV[k].lo + ' NP' : (k === 4 ? 'Note 5 / 6' : 'Note ' + (k + 1));
+    var kp = noteTh();
+    return k === 4 ? 'unter ' + p1(kp[3]) + ' %' : 'ab ' + p1(kp[k]) + ' %';
+  }
+  function legend() {
+    if (state.mode === 'np') {
+      if (state.out === 'np') return 'Notenpunkte → Note: 15–13 = 1 · 12–10 = 2 · 9–7 = 3 · 6–4 = 4 · 3–1 = 5 · 0 = 6. Gesamt = gewichteter Durchschnitt, ab ,5 aufgerundet.';
+      return 'Stufe = Note, − / + setzt die Tendenz. Gesamtnote = gewichteter Durchschnitt (intern 15–0 Punkte, ab ,5 aufgerundet).';
+    }
+    if (state.out === 'np') {
+      var t = npTh(), a = [];
+      for (var n = 15; n >= 1; n--) a.push(n + ' ab ' + p1(t[n]) + ' %');
+      return keyName() + ' (Notenpunkte): ' + a.join(' · ') + ' · 0 darunter.';
+    }
+    var kp = noteTh();
+    return keyName() + ': 1 ab ' + p1(kp[0]) + ' % · 2 ab ' + p1(kp[1]) + ' % · 3 ab ' + p1(kp[2]) + ' % · 4 ab ' + p1(kp[3]) + ' % · 5 ab ' + p1(kp[4]) + ' % · 6 darunter.';
+  }
+  function resCols(r) {
+    var d = !!r.done, c = [];
+    if (state.mode === 'np') {
+      if (state.out === 'np') c.push(['Ø NP', d ? fmt(r.ex, 1) : ''], ['Notenpunkte', d ? r.np : '']);
+      else c.push(['Tendenz', d ? TEND[r.np] : '']);
+    } else {
+      c.push(['Punkte (' + fmt(r.max || 0) + ')', r.any ? fmt(r.got) : ''], ['Prozent', d ? fmt(r.pct, 1) : '']);
+      if (state.out === 'np') c.push(['Notenpunkte', d ? r.np : '']);
+    }
+    c.push(['Note', d ? r.z.z : '']);
+    return c;
+  }
+
+  /* ================= Bogen ================= */
+  function buildSheet(s, blank) {
+    var cs = active(), sw = sum(cs.map(W)) || 1;
+    var d = document.createElement('section');
+    d.className = 'sheet' + (blank ? ' blank' : '');
+    d.dataset.id = s.id;
+    var h = '<div class="head"><h1>' + esc(state.titel) + '</h1>';
+    h += '<label class="fld"><b>Name</b><input type="text" data-f="name" placeholder="Name eintippen" autocomplete="off"></label>';
+    h += '<label class="fld"><b>Thema</b><input type="text" data-f="thema" placeholder="Thema des Referats" autocomplete="off"></label>';
+    h += '<div class="fld"><b>Kurs</b><span class="kursv">' + esc(state.kurs) + '</span></div>';
+    h += '<label class="fld"><b>Datum</b><input type="text" data-f="datum" placeholder="TT.MM.JJJJ" autocomplete="off"></label></div>';
+    h += '<div class="grid" style="grid-template-rows:auto repeat(' + cs.length + ', ' + (cs.length > 7 ? 'auto' : '1fr') + ')"><div class="gh">Kriterium</div>';
+    LV_NAMES.forEach(function (n, k) { h += '<div class="gh">' + n + '<span>' + bandLabel(k) + '</span></div>'; });
+    cs.forEach(function (c, i) {
+      var wl = state.mode === 'np' ? 'Gewichtung ' + fmt(W(c) / sw * 100, 0) + ' %' : 'max. ' + fmt(W(c)) + ' Punkte (' + fmt(W(c) / sw * 100, 0) + ' %)';
+      var nl = state.mode === 'np' ? (state.out === 'np' ? 'NP' : '') : 'von ' + fmt(W(c)) + ' P';
+      h += '<div class="crit"><span class="cn">' + (i + 1) + ' ' + esc(c.n) + '</span><span class="wl">' + wl + '</span>' +
+           '<span class="np"><button type="button" class="st" data-c="' + esc(c.id) + '" data-d="-1" aria-label="weniger">−</button>' +
+           '<b class="nv">–</b><button type="button" class="st" data-c="' + esc(c.id) + '" data-d="1" aria-label="mehr">+</button>' +
+           '<span class="nl">' + nl + '</span></span></div>';
+      c.d.forEach(function (t, k) {
+        h += '<div class="lv' + (k === 4 ? ' last' : '') + '" role="button" tabindex="0" data-c="' + esc(c.id) + '" data-k="' + k + '" data-l="' + esc(LV_NAMES[k] + ' · ' + bandLabel(k)) + '">' + esc(t) + '</div>';
+      });
+    });
+    h += '</div>';
+    h += '<div class="sum"><div class="s1"></div><div class="s2"></div><div class="s3"></div><div class="sstat"></div></div>';
+    h += '<div class="cmt"><b>Rückmeldung</b><textarea data-f="cmt" aria-label="Rückmeldung"></textarea><div class="cmtp"></div></div>';
+    h += '<div class="foot">' + esc(legend()) + '</div>';
+    d.innerHTML = h;
+    if (!blank) {
+      ['name', 'thema', 'datum', 'cmt'].forEach(function (f) { d.querySelector('[data-f="' + f + '"]').value = s[f]; });
+      d.querySelector('.cmtp').textContent = s.cmt;
+    } else {
+      qa(d, 'input, textarea').forEach(function (el) { el.disabled = true; });
+    }
+    update(s, d);
+    return d;
+  }
+
+  function update(s, d) {
+    var c0 = calc(s), cs = active();
+    qa(d, '.crit').forEach(function (cell, i) {
+      var c = cs[i], x = s.r[c.id];
+      cell.querySelector('.nv').textContent = x ? valLabel(x.v) : '–';
+      var b = cell.querySelectorAll('button.st');
+      if (x) { var rg = range(c, x.k); b[0].disabled = x.v <= rg.lo + 1e-9; b[1].disabled = x.v >= rg.hi - 1e-9; }
+      else { b[0].disabled = b[1].disabled = true; }
+    });
+    qa(d, '.lv').forEach(function (el) {
+      var x = s.r[el.dataset.c], on = !!x && x.k === +el.dataset.k;
+      el.classList.toggle('hit', on);
+      el.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var s1 = d.querySelector('.s1'), s2 = d.querySelector('.s2'), s3 = d.querySelector('.s3'), st = d.querySelector('.sstat');
+    var nt = 'Note: <b class="big">' + (c0.done ? c0.z.z + ' (' + c0.z.t + ')' : '–') + '</b>';
+    if (state.mode === 'np') {
+      if (state.out === 'np') {
+        s1.innerHTML = 'Ø Notenpunkte: <b class="big">' + (c0.done ? fmt(c0.ex, 1) : '–') + '</b>';
+        s2.innerHTML = 'Notenpunkte: <b class="big">' + (c0.done ? c0.np : '–') + '</b>';
+      } else {
+        s1.innerHTML = 'Tendenz: <b class="big">' + (c0.done ? TEND[c0.np] : '–') + '</b>';
+        s2.innerHTML = nt; nt = '';
+      }
+    } else {
+      s1.innerHTML = 'Punkte: <b class="big">' + (c0.any ? fmt(c0.got) : '–') + '</b> / ' + fmt(c0.max);
+      if (state.out === 'np') {
+        s2.innerHTML = 'Anteil: ' + (c0.done ? fmt(c0.pct, 1) + ' %' : '–') + ' → <b class="big">' + (c0.done ? c0.np + ' NP' : '–') + '</b>';
+      } else {
+        s2.innerHTML = 'Anteil: <b class="big">' + (c0.done ? fmt(c0.pct, 1) + ' %' : '–') + '</b>';
+      }
+    }
+    s3.innerHTML = nt;
+    s3.style.display = nt ? '' : 'none';
+    st.textContent = d.classList.contains('blank') ? '' : c0.done ? '' :
+      c0.any ? 'Noch ' + c0.open + (c0.open === 1 ? ' Kriterium' : ' Kriterien') + ' offen' : 'Beschreibungen antippen – die Note erscheint automatisch.';
+  }
+
+  /* ================= Übersicht ================= */
+  function buildOverview() {
+    var cs = active(), sw = sum(cs.map(W)) || 1;
+    var d = document.createElement('section');
+    d.className = 'ov';
+    var h = '<h1>Übersicht ' + esc(state.titel) + (state.kurs ? ' – ' + esc(state.kurs) : '') + '</h1><div class="tw"><table><tr><th>Nr.</th><th>Name</th><th>Thema</th>';
+    cs.forEach(function (c, i) {
+      h += '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (state.mode === 'np' ? fmt(W(c) / sw * 100, 0) + ' %' : fmt(W(c)) + ' P') + ')</th>';
+    });
+    resCols({ max:sw }).forEach(function (x) { h += '<th>' + esc(x[0]) + '</th>'; });
+    h += '</tr>';
+    state.students.forEach(function (s, n) {
+      var r = calc(s);
+      h += '<tr data-i="' + n + '"><td>' + (n + 1) + '</td><td class="l">' + esc(s.name || '–') + '</td><td class="l">' + esc(s.thema) + '</td>';
+      cs.forEach(function (c) { var x = s.r[c.id]; h += '<td>' + (x ? valLabel(x.v) : '') + '</td>'; });
+      var rc = resCols(r);
+      rc.forEach(function (x, i) { h += '<td>' + (i === rc.length - 1 ? '<b>' + x[1] + '</b>' : esc(x[1])) + '</td>'; });
+      h += '</tr>';
+    });
+    h += '</table></div><div class="ovnote foot">' + esc(legend()) + ' Zeile antippen öffnet den Bogen.</div>';
+    d.innerHTML = h;
+    return d;
+  }
+
+  /* ================= Rendern ================= */
+  function setAccent() {
+    var S = SUBJ[state.fach], r = document.documentElement.style;
+    r.setProperty('--acc', S.acc); r.setProperty('--light', S.light); r.setProperty('--hit', S.hit);
+  }
+  function renderAll() {
+    setAccent();
+    els.stage.innerHTML = '';
+    state.students.forEach(function (s) { els.stage.appendChild(buildSheet(s)); });
+    els.stage.appendChild(buildOverview());
+    els.withov.checked = state.withov;
+    els.brand.textContent = state.titel + (state.kurs ? ' · ' + state.kurs : '');
+    refreshSelect();
+    show();
+  }
+  function show() {
+    qa(els.stage, '.sheet').forEach(function (el, i) { el.classList.toggle('active', i === state.cur); });
+    els.sel.value = String(state.cur);
+  }
+  function refreshOverview() {
+    var old = els.stage.querySelector('.ov');
+    if (old) els.stage.replaceChild(buildOverview(), old); else els.stage.appendChild(buildOverview());
+  }
+  function refreshSelect() {
+    els.sel.innerHTML = '';
+    state.students.forEach(function (s, i) {
+      var o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = (i + 1) + '. ' + (s.name.trim() || 'Schüler/in');
+      els.sel.appendChild(o);
+    });
+    els.sel.value = String(state.cur);
+  }
+  function setView(v) {
+    document.body.dataset.view = v;
+    if (v === 'ov') refreshOverview();
+    if (v === 'setup') renderSetup();
+    window.scrollTo(0, 0);
+  }
+
+  /* ================= Einrichtung ================= */
+  function hasRatings() {
+    return state.students.some(function (s) { for (var k in s.r) return true; return false; });
+  }
+  function renderSetup() {
+    setAccent();
+    var cs = catalog(), act = active(), n = act.length, np = state.mode === 'np';
+    var h = '<div class="sbox"><h2>Referate bewerten – Einrichtung</h2>' +
+      '<p>Stellen Sie in fünf Schritten Ihren Bewertungsbogen zusammen. Alles lässt sich später über „Einrichtung“ wieder ändern, auch wenn schon bewertet wurde.</p>' +
+      '<p class="priv"><b>Datenschutz:</b> Das Programm arbeitet vollständig offline. Alle Eingaben bleiben ausschließlich in diesem Browser auf diesem Gerät; es werden keine Daten übertragen.</p>' +
+      '<button type="button" data-a="load">Vorhandene Sicherung laden</button></div>';
+
+    h += '<div class="sbox"><h3><span class="no">1</span> Fach wählen</h3><div class="chips">';
+    for (var f in SUBJ) h += '<button type="button" class="chip' + (f === state.fach ? ' on' : '') + '" data-a="fach" data-v="' + f + '">' + SUBJ[f].n + '</button>';
+    h += '</div></div>';
+
+    h += '<div class="sbox"><h3><span class="no">2</span> Titel und Kurs</h3><div class="row2">' +
+      '<label>Titel des Bogens<input type="text" data-s="titel" maxlength="60" value="' + esc(state.titel) + '"></label>' +
+      '<label>Kurs / Klasse<input type="text" data-s="kurs" maxlength="40" placeholder="z. B. Q12 Deutsch eA oder 9b" value="' + esc(state.kurs) + '"></label></div></div>';
+
+    h += '<div class="sbox"><h3><span class="no">3</span> Kriterien auswählen <small id="ccount">(' + n + ' gewählt, ' + MIN + ' bis ' + MAX + ' möglich)</small></h3>' +
+      '<p class="note">Antippen zum An- und Abwählen. Klein darunter steht die Beschreibung für „sehr gut“. Farben: ' +
+      '<i class="tag tI">Inhalt</i> <i class="tag tP">Präsentation</i> <i class="tag tS">Sprache</i></p><div class="clist">';
+    cs.forEach(function (c) {
+      var on = state.sel.indexOf(c.id) >= 0, dis = !on && n >= MAX;
+      h += '<div class="ckrow"><label class="ck' + (on ? ' on' : '') + (dis ? ' off' : '') + '"><input type="checkbox" data-a="crit" data-v="' + esc(c.id) + '"' + (on ? ' checked' : '') + (dis ? ' disabled' : '') + '>' +
+           '<span><b>' + esc(c.n) + '</b> <i class="tag t' + c.g + '">' + GROUPS[c.g] + '</i><small>' + esc(c.d[0]) + '</small></span></label>' +
+           (c.custom ? '<button type="button" class="mini" data-a="delc" data-v="' + esc(c.id) + '">entfernen</button>' : '') + '</div>';
+    });
+    h += '</div><div class="addc"><input type="text" id="cname" maxlength="60" placeholder="Eigenes Kriterium, z. B. Kreativität">' +
+      '<select id="cgrp" aria-label="Bereich"><option value="I">Inhalt</option><option value="P">Präsentation</option><option value="S">Sprache</option></select>' +
+      '<button type="button" data-a="addc">+ Kriterium hinzufügen</button></div>' +
+      '<p class="note">Eigene Kriterien erhalten zunächst allgemeine Stufenbeschreibungen; diese lassen sich unten anpassen. Bei mehr als 7 Kriterien kann ein gedruckter Bogen auf eine zweite Seite reichen.</p>';
+    h += '<details class="txed" id="txed"' + (txOpen ? ' open' : '') + '><summary>Texte der gewählten Kriterien bearbeiten</summary>' +
+      '<p class="note">Name und Stufenbeschreibungen anpassen. Änderungen gelten sofort für alle Bögen. Kurze Texte (bis ca. 90 Zeichen) passen am besten auf den Druck.</p>';
+    act.forEach(function (c) {
+      var id = esc(c.id);
+      h += '<div class="txc"><label>Name des Kriteriums<input type="text" maxlength="80" data-tx="' + id + '" data-ti="n" value="' + esc(c.n) + '"></label>';
+      LV_NAMES.forEach(function (ln, k) {
+        h += '<label>' + ln + '<textarea rows="2" maxlength="200" data-tx="' + id + '" data-ti="' + k + '">' + esc(c.d[k]) + '</textarea></label>';
+      });
+      if (state.texts[c.id]) h += '<button type="button" data-a="txreset" data-v="' + id + '">Originaltexte wiederherstellen</button>';
+      h += '</div>';
+    });
+    h += '</details></div>';
+
+    h += '<div class="sbox"><h3><span class="no">4</span> Schwerpunkt der Bewertung</h3><div class="chips">';
+    PRESETS.forEach(function (p) {
+      h += '<button type="button" class="chip' + (p.id === state.preset ? ' on' : '') + '" data-a="preset" data-v="' + p.id + '">' + p.n + '<small>' + p.t + '</small></button>';
+    });
+    h += '</div>';
+    if (state.preset === 'bereich') {
+      var present = {}; act.forEach(function (c) { present[c.g] = 1; });
+      h += '<div class="grpin">';
+      for (var g in GROUPS) if (present[g]) h += '<label><i class="tag t' + g + '">' + GROUPS[g] + '</i><input type="text" inputmode="decimal" data-gr="' + g + '" value="' + fmt(state.groups[g]) + '"> %</label>';
+      h += '<span id="grsum"></span></div>';
+    }
+    h += '<table class="wt"><tr><th>Kriterium</th><th class="c">' + (np ? 'Gewichtung in %' : 'Höchstpunkte') + '</th><th class="c">Anteil</th></tr>';
+    act.forEach(function (c) {
+      h += '<tr><td>' + esc(c.n) + ' <i class="tag t' + c.g + '">' + GROUPS[c.g] + '</i></td><td class="c"><input type="number" inputmode="numeric" min="' + (np ? 0 : 1) + '" step="1" data-w="' + esc(c.id) + '" value="' + W(c) + '"></td><td class="c" data-pc="' + esc(c.id) + '"></td></tr>';
+    });
+    h += '<tr class="wsr"><td>Summe</td><td class="c" id="wsum"></td><td class="c">100 %</td></tr></table>' +
+      '<p class="note">Die Schwerpunkte verteilen die Anteile auf die Bereiche Inhalt, Präsentation und Sprache; innerhalb eines Bereichs zählen die Kriterien gleich. Fehlt ein Bereich, wird anteilig umgerechnet. Wer in der Tabelle selbst Werte einträgt, wechselt automatisch zu „Eigene Gewichtung“.</p></div>';
+
+    function chip(a, v, on, t, sm) { return '<button type="button" class="chip' + (on ? ' on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + t + '<small>' + sm + '</small></button>'; }
+    var outN = state.out === 'note';
+    h += '<div class="sbox"><h3><span class="no">5</span> Punkte und Noten</h3>' +
+      '<p class="lbl">a) Wie wird jedes Kriterium bewertet?</p><div class="chips">' +
+      chip('mode', 'np', np, 'Stufe antippen', 'Jede Stufe hat einen Notenwert; der gewichtete Durchschnitt ergibt das Ergebnis.') +
+      chip('mode', 'pt', !np, 'Punkte mit Notenschlüssel', 'Jedes Kriterium hat Höchstpunkte; der Notenschlüssel ergibt das Ergebnis.') + '</div>' +
+      '<p class="lbl">b) Ergebnis als</p><div class="chips">' +
+      chip('out', 'note', outN, 'Noten 1–6', np ? 'Feinwerte als Tendenz (2+, 2, 2−).' : 'z. B. Unter- und Mittelstufe.') +
+      chip('out', 'np', !outN, 'Notenpunkte 15–0', 'Oberstufe.') + '</div>';
+    if (np) {
+      h += '<p class="note">' + (outN
+        ? 'Stufen = Noten 1 bis 5/6. Beim Antippen wird die Note ohne Tendenz gesetzt, mit − und + wird daraus z. B. 2− oder 2+. Die Gesamtnote ergibt sich aus dem gewichteten Durchschnitt (intern in Notenpunkten).'
+        : 'Stufen: sehr gut = 15–13, gut = 12–10, befriedigend = 9–7, ausreichend = 6–4, mangelhaft/ungenügend = 3–0 Notenpunkte. Beim Antippen wird der mittlere Wert gesetzt (14, 11, 8, 5, 2), mit − und + lässt er sich anpassen.') + '</p>';
+    } else {
+      var opts = TOTALS.slice(); if (opts.indexOf(state.total) < 0) { opts.push(state.total); opts.sort(function (a, b) { return a - b; }); }
+      h += '<div class="stack" style="margin-top:10px"><label>Gesamtpunktzahl<select data-a="total">' +
+        opts.map(function (t) { return '<option value="' + t + '"' + (t === state.total ? ' selected' : '') + '>' + t + ' Punkte</option>'; }).join('') +
+        '</select></label></div>' +
+        '<label class="inl"><input type="checkbox" data-a="half"' + (state.half ? ' checked' : '') + '> halbe Punkte erlauben</label>' +
+        '<p class="lbl">c) Notenschlüssel</p><div class="chips">';
+      KEYS.forEach(function (k) { h += chip('key', k.id, state.keyType === k.id, k.n, k.t); });
+      h += '</div>';
+      if (state.keyType === 'knick') {
+        h += '<div class="keys"><label>Grenze 4/5: Note 4 ab <input type="text" inputmode="decimal" data-kn="0" value="' + fmt(state.knick[0]) + '"> %</label>' +
+             '<label>Grenze 5/6: Note 5 ab <input type="text" inputmode="decimal" data-kn="1" value="' + fmt(state.knick[1]) + '"> %</label></div>' +
+             '<p class="note">Oberhalb der Grenze 4/5 werden die Noten 1–4 (bzw. 15–4 Punkte) gleichmäßig verteilt, zwischen den beiden Grenzen die Note 5 (bzw. 3–1 Punkte).</p>';
+      } else if (state.keyType === 'ind') {
+        h += '<div class="keys">';
+        if (outN) for (var i = 0; i < 5; i++) h += '<label>Note ' + (i + 1) + ' ab <input type="text" inputmode="decimal" data-in="' + i + '" value="' + fmt(state.indNote[i]) + '"> %</label>';
+        else for (var p = 15; p >= 1; p--) h += '<label>' + p + ' NP ab <input type="text" inputmode="decimal" data-ip="' + (p - 1) + '" value="' + fmt(state.indNP[p - 1]) + '"> %</label>';
+        h += '<span>' + (outN ? 'Note 6' : '0 NP') + ' darunter</span></div><button type="button" data-a="indcopy">Werte aus dem Abiturschlüssel übernehmen</button>';
+      } else {
+        h += '<p class="note">KMK-Schlüssel (Oberstufe/Abitur): 15 NP ab 95 %, 14 ab 90 %, 13 ab 85 %, 12 ab 80 %, 11 ab 75 %, 10 ab 70 %, 9 ab 65 %, 8 ab 60 %, 7 ab 55 %, 6 ab 50 %, 5 ab 45 %, 4 ab 40 %, 3 ab 33 %, 2 ab 27 %, 1 ab 20 %. Es wird nicht gerundet. Bitte mit der aktuellen Vorgabe abgleichen; bei Abweichung „Individuell“ wählen.</p>';
+      }
+      h += '<p class="note" id="keymsg"></p><div class="ktw" id="keytab"></div>';
+    }
+    h += '</div>';
+
+    h += '<div class="sbox done"><button type="button" class="big primary" data-a="done">Fertig – zur Bewertung</button></div>';
+
+    var cnt = state.students.filter(function (s) { return s.name.trim() || hasR(s); }).length;
+    h += '<div class="sbox"><h3>Daten auf diesem Gerät</h3><p>Zurzeit gespeichert: ' + cnt + ' ausgefüllte(r) Bogen. ' +
+      (canStore ? 'Die Daten liegen nur im Browser-Speicher dieses Geräts.' : '<b class="bad">Speichern im Browser ist hier nicht möglich – bitte „Sicherung speichern“ benutzen.</b>') +
+      ' Wird der Browserverlauf gelöscht, sind sie weg. Sichern Sie deshalb regelmäßig.</p>' +
+      '<button type="button" data-a="exp">Sicherung speichern</button> <button type="button" class="danger" data-a="wipe">Alle Daten löschen</button>' + secHTML() + '</div>';
+
+    els.setup.innerHTML = h;
+    updSums();
+    keyCheck();
+  }
+  function hasR(s) { for (var k in s.r) return true; return false; }
+  function updSums() {
+    var act = active(), t = sum(act.map(W)), np = state.mode === 'np';
+    var el = document.getElementById('wsum');
+    if (el) el.innerHTML = fmt(t) + (np ? ' %' : ' Punkte') + (np && Math.abs(t - 100) > 1e-9 ? ' <span class="bad">(nicht 100 – wird anteilig umgerechnet)</span>' : '');
+    act.forEach(function (c) {
+      var td = els.setup.querySelector('[data-pc="' + c.id + '"]');
+      if (td) td.textContent = fmt(t ? W(c) / t * 100 : 0, 0) + ' %';
+      var inp = els.setup.querySelector('[data-w="' + c.id + '"]');
+      if (inp && document.activeElement !== inp) inp.value = W(c);
+    });
+    var gs = document.getElementById('grsum');
+    if (gs) {
+      var present = {}, s = 0; act.forEach(function (c) { present[c.g] = 1; });
+      for (var g in present) s += state.groups[g] || 0;
+      gs.innerHTML = 'Summe ' + fmt(s) + ' %' + (Math.abs(s - 100) > 1e-9 ? ' <span class="bad">(nicht 100 – wird anteilig umgerechnet)</span>' : '');
+    }
+  }
+  function keyCheck() {
+    if (state.mode !== 'pt') return true;
+    var ok = true, msg = '';
+    if (state.keyType === 'knick') {
+      ok = state.knick[0] > state.knick[1] && state.knick[0] < 100 && state.knick[1] > 0;
+      msg = 'Die Grenze 4/5 muss über der Grenze 5/6 liegen (beide zwischen 0 und 100 %).';
+    } else if (state.keyType === 'ind') {
+      var a = state.out === 'note' ? state.indNote : state.indNP.slice().reverse();
+      for (var i = 1; i < a.length; i++) if (!(a[i] < a[i - 1])) ok = false;
+      if (!(a[a.length - 1] > 0) || !(a[0] <= 100)) ok = false;
+      msg = 'Die Grenzen müssen von oben nach unten kleiner werden (zwischen 0 und 100 %).';
+    }
+    var el = document.getElementById('keymsg');
+    if (el) el.innerHTML = ok ? '' : '<span class="bad">' + msg + '</span>';
+    var kt = document.getElementById('keytab');
+    if (kt) {
+      var tot = sum(active().map(W)), st = stepSize(), rows = [];
+      if (state.out === 'np') { var t = npTh(); for (var n = 15; n >= 1; n--) rows.push([n + ' NP', t[n]]); rows.push(['0 NP', null]); }
+      else { var k = noteTh(); for (var j = 0; j < 5; j++) rows.push(['Note ' + (j + 1), k[j]]); rows.push(['Note 6', null]); }
+      kt.innerHTML = ok ? '<table class="kt"><tr><th>Ergebnis</th><th>ab Prozent</th><th>ab Punkten (von ' + fmt(tot) + ')</th></tr>' +
+        rows.map(function (r) {
+          return '<tr><td>' + r[0] + '</td><td>' + (r[1] === null ? 'darunter' : p1(r[1]) + ' %') + '</td><td>' + (r[1] === null ? 'darunter' : fmt(ceilS(tot * r[1] / 100, st))) + '</td></tr>';
+        }).join('') + '</table>' : '';
+    }
+    return ok;
+  }
+
+  function setupClick(a, v) {
+    if (secClick(a)) return;
+    if (a === 'fach') {
+      if (v === state.fach) return;
+      if (hasRatings() && !confirm('Fach wechseln? Die Kriterienauswahl wird neu gesetzt. Bewertungen bleiben nur für Kriterien erhalten, die in beiden Fächern vorkommen.')) return;
+      var defTitle = !state.titel || state.titel === 'Referat ' + SUBJ[state.fach].n;
+      var keep = state.sel.filter(function (id) { return !C[id]; });
+      state.fach = v;
+      state.sel = SUBJ[v].def.concat(keep).slice(0, MAX);
+      state.preset = SUBJ[v].preset;
+      if (defTitle) state.titel = 'Referat ' + SUBJ[v].n;
+      applyPreset(); save(); renderSetup();
+    } else if (a === 'out') {
+      state.out = v; save(); renderSetup();
+    } else if (a === 'key') {
+      if (v === state.keyType) return;
+      if (v === 'ind') {
+        state.indNote = noteTh().map(function (x) { return Math.round(x * 100) / 100; });
+        state.indNP = npTh().slice(1).map(function (x) { return Math.round(x * 100) / 100; });
+      }
+      state.keyType = v; save(); renderSetup();
+    } else if (a === 'indcopy') {
+      state.indNote = [85, 70, 55, 40, 20]; state.indNP = ABI.slice(1); save(); renderSetup();
+    } else if (a === 'txreset') {
+      delete state.texts[v]; save(); renderSetup();
+    } else if (a === 'preset') {
+      state.preset = v; applyPreset(); save(); renderSetup();
+    } else if (a === 'mode') {
+      if (v === state.mode) return;
+      if (hasRatings() && !confirm('Punktesystem wechseln? Gewählte Stufen bleiben erhalten, die Feinwerte werden auf den Mittelwert der Stufe gesetzt.')) return;
+      state.mode = v; applyPreset(); save(); renderSetup();
+    } else if (a === 'addc') {
+      var nm = document.getElementById('cname').value.trim(), g = document.getElementById('cgrp').value;
+      if (!nm) { alert('Bitte zuerst einen Namen für das Kriterium eintippen.'); return; }
+      if (active().length >= MAX) { alert('Es sind bereits ' + MAX + ' Kriterien gewählt. Bitte zuerst eines abwählen.'); return; }
+      var id = 'c' + Date.now();
+      state.custom.push({ id:id, n:nm.slice(0, 60), g:g });
+      state.sel.push(id);
+      applyPreset(); save(); renderSetup();
+    } else if (a === 'delc') {
+      if (!confirm('Eigenes Kriterium entfernen?')) return;
+      state.custom = state.custom.filter(function (c) { return c.id !== v; });
+      state.sel = state.sel.filter(function (id) { return id !== v; });
+      delete state.weights[v];
+      applyPreset(); save(); renderSetup();
+    } else if (a === 'done') {
+      if (active().length < MIN) { alert('Bitte mindestens ' + MIN + ' Kriterien wählen.'); return; }
+      if (state.mode === 'pt' && !keyCheck()) { alert('Bitte den Notenschlüssel prüfen (siehe rote Meldung in Schritt 5).'); return; }
+      if (!state.titel.trim()) state.titel = 'Referat ' + SUBJ[state.fach].n;
+      state.setup = true; save(); renderAll(); setView('sheet');
+    } else if (a === 'load') {
+      els.file.click();
+    } else if (a === 'exp') {
+      exportJSON();
+    } else if (a === 'wipe') {
+      if (!confirm('Wirklich ALLE Bögen und Einstellungen auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.')) return;
+      clearTimeout(tmr); tmr = null;
+      SEC.wipe(KEY); updLockBtn();
+      state = fresh(); renderAll(); renderSetup(); window.scrollTo(0, 0);
+    }
+  }
+
+  /* ================= Druck & Dateien ================= */
+  function doPrint(mode) {
+    var b = document.body;
+    b.classList.remove('print-one', 'print-all', 'print-blank', 'print-ov', 'with-ov');
+    qa(els.stage, '.sheet.blank').forEach(function (el) { el.parentNode.removeChild(el); });
+    refreshOverview();
+    if (mode === 'blank') els.stage.insertBefore(buildSheet(newStudent(), true), els.stage.firstChild);
+    b.classList.add('print-' + mode);
+    if (mode === 'all' && state.withov) b.classList.add('with-ov');
+    setTimeout(function () { window.print(); }, 60);
+  }
+  function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function download(name, text, type) {
+    var blob = new Blob([text], { type:type });
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) { window.navigator.msSaveOrOpenBlob(blob, name); return; }
+    function viaLink() {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    }
+    // iPad/iPhone: über „Teilen“ → „In Dateien sichern“, weil Downloads dort oft nicht ankommen
+    if (isIOS() && window.File && navigator.canShare && navigator.share) {
+      try {
+        var file = new File([blob], name, { type:type });
+        if (navigator.canShare({ files:[file] })) {
+          navigator.share({ files:[file], title:name }).catch(function (err) { if (!err || err.name !== 'AbortError') viaLink(); });
+          return;
+        }
+      } catch (e) {}
+    }
+    viaLink();
+  }
+  function stamp() { return new Date().toISOString().slice(0, 10); }
+  function fileBase() { return 'referat_' + state.fach + '_' + (state.kurs || 'kurs').replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g, '_'); }
+  function exportJSON() { exportBackup(fileBase() + '_sicherung_' + stamp() + '.json', JSON.stringify(state, null, 1)); }
+  function csvCell(x) {
+    var t = String(x == null ? '' : x);
+    if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+    return /[;"\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+  function exportCSV() {
+    var cs = active(), np = state.mode === 'np', rows = [];
+    var head = ['Nr', 'Name', 'Thema', 'Datum'].concat(cs.map(function (c) { return c.n + (np ? ' (' + W(c) + ' %)' : ' (max ' + W(c) + ')'); }));
+    head = head.concat(resCols({ max:sum(cs.map(W)) }).map(function (x) { return x[0]; }), ['Rückmeldung']);
+    rows.push(head);
+    state.students.forEach(function (s, i) {
+      var r = calc(s);
+      var row = [i + 1, s.name, s.thema, s.datum].concat(cs.map(function (c) { var x = s.r[c.id]; return x ? valLabel(x.v) : ''; }));
+      row = row.concat(resCols(r).map(function (x) { return x[1]; }), [s.cmt]);
+      rows.push(row);
+    });
+    download(fileBase() + '_tabelle_' + stamp() + '.csv', '﻿' + rows.map(function (r) { return r.map(csvCell).join(';'); }).join('\r\n'), 'text/csv;charset=utf-8');
+  }
+
+  /* ================= Start ================= */
+  function init() {
+    ['stage', 'sel', 'withov', 'brand', 'setup', 'file'].forEach(function (id) { els[id] = document.getElementById(id); });
+    if (!canStore) document.getElementById('warn').hidden = false;
+    renderAll();
+    setView(state.setup ? 'sheet' : 'setup');
+    updLockBtn();
+    document.getElementById('lockbtn').addEventListener('click', lockNow);
+
+    // Bewerten
+    els.stage.addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-i]');
+      if (tr) { goto(+tr.dataset.i); return; }
+      var sh = e.target.closest('.sheet'); if (!sh || sh.classList.contains('blank')) return;
+      var s = byId(sh.dataset.id); if (!s) return;
+      var b = e.target.closest('button.st'), c = e.target.closest('.lv');
+      var crit;
+      if (b) {
+        if (b.disabled) return;
+        crit = critObj(state, b.dataset.c); var x = s.r[crit.id]; if (!x) return;
+        var rg = range(crit, x.k);
+        x.v = Math.max(rg.lo, Math.min(rg.hi, Math.round((x.v + (+b.dataset.d) * stepSize()) * 2) / 2));
+      } else if (c) {
+        crit = critObj(state, c.dataset.c); var k = +c.dataset.k, cur = s.r[crit.id];
+        if (cur && cur.k === k) delete s.r[crit.id];
+        else s.r[crit.id] = { k:k, v:range(crit, k).def };
+      } else return;
+      save(); update(s, sh);
+    });
+    els.stage.addEventListener('keydown', function (e) {
+      var c = e.target.closest && e.target.closest('.lv');
+      if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); c.click(); }
+    });
+    els.stage.addEventListener('input', function (e) {
+      var f = e.target.dataset && e.target.dataset.f; if (!f) return;
+      var sh = e.target.closest('.sheet'), s = sh && byId(sh.dataset.id); if (!s) return;
+      s[f] = e.target.value.slice(0, f === 'cmt' ? 3000 : 200);
+      if (f === 'cmt') sh.querySelector('.cmtp').textContent = s.cmt;
+      if (f === 'name') refreshSelect();
+      save();
+    });
+
+    // Leisten
+    function goto(i) { state.cur = i; save(); show(); setView('sheet'); }
+    els.sel.addEventListener('change', function () { goto(+els.sel.value); });
+    document.getElementById('prev').addEventListener('click', function () { if (state.cur > 0) goto(state.cur - 1); });
+    document.getElementById('next').addEventListener('click', function () { if (state.cur < state.students.length - 1) goto(state.cur + 1); });
+    document.getElementById('add').addEventListener('click', function () {
+      state.students.push(newStudent()); state.cur = state.students.length - 1; save(); renderAll(); setView('sheet');
+      var inp = els.stage.querySelector('.sheet.active [data-f="name"]'); if (inp && window.innerWidth > 820) inp.focus();
+    });
+    document.getElementById('del').addEventListener('click', function () {
+      var s = state.students[state.cur];
+      if (!confirm('Bogen von „' + (s.name.trim() || 'Schüler/in') + '“ wirklich löschen?')) return;
+      state.students.splice(state.cur, 1);
+      if (!state.students.length) state.students.push(newStudent());
+      state.cur = Math.min(state.cur, state.students.length - 1); save(); renderAll(); setView('sheet');
+    });
+    document.getElementById('ovbtn').addEventListener('click', function () { setView(document.body.dataset.view === 'ov' ? 'sheet' : 'ov'); });
+    document.getElementById('setbtn').addEventListener('click', function () { setView('setup'); });
+    document.getElementById('helpbtn').addEventListener('click', function () { var h = document.getElementById('help'); h.hidden = !h.hidden; });
+    els.withov.addEventListener('change', function () { state.withov = els.withov.checked; save(); });
+    document.getElementById('pone').addEventListener('click', function () { setView('sheet'); doPrint('one'); });
+    document.getElementById('pall').addEventListener('click', function () { doPrint('all'); });
+    document.getElementById('pblank').addEventListener('click', function () { doPrint('blank'); });
+    document.getElementById('pov').addEventListener('click', function () { doPrint('ov'); });
+    document.getElementById('exp').addEventListener('click', exportJSON);
+    document.getElementById('csv').addEventListener('click', exportCSV);
+    document.getElementById('imp').addEventListener('click', function () { els.file.click(); });
+    els.file.addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        readBackup(r.result, function (raw, found) {
+          var o = null; try { o = sanitize(raw); } catch (err) {}
+          if (!o) { alert('Die Datei konnte nicht gelesen werden. Bitte eine Sicherung aus diesem Bewertungsbogen wählen.'); return; }
+          if (!confirm('Aktuelle Daten durch die geladene Sicherung ersetzen?')) return;
+          if (found && !SEC.on()) SEC.adopt(found);
+          state = o; state.setup = true; flush(); updLockBtn(); renderAll(); setView('sheet');
+        });
+      };
+      r.readAsText(f); e.target.value = '';
+    });
+
+    // Einrichtung
+    els.setup.addEventListener('click', function (e) {
+      var sm = e.target.closest('summary');
+      if (sm) { txOpen = !sm.parentNode.open; return; }
+      var b = e.target.closest('button[data-a]'); if (!b) return;
+      setupClick(b.dataset.a, b.dataset.v);
+    });
+    els.setup.addEventListener('change', function (e) {
+      var t = e.target, a = t.dataset.a;
+      if (a === 'autolock') { SEC.setAuto(+t.value); flush(); return; }
+      if (a === 'crit') {
+        var id = t.dataset.v;
+        if (t.checked) { if (active().length >= MAX) { t.checked = false; return; } state.sel.push(id); }
+        else {
+          if (active().length <= MIN) { t.checked = true; alert('Mindestens ' + MIN + ' Kriterien müssen gewählt bleiben.'); return; }
+          state.sel = state.sel.filter(function (x) { return x !== id; });
+        }
+        applyPreset(); save(); renderSetup();
+      } else if (a === 'total') {
+        state.total = +t.value; applyPreset(); save(); renderSetup();
+      } else if (a === 'half') {
+        state.half = t.checked; save(); keyCheck();
+      }
+    });
+    els.setup.addEventListener('input', function (e) {
+      var t = e.target;
+      if (t.dataset.s) { state[t.dataset.s] = t.value; save(); }
+      else if (t.dataset.w !== undefined) {
+        var v = Math.max(0, Math.round(num(t.value, 0)));
+        if (state.mode === 'pt' && v < 1 && t.value !== '') v = 1;
+        state.weights[t.dataset.w] = v;
+        if (state.preset !== 'eigen') {
+          state.preset = 'eigen';
+          qa(els.setup, '[data-a="preset"]').forEach(function (b) { b.classList.toggle('on', b.dataset.v === 'eigen'); });
+          qa(els.setup, '.grpin').forEach(function (el) { el.parentNode.removeChild(el); });
+        }
+        if (state.mode === 'pt') state.total = Math.max(1, sum(active().map(W)));
+        updSums(); keyCheck(); save();
+      } else if (t.dataset.gr) {
+        state.groups[t.dataset.gr] = Math.max(0, num(t.value, 0));
+        applyPreset(); updSums(); keyCheck(); save();
+      } else if (t.dataset.kn !== undefined) {
+        state.knick[+t.dataset.kn] = Math.max(0, Math.min(100, num(t.value, 0)));
+        keyCheck(); save();
+      } else if (t.dataset.in !== undefined) {
+        state.indNote[+t.dataset.in] = Math.max(0, Math.min(100, num(t.value, 0)));
+        keyCheck(); save();
+      } else if (t.dataset.ip !== undefined) {
+        state.indNP[+t.dataset.ip] = Math.max(0, Math.min(100, num(t.value, 0)));
+        keyCheck(); save();
+      } else if (t.dataset.tx) {
+        var id = t.dataset.tx, base = critBase(state, id); if (!base) return;
+        var o = state.texts[id] || (state.texts[id] = { n:'', d:['', '', '', '', ''] });
+        if (t.dataset.ti === 'n') o.n = t.value.slice(0, 80); else o.d[+t.dataset.ti] = t.value.slice(0, 200);
+        save();
+      }
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+      if (!canStore && state.students.some(function (s) { return s.name.trim() || hasR(s); })) { e.preventDefault(); e.returnValue = ''; }
+    });
+  }
+  function boot() {
+    var raw = load();
+    if (raw && SEC.isEnv(raw)) unlockScreen(raw, function (o) { var s = null; try { s = sanitize(o); } catch (e) {} state = s || fresh(); init(); });
+    else { var s = null; try { s = raw ? sanitize(raw) : null; } catch (e) {} state = s || fresh(); init(); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+<script>if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

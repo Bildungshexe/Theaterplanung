@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+/*@@HEAD@@*/
+<title>Bewertungstools</title>
+<style>
+  :root { --acc:#6B2D5C; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system, Arial, Helvetica, sans-serif; font-size:12pt; color:#111; background:#e6e2e6; padding:env(safe-area-inset-top) 0 40px; }
+  .wrap { max-width:760px; margin:0 auto; padding:16px 12px; }
+  h1 { color:var(--acc); font-size:20pt; margin:8px 0 4px; }
+  .sub { margin:0 0 16px; color:#333; }
+  .tile { display:flex; gap:14px; align-items:center; background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; text-decoration:none; color:#111; box-shadow:0 1px 4px rgba(0,0,0,.18); min-height:80px; }
+  .tile b { display:block; font-size:14pt; color:var(--acc); }
+  .tile span.ic { width:52px; height:52px; border-radius:12px; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:18pt; }
+  .box { background:#fff; border-radius:12px; padding:14px 16px; margin-top:16px; line-height:1.45; box-shadow:0 1px 4px rgba(0,0,0,.18); }
+  .box h2 { font-size:13pt; margin:0 0 6px; }
+  .ok { color:#1e6b2e; font-weight:bold; }
+  .warn { color:#8a5a00; font-weight:bold; }
+  ol { padding-left:22px; margin:6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bewertungstools</h1>
+  <p class="sub">Offline-Werkzeuge für Referate, Unterrichtsbeiträge und den Theaterkurs. Alle Daten bleiben auf diesem Gerät.</p>
+  <a class="tile" href="referat.html"><span class="ic" style="background:#8B1E2D">R</span><span><b>Referate bewerten</b>Deutsch, Geschichte, PuG, Spanisch und weitere Fächer</span></a>
+  <a class="tile" href="unterricht.html"><span class="ic" style="background:#1F4E79">U</span><span><b>Unterrichtsbeiträge</b>Laufende Erfassung pro Stunde und Auswertung über Zeiträume</span></a>
+  <a class="tile" href="theater.html"><span class="ic" style="background:#6B2D5C">T</span><span><b>Theaterkurs</b>Proben und Premiere (Klausurersatz), Schauspiel und weitere Aufgaben</span></a>
+
+  <div class="box" id="status"><h2>Offline-Status</h2><p id="st">Wird geprüft …</p></div>
+
+  <div class="box"><h2>Auf dem iPad installieren</h2>
+    <ol>
+      <li>Diese Seite in <b>Safari</b> öffnen (nicht in einer anderen App).</li>
+      <li>Auf das <b>Teilen-Symbol</b> (Quadrat mit Pfeil nach oben) tippen.</li>
+      <li><b>„Zum Home-Bildschirm“</b> wählen und „Hinzufügen“ tippen.</li>
+      <li>Ab jetzt die Tools immer über das neue Symbol auf dem Home-Bildschirm öffnen. Dann laufen sie auch ohne Internet, und die Daten bleiben dauerhaft gespeichert.</li>
+    </ol>
+    <p><b>Wichtig:</b> Daten, die in Safari eingegeben werden, und Daten in der Home-Bildschirm-App sind getrennt. Bitte nur mit der App vom Home-Bildschirm arbeiten. Regelmäßig „Sichern“ benutzen: Auf dem iPad öffnet sich dann „Teilen“ – dort „In Dateien sichern“ wählen.</p>
+  </div>
+  <div class="box"><h2>Datenschutz</h2>
+    <p>Die Programme werden nur einmal von dieser Adresse geladen und dann auf dem Gerät gespeichert. Bewertungsdaten werden nie übertragen: Die Seiten sind technisch so gesperrt, dass sie keine Verbindungen aufbauen können. Gespeichert wird ausschließlich im Speicher dieser App auf diesem Gerät. Für zusätzlichen Schutz in jedem Tool unter „Einrichtung“ einen Passwortschutz einrichten.</p>
+  </div>
+</div>
+<script>
+(function () {
+  var st = document.getElementById('st');
+  var standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if (!('serviceWorker' in navigator)) { st.innerHTML = '<span class="warn">Dieser Browser unterstützt keinen Offline-Betrieb.</span>'; return; }
+  navigator.serviceWorker.register('sw.js').then(function () { return navigator.serviceWorker.ready; }).then(function () {
+    st.innerHTML = '<span class="ok">Offline bereit.</span> ' + (standalone ? 'Die App läuft vom Home-Bildschirm.' : 'Für dauerhaften Betrieb bitte zum Home-Bildschirm hinzufügen (siehe unten).');
+  }).catch(function () { st.innerHTML = '<span class="warn">Offline-Speicher konnte nicht eingerichtet werden. Bitte die Seite über https öffnen.</span>'; });
+})();
+</script>
+</body>
+</html>
