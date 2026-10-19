@@ -749,7 +749,37 @@
                 r_psach:'I', r_panalyse:'I', r_pkontro:'I', r_purteil:'I', r_pmat:'I', r_einhalt:'I',
                 r_aufbau:'P', r_vortrag:'P', r_medien:'P', r_handout:'P', r_zeit:'P',
                 r_sprache:'S', r_efluss:'S', r_eaussp:'S', r_ekorr:'S', r_ewort:'S' };
-  var REF_P = [ ['gleich','Ausgewogen',null], ['inhalt','Schwerpunkt Inhalt',{ I:60, P:25, S:15 }], ['praes','Schwerpunkt Präsentation',{ I:35, P:45, S:20 }], ['sprache','Schwerpunkt Sprache',{ I:30, P:20, S:50 }] ];
+  /* Schwerpunktsetzung: Bereiche (g), Zuordnung der Kriterien (m) und Vorschläge (p: Anteile je Bereich) je Bewertungsart */
+  var WG = {
+    lesen:   { g:{ T:'Lesetechnik', A:'Aussprache', G:'Gestaltung', V:'Textverständnis' },
+               m:{ gen:'T', fluss:'T', med:'T', aus:'A', bet:'G', gest:'G', glie:'G', hal:'G', verst:'V' },
+               p:[ ['tech','Schwerpunkt Lesetechnik',{ T:45, A:15, G:25, V:15 }], ['gest','Schwerpunkt Gestaltung',{ T:20, A:15, G:50, V:15 }],
+                   ['verst','Schwerpunkt Textverständnis',{ T:20, A:15, G:25, V:40 }], ['aus','Schwerpunkt Aussprache (Fremdsprache)',{ T:20, A:40, G:25, V:15 }] ] },
+    gedicht: { g:{ T:'Textsicherheit', S:'Sprechen & Aussprache', G:'Gestaltung', A:'Auftreten', I:'Einführung' },
+               m:{ tex:'T', spr:'S', aus:'S', vers:'G', sinn:'G', reim:'G', pause:'G', deut:'G', auft:'A', einf:'I' },
+               p:[ ['text','Schwerpunkt Textsicherheit',{ T:40, S:15, G:30, A:10, I:5 }], ['gest','Schwerpunkt Gestaltung',{ T:15, S:15, G:55, A:10, I:5 }],
+                   ['spr','Schwerpunkt Sprechen & Aussprache',{ T:15, S:45, G:25, A:10, I:5 }], ['auft','Schwerpunkt Auftreten',{ T:15, S:15, G:30, A:35, I:5 }] ] },
+    song:    { g:{ S:'Sprache', I:'Interpretation', V:'Vortrag' },
+               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'V', s6:'V', s7:'V', s8:'V' },
+               p:[ ['spr','Schwerpunkt Sprache',{ S:50, I:25, V:25 }], ['int','Schwerpunkt Interpretation',{ S:25, I:50, V:25 }],
+                   ['vor','Schwerpunkt Vortrag',{ S:25, I:25, V:50 }], ['spr2','Sprache & Interpretation',{ S:40, I:40, V:20 }] ] },
+    unterricht: { g:{ B:'Beteiligung', Q:'Qualität', K:'Kommunikation' },
+               m:{ u1:'B', u6:'B', u8:'B', u2:'Q', u3:'Q', u7:'Q', u4:'K', u5:'K' },
+               p:[ ['qual','Schwerpunkt Qualität',{ B:20, Q:60, K:20 }], ['bet','Schwerpunkt Beteiligung',{ B:50, Q:30, K:20 }],
+                   ['komm','Schwerpunkt Kommunikation',{ B:20, Q:30, K:50 }], ['denk','Schwerpunkt Denken & Transfer',{ B:15, Q:65, K:20 }] ] },
+    theater: { g:{ S:'Sprache', K:'Körper & Raum', R:'Rolle & Spiel', T:'Text & Technik' },
+               m:{ th1:'S', th2:'K', th6:'K', th3:'R', th5:'R', th7:'R', th4:'T', th8:'T' },
+               p:[ ['rolle','Schwerpunkt Rollengestaltung',{ S:20, K:20, R:45, T:15 }], ['spr','Schwerpunkt Sprache',{ S:45, K:20, R:20, T:15 }],
+                   ['koerp','Schwerpunkt Körper & Raum',{ S:20, K:45, R:20, T:15 }], ['text','Schwerpunkt Text & Technik',{ S:20, K:20, R:25, T:35 }] ] },
+    abfrage: { g:{ W:'Wissen', V:'Verständnis', A:'Anwendung', D:'Darstellung' },
+               m:{ f1:'W', v1:'W', g1:'W', t1:'W', v5:'W', f2:'V', g2:'V', t2:'V', v4:'V', t4:'V', f5:'V', t5:'V',
+                   f3:'A', v2:'A', g3:'A', g5:'A', t3:'A', g4:'A', f4:'D', v3:'D', dar:'D' },
+               p:[ ['wiss','Schwerpunkt Wissen',{ W:45, V:20, A:20, D:15 }], ['verst','Schwerpunkt Verständnis',{ W:20, V:45, A:20, D:15 }],
+                   ['anw','Schwerpunkt Anwendung',{ W:20, V:20, A:45, D:15 }], ['dar','Schwerpunkt Darstellung',{ W:25, V:20, A:20, D:35 }] ] },
+    referat: { g:{ I:'Inhalt', P:'Präsentation', S:'Sprache' }, m:REF_G,
+               p:[ ['inhalt','Schwerpunkt Inhalt',{ I:60, P:25, S:15 }], ['praes','Schwerpunkt Präsentation',{ I:35, P:45, S:20 }],
+                   ['sprache','Schwerpunkt Sprache',{ I:30, P:20, S:50 }], ['ip','Inhalt & Präsentation',{ I:45, P:45, S:10 }] ] }
+  };
   /* Kriterienpools: Basisliste (MOD…lists, wie bisher immer verwendet) plus je 3
      zusätzliche Kriterien zur freien Schwerpunktsetzung pro Bewertung. */
   var POOL = {
@@ -820,9 +850,9 @@
      ===================================================================== */
   var KEY = 'muendliche_noten_tool_v1';
   var state = load() || fresh();
-  var ui = { draft:{}, cur:{}, fresh:{} };
+  var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} };
 
-  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', mt:'song', w:{}, classes:[] }; }
+  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', mt:'song', w:{}, wp:{}, classes:[] }; }
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
   function save() { clearTimeout(tmr); tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 200); }
@@ -833,6 +863,7 @@
     f.tab = TABS.indexOf(o.tab) >= 0 ? o.tab : 'student';
     f.vr = (o.vr === 'es' || o.vr === 'fs') ? o.vr : 'de';
     f.vrRef = MOD.referat.vars[o.vrRef] ? o.vrRef : 'de';
+    f.wp = {}; if (o.wp && typeof o.wp === 'object') Object.keys(o.wp).forEach(function (k) { f.wp[k] = String(o.wp[k]); });
     f.mt = (MOD[o.mt] ? o.mt : 'song');
     f.classes = o.classes.map(function (c) {
       var students = (Array.isArray(c.students) ? c.students : []).map(function (s) { return { id:String(s.id || uid('s')), name:String(s.name || '') }; });
@@ -1148,15 +1179,63 @@
       h += '<div class="panel" style="margin-top:0"><div class="row"><span>Kriterien für diese Bewertung (Standard: die ersten ' + baseIds.length + '; zum Schwerpunktsetzen beliebig an- und abwählen):</span></div><div class="row">' +
            pool.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (activeIds.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
            '</div><div class="row"><button data-act="selReset">Auswahl zurücksetzen (Standard)</button></div>';
-      if (type === 'referat') {
-        h += '<div class="row"><span>Schwerpunkt der Gewichtung:</span>' + REF_P.map(function (p) { return '<button data-act="refPreset" data-v="' + p[0] + '">' + esc(p[1]) + (p[2] ? ' <span class="muted">(' + p[2].I + '·' + p[2].P + '·' + p[2].S + ')</span>' : '') + '</button>'; }).join('') +
-             '<button data-act="refPreset" data-v="std">Vorgabe</button></div>' +
-             '<div class="hint">Schwerpunkt: Anteile für Inhalt · Präsentation · Sprache, verteilt auf die gewählten Kriterien. Gilt für alle Referate „' + esc(MOD.referat.vars[a.variant]) + '“; einzelne Werte lassen sich unter Einstellungen anpassen. Für den Druck auf einer Seite höchstens 8 Kriterien wählen. Die fertige Note erscheint automatisch unter „Schüler/in“ und in der Klassenübersicht mit dem Vermerk „Referat“.</div>';
-      }
+      if (type === 'referat') h += '<div class="hint">Für den Druck auf einer Seite höchstens 8 Kriterien wählen. Die fertige Note erscheint automatisch unter „Schüler/in“ und in der Klassenübersicht mit dem Vermerk „Referat“.</div>';
       h += '</div>';
     }
+    h += weightPanel(type, a);
     h += sheetHTML(c, s, a, true);
     return h;
+  }
+
+  /* ---- Schwerpunktsetzung der Gewichtung (Vorschläge + individuell) ---- */
+  function wGroup(type, id) { var W = WG[type]; return (W && W.m[id]) || Object.keys(W.g)[0]; }
+  function weightPanel(type, a) {
+    var W = WG[type]; if (!W) return '';
+    var mk = modKey(a), cur = state.wp[mk] || 'std', crs = critsOf(a), tot = crs.reduce(function (x, k) { return x + k.w; }, 0) || 1;
+    var present = Object.keys(W.g).filter(function (g) { return crs.some(function (k) { return wGroup(type, k.id) === g; }); });
+    var pres = [['gleich', 'Ausgewogen', null]].concat(W.p).concat([['std', 'Vorgabe', null]]);
+    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Schwerpunkt der Gewichtung:</b></div><div class="row">';
+    pres.forEach(function (p) {
+      var info = p[2] ? present.map(function (g) { return W.g[g] + ' ' + (p[2][g] || 0); }).join(' · ') : (p[0] === 'gleich' ? 'alle Kriterien gleich' : 'voreingestellte Gewichtung');
+      h += '<button class="chip' + (cur === p[0] ? ' on' : '') + '" data-act="wPreset" data-v="' + p[0] + '" title="' + esc(info) + '">' + esc(p[1]) + '</button>';
+    });
+    var open = cur === 'eigen' || ui.wOpen[mk];
+    h += '<button class="chip' + (cur === 'eigen' ? ' on' : '') + '" data-act="wOwn" data-mk="' + mk + '">Individuell …</button></div>';
+    h += '<div class="hint">Bereiche: ' + present.map(function (g) { return '<b>' + esc(W.g[g]) + '</b> (' + crs.filter(function (k) { return wGroup(type, k.id) === g; }).map(function (k) { return esc(k.n); }).join(', ') + ')'; }).join(' · ') +
+         '. Die Anteile werden auf die gewählten Kriterien verteilt und gelten für alle Bewertungen „' + esc(modeLabel(type)) + '“.</div>';
+    if (open) {
+      h += '<table class="t" style="max-width:640px"><tr><th>Kriterium</th><th class="c" style="width:110px">Gewicht</th><th class="c" style="width:90px">Anteil</th></tr>';
+      crs.forEach(function (k) {
+        var key = mk + '/' + k.id, ov = state.w[key], raw = (ov !== undefined && ov !== null) ? ov : baseW(a, k.id);
+        h += '<tr><td>' + esc(k.n) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(raw) + '"></td><td class="c">' + fmt(k.w / tot * 100, 0) + ' %</td></tr>';
+      });
+      h += '</table><div class="hint">Es zählt das Verhältnis der Zahlen zueinander; die Summe muss nicht 100 ergeben. Änderungen wirken sofort auf den Bogen.</div>';
+    }
+    return h + '</div>';
+  }
+  function baseW(a, id) {
+    if (a.type === 'abfrage') return id === 'dar' ? 25 : ALLW[id];
+    var pool = POOL[a.type] ? (POOL[a.type][poolKeyOf(a)] || []) : MOD[a.type].lists[poolKeyOf(a)], w = 0;
+    pool.forEach(function (p) { if (p[0] === id) w = p[1]; });
+    return w;
+  }
+  function applyWPreset(a, id) {
+    var W = WG[a.type], mk = modKey(a), crs = critsOf(a);
+    Object.keys(state.w).forEach(function (k) { if (k.indexOf(mk + '/') === 0) delete state.w[k]; });
+    state.wp[mk] = id;
+    if (id === 'std') return;
+    var pr = null; W.p.forEach(function (p) { if (p[0] === id) pr = p; });
+    var cnt = {}; crs.forEach(function (k) { var g = wGroup(a.type, k.id); cnt[g] = (cnt[g] || 0) + 1; });
+    var tot = 0; Object.keys(cnt).forEach(function (g) { tot += pr ? (pr[2][g] || 0) : cnt[g]; });
+    if (!tot) tot = 1;
+    // Abfrage: „Darstellung und Gesprächsverhalten“ wird intern mit der Summe der gewählten Kriterien skaliert
+    var scale = 1;
+    if (a.type === 'abfrage') { var sw = 0; crs.forEach(function (k) { if (k.id !== 'dar') sw += ALLW[k.id] || 0; }); scale = sw > 0 ? sw / 100 : 1; }
+    crs.forEach(function (k) {
+      var g = wGroup(a.type, k.id), share = pr ? (pr[2][g] || 0) / tot / cnt[g] : 1 / crs.length, w = Math.round(share * 1000) / 10;
+      if (a.type === 'abfrage' && k.id === 'dar') w = Math.round(w / scale * 10) / 10;
+      state.w[mk + '/' + k.id] = w;
+    });
   }
 
   function vSettings() {
@@ -1334,19 +1413,10 @@
         c.manual = c.manual.filter(function (x) { return x.sid !== el.dataset.sid; });
         if (c.stu === el.dataset.sid) c.stu = c.students[0] ? c.students[0].id : null; save(); render(); return;
       }
-      if (act === 'refPreset') {
-        var ar = curA('referat'), mkr = 'referat:' + ar.variant, crs = critsOf(ar);
-        Object.keys(state.w).forEach(function (k) { if (k.indexOf(mkr + '/') === 0) delete state.w[k]; });
-        var pr = null; REF_P.forEach(function (p) { if (p[0] === el.dataset.v) pr = p; });
-        if (pr) {
-          var cnt = {}; crs.forEach(function (k) { var g = REF_G[k.id] || 'I'; cnt[g] = (cnt[g] || 0) + 1; });
-          var tot = 0; Object.keys(cnt).forEach(function (g) { tot += pr[2] ? pr[2][g] : 1; });
-          crs.forEach(function (k) { var g = REF_G[k.id] || 'I'; var share = pr[2] ? pr[2][g] / tot / cnt[g] : 1 / crs.length; state.w[mkr + '/' + k.id] = Math.round(share * 1000) / 10; });
-        }
-        save(); render(); return;
-      }
+      if (act === 'wPreset') { applyWPreset(curA(type), el.dataset.v); ui.wOpen[modKey(curA(type))] = false; save(); render(); return; }
+      if (act === 'wOwn') { ui.wOpen[el.dataset.mk] = !ui.wOpen[el.dataset.mk]; render(); return; }
       if (act === 'selReset') { var a4 = curA(type); a4.sel = []; ensure(c, a4); save(); render(); return; }
-      if (act === 'wReset') { state.w = {}; save(); render(); return; }
+      if (act === 'wReset') { state.w = {}; state.wp = {}; save(); render(); return; }
       if (act === 'exp') { download('muendliche_noten_' + todayISO() + '.json', JSON.stringify(state, null, 2), 'application/json'); return; }
       if (act === 'imp') { $('file').click(); return; }
       if (act === 'impSong') { if (!c) { alert('Bitte zuerst eine Klasse anlegen und auswählen.'); return; } $('fileSong').click(); return; }
@@ -1356,7 +1426,7 @@
       var t = e.target, c = cls(), s = stu();
       if (t.dataset.cf !== undefined && c) { c[t.dataset.cf] = t.value; save(); renderBar(); return; }
       if (t.dataset.sf !== undefined && c) { var st = stuById(c, t.dataset.sid); if (st) { st.name = t.value; save(); renderBar(); } return; }
-      if (t.dataset.w !== undefined) { state.w[t.dataset.w] = Math.max(0, num(t.value, 0)); save(); return; }
+      if (t.dataset.w !== undefined) { state.w[t.dataset.w] = Math.max(0, num(t.value, 0)); state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); if (MOD[state.tab]) render(); return; }
       if (t.dataset.ef !== undefined && c) {
         var id = t.dataset.id, f = t.dataset.ef, obj = null;
         c.manual.forEach(function (x) { if (x.id === id) obj = x; });
@@ -1473,7 +1543,7 @@
         try {
           var o = sanitize(JSON.parse(r.result)); if (!o) throw new Error('leer');
           if (!confirm('Alle aktuellen Daten durch die geladene Sicherung ersetzen?')) return;
-          state = o; ui = { draft:{}, cur:{}, fresh:{} }; save(); render();
+          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} }; save(); render();
         } catch (err) { alert('Die Datei konnte nicht gelesen werden (nur Sicherungen aus diesem Tool).'); }
       };
       r.readAsText(f); e.target.value = '';
