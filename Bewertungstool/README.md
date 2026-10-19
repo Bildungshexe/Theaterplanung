@@ -1,7 +1,7 @@
 # Bewertungstool (offline)
 
 Eine einzige HTML-Datei zum Bewerten mündlicher Leistungen, offline und ohne Installation:
-Songvortrag Spanisch, Lesen (Deutsch, Spanisch, andere Fremdsprache), Gedichtvortrag (Deutsch, Spanisch, andere Fremdsprache), Abfrage (Fachwissen, Vokabular, Grammatik, Textkenntnis), Unterrichtsbeitrag und Theater. Dazu kommen Klassenverwaltung, frei eingetragene Noten (Referat, Mitarbeit …), Übersichten pro Schüler/in und Klasse, Druck/PDF (A4 quer) und CSV-Export.
+Songvortrag Spanisch, Lesen (Deutsch, Spanisch, andere Fremdsprache), Gedichtvortrag (Deutsch, Spanisch, andere Fremdsprache), Referat (Deutsch, Geschichte, Politik und Gesellschaft, Spanisch/Fremdsprache, anderes Fach), Abfrage (Fachwissen, Vokabular, Grammatik, Textkenntnis), Unterrichtsbeitrag und Theater. Dazu kommen Klassenverwaltung, frei eingetragene Noten (Referat, Mitarbeit …), Übersichten pro Schüler/in und Klasse, Druck/PDF (A4 quer) und CSV-Export.
 
 ## Herunterladen
 1. Datei `Bewertungstool.html` in diesem Ordner anklicken.
