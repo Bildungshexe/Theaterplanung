@@ -343,6 +343,18 @@
       'Anwendung nur bei bekannten Beispielen oder mit Hilfe.',
       'Anwendung kaum möglich; nur Wiedergabe.',
       'Keine Anwendung möglich.' ] },
+    f4: { n:'Begriffssicherheit und Fachsprache', d:[
+      'Verwendet Fachbegriffe präzise, sicher und in passendem Kontext.',
+      'Verwendet die wichtigsten Fachbegriffe meist richtig.',
+      'Fachbegriffe teils ungenau oder umschrieben.',
+      'Fachbegriffe selten oder falsch verwendet.',
+      'Keine Fachsprache erkennbar.' ] },
+    f5: { n:'Einordnung und Aktualität', d:[
+      'Ordnet das Thema sicher in größere Zusammenhänge ein; stellt Bezüge zu Aktuellem oder Bekanntem her.',
+      'Stellt meist sinnvolle Bezüge zu anderen Themen her.',
+      'Einordnung nur mit Hilfe oder sehr allgemein.',
+      'Kaum Einordnung über das Einzelthema hinaus.',
+      'Keine Einordnung erkennbar.' ] },
     /* ----- Abfrage: Vokabular ----- */
     v1: { n:'Bedeutung und Formangaben', d:[
       'Bedeutungen vollständig und richtig; Artikel, Plural, Formen sicher.',
@@ -362,6 +374,18 @@
       'Zögerlich; teils Aussprachefehler ohne Verständnisproblem.',
       'Langes Suchen; Aussprache erschwert das Verständnis.',
       'Kaum abrufbar; kaum verständlich.' ] },
+    v4: { n:'Wortfeld und Abgrenzung', d:[
+      'Erkennt und nennt verwandte oder ähnliche Begriffe sicher; grenzt sie treffend ab.',
+      'Nennt meist passende verwandte Begriffe; Abgrenzung überwiegend gelungen.',
+      'Wortfeld nur ansatzweise bekannt; Verwechslungen möglich.',
+      'Wortfeld kaum bekannt; häufige Verwechslungen.',
+      'Keine Kenntnis des Wortfelds.' ] },
+    v5: { n:'Rechtschreibung und Schreibweise', d:[
+      'Schreibt die Wörter durchgehend korrekt (Artikel, Plural, Sonderzeichen).',
+      'Schreibt überwiegend korrekt; vereinzelte kleine Fehler.',
+      'Mehrere Rechtschreibfehler, Bedeutung bleibt erkennbar.',
+      'Häufige Rechtschreibfehler erschweren das Erkennen.',
+      'Schreibweise überwiegend falsch.' ] },
     /* ----- Abfrage: Grammatik / Formen ----- */
     g1: { n:'Formenbildung', d:[
       'Alle Formen richtig und sicher gebildet.',
@@ -381,6 +405,18 @@
       'Wendet die Regel nur in bekannten Mustern an; Fehler.',
       'Anwendung kaum möglich.',
       'Keine Anwendung möglich.' ] },
+    g4: { n:'Fehlererkennung und Selbstkorrektur', d:[
+      'Erkennt eigene Fehler sofort und korrigiert sie selbstständig.',
+      'Erkennt die meisten eigenen Fehler, korrigiert mit kurzer Überlegung.',
+      'Erkennt Fehler nur mit Hinweis.',
+      'Erkennt Fehler auch mit Hinweis kaum.',
+      'Erkennt keine eigenen Fehler.' ] },
+    g5: { n:'Übertragung auf neue Strukturen', d:[
+      'Wendet die Regel sicher auf neue, unbekannte Beispiele an.',
+      'Übertragung auf neue Beispiele gelingt meist.',
+      'Übertragung nur bei sehr ähnlichen Beispielen.',
+      'Übertragung auf Neues gelingt kaum.',
+      'Keine Übertragung möglich.' ] },
     /* ----- Abfrage: Textkenntnis ----- */
     t1: { n:'Inhaltskenntnis', d:[
       'Handlung, Figuren und Schauplätze genau und vollständig bekannt.',
@@ -400,6 +436,18 @@
       'Belege nur mit Hilfe oder ungenau.',
       'Kaum Belege; Aussagen unbegründet.',
       'Keine Textbelege.' ] },
+    t4: { n:'Sprachliche und stilistische Mittel', d:[
+      'Erkennt und deutet sprachliche oder stilistische Mittel treffend und begründet.',
+      'Erkennt die wichtigsten Mittel und deutet sie meist richtig.',
+      'Nennt einzelne Mittel, Deutung bleibt oberflächlich.',
+      'Erkennt kaum sprachliche Mittel.',
+      'Keine Erkennung sprachlicher Mittel.' ] },
+    t5: { n:'Einordnung in größere Zusammenhänge', d:[
+      'Ordnet den Text sicher in Epoche, Werk- oder Autor/innen-Kontext ein.',
+      'Ordnet den Text überwiegend richtig ein.',
+      'Einordnung nur ansatzweise oder mit Hilfe.',
+      'Einordnung kaum möglich.',
+      'Keine Einordnung erkennbar.' ] },
     /* ----- Abfrage: immer dabei ----- */
     dar: { n:'Darstellung und Gesprächsverhalten', d:[
       'Klar und zusammenhängend; sichere Fachsprache; erfasst Fragen sofort.',
@@ -425,11 +473,13 @@
                lists:{ '-':[['th1',25],['th2',25],['th3',25],['th4',15],['th5',10]] } }
   };
   var SW = {
-    fach: { n:'Fachwissen',            l:[['f1',40],['f2',30],['f3',30]] },
-    vok:  { n:'Vokabular',             l:[['v1',40],['v2',30],['v3',30]] },
-    gram: { n:'Grammatik / Formen',    l:[['g1',40],['g2',30],['g3',30]] },
-    text: { n:'Textkenntnis (Lektüre)', l:[['t1',40],['t2',30],['t3',30]] }
+    fach: { n:'Fachwissen',            l:[['f1',30],['f2',25],['f3',20],['f4',15],['f5',10]] },
+    vok:  { n:'Vokabular',             l:[['v1',30],['v2',25],['v3',20],['v4',15],['v5',10]] },
+    gram: { n:'Grammatik / Formen',    l:[['g1',30],['g2',25],['g3',20],['g4',15],['g5',10]] },
+    text: { n:'Textkenntnis (Lektüre)', l:[['t1',30],['t2',25],['t3',20],['t4',15],['t5',10]] }
   };
+  var ALLW = {}, AREA_OF = {};
+  Object.keys(SW).forEach(function (k) { SW[k].l.forEach(function (p) { ALLW[p[0]] = p[1]; AREA_OF[p[0]] = k; }); });
   var TYP = { de:'Deutsch', es:'Spanisch', fs:'andere Fremdsprache', other:'anderes Fach' };
   var SOURCES = ['Referat','Präsentation','Mitarbeit (Unterricht)','Projektbeitrag','Debatte','Rechenschaftsablage','Kurzarbeit','Stegreifaufgabe (Ex)','Lesen','Gedichtvortrag','Songvortrag','Abfrage','Sonstiges'];
   var MODES = [
@@ -492,7 +542,10 @@
         assessments:(Array.isArray(c.assessments) ? c.assessments : []).filter(function (a) { return ids[a.sid] && MOD[a.type]; }).map(function (a) {
           var pts = {}; if (a.pts && typeof a.pts === 'object') Object.keys(a.pts).forEach(function (k) { var n = Number(a.pts[k]); if (a.pts[k] !== null && !isNaN(n)) pts[k] = Math.max(0, Math.min(15, Math.round(n))); });
           return { id:String(a.id || uid('a')), sid:a.sid, type:a.type, variant:(MOD[a.type].vars && MOD[a.type].vars[a.variant]) ? a.variant : 'de',
-                   sw:(Array.isArray(a.sw) ? a.sw.filter(function (k) { return SW[k]; }) : []), date:String(a.date || todayISO()),
+                   sw:(Array.isArray(a.sw) ? a.sw.filter(function (k) { return SW[k]; }) : []),
+                   swMode:(a.swMode === 'custom') ? 'custom' : 'preset',
+                   crit:(Array.isArray(a.crit) ? a.crit.filter(function (k) { return ALLW[k] !== undefined; }) : []),
+                   date:String(a.date || todayISO()),
                    thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)) };
         }),
         manual:(Array.isArray(c.manual) ? c.manual : []).filter(function (m) { return ids[m.sid]; }).map(function (m) {
@@ -526,20 +579,26 @@
   function defVariant(c, type) { return (MOD[type].vars && (c.typ === 'es' || c.typ === 'fs')) ? c.typ : 'de'; }
   function defSw(c) { return (c.typ === 'es' || c.typ === 'fs') ? ['vok'] : ['fach']; }
   function newA(c, type, sid) {
-    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? (state.vr || defVariant(c, type)) : 'de', sw:defSw(c), date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, _draft:true };
+    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? (state.vr || defVariant(c, type)) : 'de', sw:defSw(c), swMode:'preset', crit:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, _draft:true };
   }
   function modKey(a) { return a.type === 'abfrage' ? 'abfrage' : a.type + ':' + (MOD[a.type].vars ? (a.variant === 'fs' ? 'es' : a.variant) : '-'); }
   function critsOf(a) {
-    var mk = modKey(a), list = [], n = Math.max(1, a.sw.length);
+    var mk = modKey(a), list = [], scale = 1;
     if (a.type === 'abfrage') {
-      a.sw.forEach(function (k) { SW[k].l.forEach(function (p) { list.push([p[0], p[1]]); }); });
+      if (a.swMode === 'custom') {
+        (a.crit || []).forEach(function (id) { if (ALLW[id] !== undefined) list.push([id, ALLW[id]]); });
+      } else {
+        a.sw.forEach(function (k) { SW[k].l.forEach(function (p) { list.push([p[0], p[1]]); }); });
+      }
+      var totalW = list.reduce(function (s, p) { return s + p[1]; }, 0);
+      scale = totalW > 0 ? totalW / 100 : 1;
       list.push(['dar', 25]);
     } else {
       list = MOD[a.type].lists[MOD[a.type].vars ? a.variant : '-'];
     }
     return list.map(function (p) {
       var c = C[p[0]], ov = state.w[mk + '/' + p[0]], w = (ov !== undefined && ov !== null) ? Number(ov) : p[1];
-      if (a.type === 'abfrage' && p[0] === 'dar') w = w * n;
+      if (a.type === 'abfrage' && p[0] === 'dar') w = w * scale;
       return { id:p[0], n:c.n, d:(a.type !== 'abfrage' && a.variant === 'es' && c.es) ? c.es : c.d, w:w };
     });
   }
@@ -551,14 +610,18 @@
     var ex = sum / (sw || 1), np = Math.floor(ex + 0.5 + 1e-9);
     return { done:true, open:0, any:true, n:cr.length, ex:ex, np:np, z:zensur(np) };
   }
+  function abfrLabel(a) {
+    if (a.swMode === 'custom') return a.crit && a.crit.length ? 'individuell (' + a.crit.length + ' Kriterien)' : 'individuell – Kriterien wählen';
+    return a.sw.length ? a.sw.map(function (k) { return SW[k].n.split(' (')[0]; }).join(', ') : 'Schwerpunkt wählen';
+  }
   function sheetTitle(a) {
     var m = MOD[a.type];
-    if (a.type === 'abfrage') return 'Abfrage · ' + (a.sw.length ? a.sw.map(function (k) { return SW[k].n.split(' (')[0]; }).join(', ') : 'Schwerpunkt wählen');
+    if (a.type === 'abfrage') return 'Abfrage · ' + abfrLabel(a);
     if (m.vars) return m.label + ' · ' + (a.variant === 'fs' ? 'Fremdsprache' : m.vars[a.variant]);
     return m.label;
   }
   function sourceOf(a) {
-    if (a.type === 'abfrage') return 'Abfrage (' + (a.sw.length ? a.sw.map(function (k) { return SW[k].n.split(' (')[0]; }).join(', ') : '–') + ')';
+    if (a.type === 'abfrage') return 'Abfrage (' + abfrLabel(a) + ')';
     if (MOD[a.type].vars) return MOD[a.type].src + ' (' + MOD[a.type].vars[a.variant] + ')';
     return MOD[a.type].src;
   }
@@ -751,9 +814,26 @@
     if (a._draft) h += '<option value="__draft" selected>neu (heute, noch leer)</option>';
     list.forEach(function (x) { h += '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + fd(x.date) + ' – ' + esc(x.thema || 'ohne Thema') + '</option>'; });
     h += '</select></label><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>';
-    if (type === 'abfrage') h += '<span>Schwerpunkt: ' + Object.keys(SW).map(function (k) { return '<label class="chk"><input type="checkbox" data-f="sw" value="' + k + '"' + (a.sw.indexOf(k) >= 0 ? ' checked' : '') + '> ' + SW[k].n + '</label>'; }).join('') + '</span>';
     h += '<span class="sep"></span><button class="primary" data-act="printOne">Diese Seite drucken / PDF</button><button data-act="printAll">Alle Bögen „' + esc(modeLabel(type)) + '“ der Klasse drucken / PDF</button></div>';
-    if (type === 'abfrage') h += '<div class="hint">Hinweis zur Abfrage: Nur die fachliche Leistung bewerten (keine sachfremden Einflüsse) und die Aussage über mehrere ähnliche Fragen absichern. Bis zu zwei Schwerpunkte sind für den Druck sinnvoll.</div>';
+    if (type === 'abfrage') {
+      h += '<div class="panel" style="margin-top:0"><div class="row">' +
+           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="preset"' + (a.swMode !== 'custom' ? ' checked' : '') + '> Bereich nach Vorgabe wählen</label>' +
+           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="custom"' + (a.swMode === 'custom' ? ' checked' : '') + '> Kriterien individuell wählen</label>' +
+           '</div>';
+      if (a.swMode !== 'custom') {
+        h += '<div class="row"><span>Schwerpunkt(e): ' + Object.keys(SW).map(function (k) { return '<label class="chk"><input type="checkbox" data-f="sw" value="' + k + '"' + (a.sw.indexOf(k) >= 0 ? ' checked' : '') + '> ' + SW[k].n + '</label>'; }).join('') + '</span></div>' +
+             '<div class="hint">Jeder gewählte Bereich bringt seine 5 Kriterien plus „Darstellung und Gesprächsverhalten“ mit. Bis zu zwei Bereiche sind für den Druck sinnvoll.</div>';
+      } else {
+        h += '<div class="row">' + Object.keys(SW).map(function (k) {
+          return '<span style="margin-right:14px"><b>' + esc(SW[k].n) + ':</b> ' + SW[k].l.map(function (p) {
+            return '<label class="chk"><input type="checkbox" data-f="crit" value="' + p[0] + '"' + ((a.crit || []).indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>';
+          }).join('') + '</span>';
+        }).join('') + '</div>' +
+        '<div class="hint">Wähle beliebige Kriterien aus allen Bereichen frei aus; „Darstellung und Gesprächsverhalten“ wird automatisch passend mitgewichtet.</div>';
+      }
+      h += '</div>';
+      h += '<div class="hint">Hinweis zur Abfrage: Nur die fachliche Leistung bewerten (keine sachfremden Einflüsse) und die Aussage über mehrere ähnliche Fragen absichern.</div>';
+    }
     h += sheetHTML(c, s, a, true);
     return h;
   }
@@ -767,7 +847,7 @@
       ['song:-','Song',MOD.song.lists['-']], ['unterricht:-','Unterrichtsbeitrag',MOD.unterricht.lists['-']], ['theater:-','Theater',MOD.theater.lists['-']]
     ];
     Object.keys(SW).forEach(function (k) { groups.push(['abfrage', 'Abfrage · ' + SW[k].n, SW[k].l]); });
-    groups.push(['abfrage', 'Abfrage · immer dabei (je Schwerpunkt einfach gezählt)', [['dar',25]]]);
+    groups.push(['abfrage', 'Abfrage · immer dabei (Gewicht skaliert automatisch mit der Summe der gewählten Kriterien)', [['dar',25]]]);
     groups.forEach(function (g) {
       h += '<table class="t" style="margin-bottom:10px"><tr><th colspan="2">' + esc(g[1]) + '</th></tr>';
       g[2].forEach(function (p) {
@@ -970,9 +1050,14 @@
       var t = e.target, c = cls(); if (!c) return;
       if (t.dataset.f === 'pickA') { var s = stu(); if (t.value !== '__draft') { ui.cur[state.tab + vk(state.tab) + '|' + s.id] = t.value; render(); } return; }
       var sh = t.closest('.sheet') || t.closest('.modbar'), a;
-      if (t.dataset.f === 'variant' || t.dataset.f === 'sw') { a = curA(state.tab); }
+      if (t.dataset.f === 'variant' || t.dataset.f === 'sw' || t.dataset.f === 'swMode' || t.dataset.f === 'crit') { a = curA(state.tab); }
       else if (t.dataset.f === 'date') { a = findAny(c, t.closest('.sheet').dataset.aid); }
       if (t.dataset.f === 'variant') { a.variant = t.value; ensure(c, a); save(); render(); return; }
+      if (t.dataset.f === 'swMode') { a.swMode = t.value; ensure(c, a); save(); render(); return; }
+      if (t.dataset.f === 'crit') {
+        var selc = []; document.querySelectorAll('input[data-f="crit"]').forEach(function (x) { if (x.checked) selc.push(x.value); });
+        a.crit = selc; ensure(c, a); save(); render(); return;
+      }
       if (t.dataset.f === 'sw') {
         var sel = []; document.querySelectorAll('input[data-f="sw"]').forEach(function (x) { if (x.checked) sel.push(x.value); });
         if (!sel.length) { t.checked = true; return; }
@@ -1031,7 +1116,7 @@
             c.students.forEach(function (x) { if (x.name.trim().toLowerCase() === it.name.toLowerCase()) st = x; });
             if (!st) { st = { id:uid('s'), name:it.name }; c.students.push(st); created++; if (!c.stu) c.stu = st.id; }
             if (it.type === 'abfrage' && !it.sw.length) it.sw = ['fach'];
-            c.assessments.push({ id:uid('a'), sid:st.id, type:it.type, variant:it.variant, sw:it.type === 'abfrage' ? it.sw : [], date:it.date, thema:it.thema, pts:it.pts, cmt:it.cmt, gew:1 });
+            c.assessments.push({ id:uid('a'), sid:st.id, type:it.type, variant:it.variant, sw:it.type === 'abfrage' ? it.sw : [], swMode:'preset', crit:[], date:it.date, thema:it.thema, pts:it.pts, cmt:it.cmt, gew:1 });
             added++;
           });
           Object.keys(wmap).forEach(function (k) { state.w[k] = wmap[k]; });
