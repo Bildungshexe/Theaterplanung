@@ -1100,19 +1100,41 @@
   }
 
   /* ================= Auswertung ================= */
-  function gradeLines(res) {
-    var h = '';
-    res.entries.forEach(function (e) { var g = entryGrade(e); if (g) h += '<div>' + de(e.d) + ' – <b>' + esc(gradeText(g)) + '</b></div>'; });
-    return h;
+  /* ---------- Referatsnoten aus dem Referat-Tool (verknüpfte Gruppen) ---------- */
+  var OUT_KEY = 'bewertung_ref_outbox_v1';
+  function refsFor(sid, r) {
+    var o = null; try { o = JSON.parse(localStorage.getItem(OUT_KEY)); } catch (e) {}
+    if (!o || !Array.isArray(o.items)) return [];
+    return o.items.filter(function (x) { return x && x.c === S.id && x.s === sid && isISO(x.d) && (!r || inPer(x.d, r)); })
+      .sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+  }
+  // Referatsnote in der Notenskala dieser Klasse anzeigen
+  function refLabel(x) {
+    var np = typeof x.np === 'number' && x.np >= 0 && x.np <= 15 ? x.np : null;
+    if (np != null && S.out === 'note') return 'Referat: ' + (S.mode === 'tap' ? TEND[np] : String(noteNP(np).z)) + ' (' + noteNP(np).t + ')';
+    if (np != null) return 'Referat: ' + np + ' NP (Note ' + noteNP(np).z + ')';
+    return 'Referat: ' + String(x.txt || '');
+  }
+  function refLines(sid, r) {
+    return refsFor(sid, r).map(function (x) {
+      return '<div>' + de(x.d) + ' – <b>' + esc(refLabel(x)) + '</b>' + (x.t ? ' <span class="note">(' + esc(x.t) + ')</span>' : '') + '</div>';
+    }).join('');
+  }
+  function gradeLines(res, sid, r) {
+    var rows = [];
+    res.entries.forEach(function (e) { var g = entryGrade(e); if (g) rows.push({ d:e.d, h:'<div>' + de(e.d) + ' – <b>' + esc(gradeText(g)) + '</b></div>' }); });
+    refsFor(sid, r).forEach(function (x) { rows.push({ d:x.d, h:'<div>' + de(x.d) + ' – <b>' + esc(refLabel(x)) + '</b>' + (x.t ? ' <span class="note">(' + esc(x.t) + ')</span>' : '') + '</div>' }); });
+    rows.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    return rows.map(function (x) { return x.h; }).join('');
   }
   function ovTable(clickable) {
     var cs = active(), r = perRange(), sw = sum(cs.map(W)) || 1;
     if (single()) {
-      var t = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Einträge</th><th>fehlt</th><th>Einzelnoten (Datum – Note)</th></tr></thead><tbody>';
+      var t = '<div class="tw"><table class="ovt"><thead><tr><th>Nr.</th><th>Name</th><th>Einträge</th><th>fehlt</th><th>Einzelnoten (Datum – Note, inkl. Referate)</th></tr></thead><tbody>';
       S.students.forEach(function (s, n) {
         var res = result(s.id, r);
         t += '<tr' + (clickable ? ' data-sid="' + esc(s.id) + '"' : '') + '><td>' + (n + 1) + '</td><td class="l">' + esc(s.name) + '</td>' +
-          '<td class="' + (res.n ? '' : 'few') + '">' + res.n + '</td><td>' + (res.abs || '') + '</td><td class="l">' + gradeLines(res) + '</td></tr>';
+          '<td class="' + (res.n ? '' : 'few') + '">' + res.n + '</td><td>' + (res.abs || '') + '</td><td class="l">' + gradeLines(res, s.id, r) + '</td></tr>';
       });
       return t + '</tbody></table></div>';
     }
@@ -1121,7 +1143,7 @@
       h += '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (S.mode === 'tap' ? fmt(W(c) / sw * 100, 0) + ' %' : 'max ' + fmt(W(c))) + ')</th>';
     });
     resCols({}).forEach(function (x) { h += '<th>' + esc(x[0]) + '</th>'; });
-    h += '</tr></thead><tbody>';
+    h += '<th>Referate</th></tr></thead><tbody>';
     S.students.forEach(function (s, n) {
       var res = result(s.id, r);
       h += '<tr' + (clickable ? ' data-sid="' + esc(s.id) + '"' : '') + '><td>' + (n + 1) + '</td><td class="l">' + esc(s.name) + '</td>' +
@@ -1129,9 +1151,14 @@
       cs.forEach(function (c) { h += '<td>' + avgLabel(res.per[c.id], c) + '</td>'; });
       var rc = resCols(res);
       rc.forEach(function (x, i) { h += '<td>' + (i === rc.length - 1 ? '<b>' + x[1] + '</b>' : esc(x[1])) + '</td>'; });
-      h += '</tr>';
+      h += '<td class="l">' + refLines(s.id, r) + '</td></tr>';
     });
     return h + '</tbody></table></div>';
+  }
+  function refTable(sid) {
+    var list = refsFor(sid, perRange()); if (!list.length) return '';
+    return '<h3 style="margin:12px 0 6px">Referate</h3><table class="ovt"><thead><tr><th>Datum</th><th>Referat</th><th>Thema</th><th>Note</th></tr></thead><tbody>' +
+      list.map(function (x) { return '<tr><td>' + de(x.d) + '</td><td class="l">' + esc(x.g || 'Referat') + '</td><td class="l">' + esc(x.t || '') + '</td><td><b>' + esc(refLabel(x).replace(/^Referat: /, '')) + '</b></td></tr>'; }).join('') + '</tbody></table>';
   }
   function renderAusw() {
     var p = S.per;
@@ -1153,7 +1180,7 @@
     var h = '<h1>' + esc(s.name) + ' – Unterrichtsbeiträge</h1><p class="sub">' + esc(courseName(S)) + ' · Zeitraum: ' + esc(perLabel()) + '</p>';
     if (single()) {
       h += '<div class="res"><span>Einträge: <b>' + res.n + '</b>' + (res.abs ? ' · fehlt: ' + res.abs : '') + '</span><span>Jeder Eintrag ist eine eigene Note.</span></div>';
-      if (!res.entries.length) return h + '<p>Keine Einträge im Zeitraum.</p>';
+      if (!res.entries.length) return h + '<p>Keine Unterrichtsbeiträge im Zeitraum.</p>' + refTable(sid);
       h += '<table class="ovt"><thead><tr><th>Datum</th>' + cs.map(function (c, i) { return '<th>' + (i + 1) + ' ' + esc(c.s) + '<br>(' + (S.mode === 'tap' ? fmt(W(c) / sw * 100, 0) + ' %' : 'max ' + fmt(W(c))) + ')</th>'; }).join('') + '<th>Note</th><th>Bemerkung</th></tr></thead><tbody>';
       res.entries.forEach(function (e) {
         var g = entryGrade(e);
@@ -1162,7 +1189,7 @@
         else { cs.forEach(function (c) { var f = e.r[c.id]; h += '<td>' + (f == null ? '' : esc(valLabel(f, c))) + '</td>'; }); h += '<td><b>' + esc(gradeText(g)) + '</b></td>'; }
         h += '<td class="l">' + esc(e.note) + '</td></tr>';
       });
-      return h + '</tbody></table><p class="legend">' + esc(legend()) + '</p>';
+      return h + '</tbody></table>' + refTable(sid) + '<p class="legend">' + esc(legend()) + '</p>';
     }
     h += '<div class="res">';
     resCols(res).forEach(function (x) { h += '<span>' + esc(x[0]) + ': <b class="big2">' + (x[1] === '' ? '–' : esc(x[1])) + (x[0] === 'Note' && res.done ? ' (' + res.z.t + ')' : '') + '</b></span>'; });
@@ -1185,7 +1212,7 @@
       });
       h += '</tbody></table>';
     }
-    return h + '<p class="legend">' + esc(legend()) + '</p>';
+    return h + refTable(sid) + '<p class="legend">' + esc(legend()) + '</p>';
   }
   function renderEinzel() {
     els.einzel.innerHTML = '<div class="sbox"><div class="row"><button type="button" data-a="back">◀ Zurück zur Übersicht</button><button type="button" class="primary" data-a="prep">Einzelbericht drucken</button>' +
@@ -1255,19 +1282,25 @@
     var cs = active(), r = perRange(), rows = [];
     rows.push(['Klasse/Kurs', courseName(S), 'Zeitraum', perLabel()]);
     if (single()) {
-      rows.push(['Nr', 'Name', 'Datum'].concat(cs.map(function (c) { return c.n; }), ['Note', 'Bemerkung']));
+      rows.push(['Nr', 'Name', 'Datum', 'Art'].concat(cs.map(function (c) { return c.n; }), ['Note', 'Bemerkung']));
       S.students.forEach(function (s, i) {
+        var list = [];
         result(s.id, r).entries.forEach(function (e) {
           var g = entryGrade(e); if (!g) return;
-          rows.push([i + 1, s.name, de(e.d)].concat(cs.map(function (c) { var f = e.r[c.id]; return f == null ? '' : valLabel(f, c); }), [gradeText(g), e.note]));
+          list.push({ d:e.d, row:[i + 1, s.name, de(e.d), 'Unterrichtsbeitrag'].concat(cs.map(function (c) { var f = e.r[c.id]; return f == null ? '' : valLabel(f, c); }), [gradeText(g), e.note]) });
         });
+        refsFor(s.id, r).forEach(function (x) {
+          list.push({ d:x.d, row:[i + 1, s.name, de(x.d), 'Referat'].concat(cs.map(function () { return ''; }), [refLabel(x).replace(/^Referat: /, ''), (x.g || 'Referat') + (x.t ? ': ' + x.t : '')]) });
+        });
+        list.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; }).forEach(function (x) { rows.push(x.row); });
       });
       csvOut(fileBase() + '_einzelnoten_' + stamp() + '.csv', rows); return;
     }
-    rows.push(['Nr', 'Name', 'Einträge', 'fehlt'].concat(cs.map(function (c) { return c.n; }), resCols({}).map(function (x) { return x[0]; })));
+    rows.push(['Nr', 'Name', 'Einträge', 'fehlt'].concat(cs.map(function (c) { return c.n; }), resCols({}).map(function (x) { return x[0]; }), ['Referate']));
     S.students.forEach(function (s, i) {
       var res = result(s.id, r);
-      rows.push([i + 1, s.name, res.n, res.abs].concat(cs.map(function (c) { return avgLabel(res.per[c.id], c); }), resCols(res).map(function (x) { return x[1]; })));
+      rows.push([i + 1, s.name, res.n, res.abs].concat(cs.map(function (c) { return avgLabel(res.per[c.id], c); }), resCols(res).map(function (x) { return x[1]; }),
+        [refsFor(s.id, r).map(function (x) { return de(x.d) + ': ' + refLabel(x).replace(/^Referat: /, ''); }).join(' | ')]));
     });
     csvOut(fileBase() + '_auswertung_' + stamp() + '.csv', rows);
   }
@@ -1558,6 +1591,9 @@
       DB.cur = els.csel.value; S = curCourse(); openSid = null; save(); setView(DB.view === 'einzel' ? 'ausw' : DB.view);
     });
 
+    function refreshRefs() { if (DB.view === 'ausw' && !els.ausw.hidden) renderAusw(); else if (!els.einzel.hidden) renderEinzel(); }
+    window.addEventListener('storage', function (e) { if (e.key === OUT_KEY) refreshRefs(); });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') refreshRefs(); });
     els.erf.addEventListener('click', erfClick);
     els.erf.addEventListener('input', erfInput);
     els.erf.addEventListener('change', function (e) {

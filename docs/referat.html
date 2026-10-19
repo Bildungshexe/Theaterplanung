@@ -771,7 +771,7 @@
     return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
   }
   function newStudent() {
-    return { id:'s' + Date.now() + Math.floor(Math.random() * 1000), name:'', thema:'', datum:today(), cmt:'', r:{} };
+    return { id:'s' + Date.now() + Math.floor(Math.random() * 1000), name:'', thema:'', datum:today(), cmt:'', r:{}, ls:'' };
   }
   function fresh(fach) {
     fach = SUBJ[fach] ? fach : 'de';
@@ -791,6 +791,7 @@
   function flush() {
     clearTimeout(tmr); tmr = null;
     if (!canStore || !state) return Promise.resolve();
+    writeOutbox();
     return SEC.write(KEY, JSON.stringify(DB));
   }
   function save() {
@@ -828,6 +829,7 @@
     f.weights = {};
     if (o.weights && typeof o.weights === 'object') for (var k in o.weights) if (known[k]) f.weights[k] = Math.max(0, num(o.weights[k], 0));
     f.withov = !!o.withov;
+    f.link = null; f.roster = [];
     f.students = o.students.slice(0, 500).map(function (s) {
       var r = {};
       if (s && s.r && typeof s.r === 'object') for (var cid in s.r) {
@@ -835,8 +837,12 @@
         if (x && x.k >= 0 && x.k <= 4) r[str(cid, 40)] = { k: x.k | 0, v: num(x.v, 0) };
       }
       return { id:str(s && s.id || ('s' + Math.random()), 40), name:str(s && s.name, 120), thema:str(s && s.thema, 200),
-               datum:str(s && s.datum, 30), cmt:str(s && s.cmt, 3000), r:r };
+               datum:str(s && s.datum, 30), cmt:str(s && s.cmt, 3000), r:r, ls:str(s && s.ls, 40) };
     });
+    if (o.link && o.link.c) {
+      f.link = { c:str(o.link.c, 40), cname:str(o.link.cname, 120) };
+      f.roster = (Array.isArray(o.roster) ? o.roster : []).slice(0, 200).filter(function (x) { return x && x.id; }).map(function (x) { return { id:str(x.id, 40), name:str(x.name, 80) }; });
+    }
     if (!f.students.length) f.students.push(newStudent());
     f.cur = Math.min(Math.max(0, o.cur | 0), f.students.length - 1);
     if (f.sel.length < MIN) { f.sel = SUBJ[f.fach].def.slice(); }
@@ -1046,7 +1052,10 @@
     d.className = 'sheet' + (blank ? ' blank' : '');
     d.dataset.id = s.id;
     var h = '<div class="head"><h1>' + esc(state.titel) + '</h1>';
-    h += '<label class="fld"><b>Name</b><input type="text" data-f="name" placeholder="Name eintippen" autocomplete="off"></label>';
+    if (state.link && !blank) {
+      h += '<label class="fld"><b>Name</b><select data-f="ls" aria-label="Schüler/in aus der Klasse"><option value="">– aus ' + esc(state.link.cname) + ' wählen –</option>' +
+        state.roster.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === s.ls ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></label>';
+    } else h += '<label class="fld"><b>Name</b><input type="text" data-f="name" placeholder="Name eintippen" autocomplete="off"></label>';
     var thl = SUBJ[state.fach].thema || 'Thema';
     h += '<label class="fld"><b>' + thl + '</b><input type="text" data-f="thema" placeholder="' + (SUBJ[state.fach].thema ? 'Song – Interpret' : 'Thema des Referats') + '" autocomplete="off"></label>';
     h += '<div class="fld"><b>Kurs</b><span class="kursv">' + esc(state.kurs) + '</span></div>';
@@ -1070,7 +1079,7 @@
     h += '<div class="foot">' + esc(legend()) + (SUBJ[state.fach].foot ? ' ' + esc(SUBJ[state.fach].foot) : '') + '</div>';
     d.innerHTML = h;
     if (!blank) {
-      ['name', 'thema', 'datum', 'cmt'].forEach(function (f) { d.querySelector('[data-f="' + f + '"]').value = s[f]; });
+      ['name', 'thema', 'datum', 'cmt'].forEach(function (f) { var el = d.querySelector('[data-f="' + f + '"]'); if (el) el.value = s[f]; });
       d.querySelector('.cmtp').textContent = s.cmt;
     } else {
       qa(d, 'input, textarea').forEach(function (el) { el.disabled = true; });
@@ -1296,6 +1305,16 @@
     }
     h += '</div>';
 
+    h += '<div class="sbox"><h3>Mit einer Klasse verknüpfen (Notenliste)</h3>';
+    if (state.link) {
+      h += '<p>Verknüpft mit <b>' + esc(state.link.cname) + '</b> aus „Unterrichtsbeiträge“ (' + state.roster.length + ' Schüler/innen). Jeder Bogen ist einer Person dieser Klasse zugeordnet. Fertige Referatsnoten erscheinen dort in der Notenliste mit dem Vermerk „Referat“.</p>' +
+        '<div class="row" style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" data-a="linksync">Klassenliste aktualisieren</button><button type="button" class="danger" data-a="unlink">Verknüpfung lösen</button></div>';
+    } else {
+      h += '<p>Ordnen Sie diese Gruppe einer bestehenden Klasse aus dem Tool „Unterrichtsbeiträge“ zu. Die Schülerliste wird übernommen, und fertige Referatsnoten erscheinen dort in der Notenliste mit dem Vermerk „Referat“.</p>' +
+        '<div class="row" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center" id="linkrow"><button type="button" data-a="linkload">Klasse auswählen …</button></div>' +
+        '<p class="note">Funktioniert, wenn beide Tools im selben Browser geöffnet werden (Web-App bzw. Chrome/Edge). Ist „Unterrichtsbeiträge“ mit Passwort geschützt, wird dessen Passwort einmal abgefragt.</p>';
+    }
+    h += '</div>';
     h += '<div class="sbox done"><button type="button" class="big primary" data-a="done">Fertig – zur Bewertung</button></div>';
 
     var cnt = state.students.filter(function (s) { return s.name.trim() || hasR(s); }).length;
@@ -1355,6 +1374,36 @@
 
   function setupClick(a, v) {
     if (secClick(a)) return;
+    if (a === 'linkload') {
+      loadUB().then(function (cs) {
+        if (!cs.length) { alert('In „Unterrichtsbeiträge“ ist noch keine Klasse mit Schülerliste angelegt.'); return; }
+        ubCache = cs;
+        document.getElementById('linkrow').innerHTML = '<label style="display:flex;gap:6px;align-items:center">Klasse <select id="linksel">' +
+          cs.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + ' (' + c.students.length + ')</option>'; }).join('') +
+          '</select></label><button type="button" class="primary" data-a="linkdo">Verknüpfen</button>';
+      }, function (msg) { if (msg) alert(msg); });
+      return;
+    }
+    if (a === 'linkdo') {
+      var cid = document.getElementById('linksel').value, c0 = null;
+      (ubCache || []).forEach(function (c) { if (c.id === cid) c0 = c; });
+      if (!c0) return;
+      state.link = { c:c0.id, cname:c0.name }; syncRoster(c0.students);
+      save(); renderAll(); renderSetup(); return;
+    }
+    if (a === 'linksync') {
+      loadUB().then(function (cs) {
+        var c0 = null; cs.forEach(function (c) { if (c.id === state.link.c) c0 = c; });
+        if (!c0) { alert('Die verknüpfte Klasse wurde in „Unterrichtsbeiträge“ nicht gefunden.'); return; }
+        state.link.cname = c0.name; syncRoster(c0.students); save(); renderAll(); renderSetup();
+      }, function (msg) { if (msg) alert(msg); });
+      return;
+    }
+    if (a === 'unlink') {
+      if (!confirm('Verknüpfung lösen? Die Bögen bleiben erhalten, die Noten erscheinen aber nicht mehr in der Notenliste der Klasse.')) return;
+      state.link = null; state.roster = []; state.students.forEach(function (x) { x.ls = ''; });
+      save(); renderAll(); renderSetup(); return;
+    }
     if (a === 'delset') {
       if (!confirm('Gruppe „' + setName(state) + '“ mit allen Bögen löschen? Das kann nicht rückgängig gemacht werden.')) return;
       var gone = state.id; DB.sets = DB.sets.filter(function (x) { return x.id !== gone; });
@@ -1425,6 +1474,7 @@
       if (!confirm('Wirklich ALLE Bögen und Einstellungen auf diesem Gerät löschen? Das kann nicht rückgängig gemacht werden.')) return;
       clearTimeout(tmr); tmr = null;
       SEC.wipe(KEY); updLockBtn();
+      try { localStorage.removeItem(OUT_KEY); } catch (e) {}
       DB = freshDB(); state = curSet(); renderAll(); renderSetup(); window.scrollTo(0, 0);
     }
   }
@@ -1529,6 +1579,11 @@
     els.stage.addEventListener('input', function (e) {
       var f = e.target.dataset && e.target.dataset.f; if (!f) return;
       var sh = e.target.closest('.sheet'), s = sh && byId(sh.dataset.id); if (!s) return;
+      if (f === 'ls') {
+        s.ls = e.target.value; s.name = '';
+        state.roster.forEach(function (x) { if (x.id === s.ls) s.name = x.name; });
+        refreshSelect(); save(); return;
+      }
       s[f] = e.target.value.slice(0, f === 'cmt' ? 3000 : 200);
       if (f === 'cmt') sh.querySelector('.cmtp').textContent = s.cmt;
       if (f === 'name') refreshSelect();
@@ -1644,6 +1699,66 @@
     window.addEventListener('beforeunload', function (e) {
       if (!canStore && state.students.some(function (s) { return s.name.trim() || hasR(s); })) { e.preventDefault(); e.returnValue = ''; }
     });
+  }
+  /* ---------- Verknüpfung mit „Unterrichtsbeiträge“ ---------- */
+  var UB_KEY = 'unterrichtsbeitraege_v1', OUT_KEY = 'bewertung_ref_outbox_v1', ubCache = null;
+  function loadUB() {
+    return new Promise(function (resolve, reject) {
+      var raw = null;
+      try { raw = JSON.parse(localStorage.getItem(UB_KEY)); } catch (e) {}
+      if (!raw) { reject('Keine Klassen aus „Unterrichtsbeiträge“ gefunden. Bitte das Tool „Unterrichtsbeiträge“ im selben Browser öffnen und dort die Klasse mit Schülerliste anlegen.'); return; }
+      function take(o) {
+        var cs = (o && Array.isArray(o.courses) ? o.courses : []).filter(function (c) { return c && c.id && Array.isArray(c.students) && c.students.length; }).map(function (c) {
+          return { id:String(c.id), name:(c.klasse || ('Jgst. ' + c.stufe)) + ' · ' + (c.fachName || c.fach || ''), students:c.students.map(function (x) { return { id:String(x.id), name:String(x.name || '') }; }) };
+        });
+        resolve(cs);
+      }
+      if (!SEC.isEnv(raw)) { take(raw); return; }
+      if (!SEC.ok()) { reject('Die Daten von „Unterrichtsbeiträge“ sind verschlüsselt; dieser Browser kann sie nicht entschlüsseln.'); return; }
+      var found = null;
+      pwDialog({ title:'Passwort „Unterrichtsbeiträge“', cancel:true, okText:'Öffnen', text:'Die Klassenlisten in „Unterrichtsbeiträge“ sind verschlüsselt. Bitte das dortige Passwort eingeben. Es wird nur für diesen Vorgang verwendet.',
+        check:function (pw) { return SEC.tryEnv(raw, pw).then(function (r) { found = r; return true; }, function () { return 'Falsches Passwort.'; }); } }).then(function (pw) {
+        if (!pw || !found) { reject(''); return; }
+        var o = null; try { o = JSON.parse(found.txt); } catch (e) {}
+        take(o);
+      });
+    });
+  }
+  function syncRoster(list) {
+    state.roster = list.map(function (x) { return { id:x.id, name:x.name }; });
+    var byName = {};
+    state.students.forEach(function (s) { if (!s.ls && s.name.trim()) byName[s.name.trim().toLowerCase()] = s; });
+    list.forEach(function (x) {
+      if (state.students.some(function (s) { return s.ls === x.id; })) return;
+      var m = byName[x.name.trim().toLowerCase()];
+      if (m) { m.ls = x.id; m.name = x.name; return; }
+      var n = newStudent(); n.name = x.name; n.ls = x.id; state.students.push(n);
+    });
+    state.students = state.students.filter(function (s) { return s.ls || s.name.trim() || hasR(s) || s.thema.trim(); });
+    if (!state.students.length) state.students.push(newStudent());
+    state.cur = 0;
+  }
+  function isoDate(t) {
+    var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(t).trim());
+    var d = m ? new Date(+m[3], +m[2] - 1, +m[1]) : new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  // Fertige, verknüpfte Referatsnoten für die Notenliste in „Unterrichtsbeiträge“ (nur IDs, keine Namen)
+  function writeOutbox() {
+    if (!canStore || !DB) return;
+    var keep = state, items = [];
+    DB.sets.forEach(function (st) {
+      if (!st.link) return;
+      state = st;
+      st.students.forEach(function (s) {
+        if (!s.ls) return;
+        var c = calc(s); if (!c.done) return;
+        var txt = (st.out === 'np' && c.np != null) ? c.np + ' NP (Note ' + noteNP(c.np).z + ')' : 'Note ' + c.z.z + ' (' + c.z.t + ')';
+        items.push({ k:st.id + ':' + s.id, c:st.link.c, s:s.ls, d:isoDate(s.datum), g:st.titel, t:SEC.on() ? '' : s.thema, txt:txt, np:(c.np != null ? c.np : null), z:c.z.z });
+      });
+    });
+    state = keep;
+    try { localStorage.setItem(OUT_KEY, JSON.stringify({ v:1, items:items })); } catch (e) {}
   }
   function hasRatingsOf(st) { return st.students.some(function (x) { for (var k in x.r) return true; return !!x.name.trim(); }); }
   function boot() {
