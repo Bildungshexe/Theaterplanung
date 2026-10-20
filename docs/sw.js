@@ -1,5 +1,5 @@
 /* Service Worker: hält das Bewertungstool offline verfügbar. Speichert nur Programmdateien, keine Bewertungsdaten. */
-var CACHE = 'bewertungstool-759bc2b02766';
+var CACHE = 'bewertungstool-ca2c50d7543c';
 var FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));

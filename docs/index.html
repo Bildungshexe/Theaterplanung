@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#2b2b2b">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Bewertungstool – Song, Lesen, Gedicht, Referat, Abfrage, Unterricht, Theater</title>
+<title>Bewertungstool – Deutsch, Geschichte, PoGe, Spanisch, Theater, P/W-Seminar</title>
 <style>
   :root { --acc:#8B1E2D; --light:#F6E9EB; --gray:#E9E9E9; --line:#7f7f7f; --hit:#F3C9CF; }
   * { box-sizing: border-box; }
@@ -30,6 +30,9 @@
   .toolbar .tab.on { background:var(--acc); border-color:var(--acc); }
   .toolbar .sep { width:1px; height:30px; background:#666; margin:0 2px; }
   .toolbar label { display:flex; gap:6px; align-items:center; }
+  .backup-alert { background: #b91c1c; color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 10pt; display: flex; align-items: center; gap: 8px; }
+  .backup-alert button { background: #fff; color: #b91c1c; border: none; padding: 4px 8px; font-weight: bold; min-height: 0; border-radius: 4px; }
+
   .stage { padding:14px 10px 40px; }
   .panel { background:#fff; max-width:297mm; margin:0 auto 12px; padding:12px 16px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,.25); }
   .panel h2 { margin:0 0 8px; font-size:15pt; color:var(--acc); }
@@ -54,14 +57,17 @@
   table.t th, table.t td { border:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:middle; }
   table.t th { background:var(--gray); }
   table.t td.c, table.t th.c { text-align:center; }
-  table.t input { width:100%; min-height:34px; padding:3px 6px; }
+  table.t input, table.t select { width:100%; min-height:34px; padding:3px 6px; }
   table.t input.n { width:70px; text-align:center; }
   table.t input.g { width:60px; text-align:center; }
   .big { font-size:13pt; color:var(--acc); }
-  .chips span { display:inline-block; border:1px solid var(--line); border-radius:12px; padding:1px 8px; margin:2px 4px 2px 0; background:#fff; white-space:nowrap; }
   .muted { color:#555; }
   .warn { color:#a00; }
   a { color:#0b4fa8; }
+
+  /* ---------- Leistungsspiegel / Barometer ---------- */
+  .stats-bar { display: flex; gap: 4px; height: 24px; background: var(--gray); border-radius: 4px; overflow: hidden; margin: 10px 0; }
+  .stats-segment { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9pt; font-weight: bold; overflow: hidden; white-space: nowrap; text-shadow: 0 1px 1px rgba(0,0,0,0.4); }
 
   /* ---------- Bewertungsbogen ---------- */
   .sheet { background:#fff; width:297mm; min-height:209mm; margin:0 auto 14px; padding:6mm 8mm; box-shadow:0 2px 8px rgba(0,0,0,.3); display:grid; grid-template-rows: auto 1fr auto auto auto; gap:1.6mm; }
@@ -97,7 +103,6 @@
   .cmt .v { flex:1; outline:none; overflow:hidden; line-height:1.2; }
   .foot { min-height:4.6mm; }
 
-  /* ---------- Übersichten ---------- */
   .ov { background:#fff; max-width:297mm; margin:0 auto 12px; padding:6mm 8mm; }
   .ov h1 { font-size:15pt; color:var(--acc); margin:0 0 3mm; }
   .ov table { border-collapse:collapse; width:100%; }
@@ -105,16 +110,28 @@
   .ov th { background:var(--gray); }
   .ov td.c { text-align:center; }
 
-  /* ---------- Druck ---------- */
+  @media screen and (max-width: 1024px) {
+    .sheet { width: 100%; min-height: auto; display: block; overflow-x: auto; }
+    .head { grid-template-columns: 1fr; gap: 4px; }
+    .grid { grid-template-columns: 1fr; }
+    .grid > div { border-right: 1px solid var(--line); }
+    .sum { grid-template-columns: 1fr; }
+    .sum > div { border-bottom: 1px solid var(--line); border-right: none; }
+  }
+
   @page { size: A4 landscape; margin: 0; }
   @media print {
-    body { background:#fff; }
+    body { background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #app { display:none !important; }
     body.printing #printArea { display:block; }
-    #printArea .sheet { box-shadow:none; margin:0; width:297mm; height:209mm; min-height:0; overflow:hidden; break-after:page; }
+    #printArea .sheet { box-shadow:none; margin:0; width:297mm; height:209mm; min-height:0; overflow:hidden; break-after:page; display:grid !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #printArea .sheet:last-child { break-after:auto; }
+    #printArea .head { display:grid !important; grid-template-columns: auto 1.1fr 46mm 1.2fr 42mm !important; }
+    #printArea .grid { display:grid !important; grid-template-columns: 45mm repeat(5, 1fr) !important; }
+    #printArea .sum { display:grid !important; grid-template-columns: repeat(3, auto) 1fr !important; }
     #printArea .ov { max-width:none; width:297mm; margin:0; }
     .crit button.st { display:none !important; }
+    .crit, .gh, .sum > div, .lv.hit { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   }
 </style>
 </head>
@@ -134,6 +151,7 @@
     <span class="sep"></span>
     <button class="tab" data-tab="classes">Klassen</button>
     <button class="tab" data-tab="settings">Einstellungen</button>
+    <span id="backupWarnContainer"></span>
   </div>
   <div class="stage" id="view"></div>
 </div>
@@ -145,9 +163,6 @@
 (function () {
   'use strict';
 
-  /* =====================================================================
-     Kriterienbibliothek (5 Stufen: sehr gut … mangelhaft/ungenügend)
-     ===================================================================== */
   var LV = [
     { n:'sehr gut',                np:'15–13', hi:15, lo:13, def:14 },
     { n:'gut',                     np:'12–10', hi:12, lo:10, def:11 },
@@ -157,7 +172,6 @@
   ];
 
   var C = {
-    /* ----- Lesen ----- */
     gen:  { n:'Lesegenauigkeit', d:[
       'Alle Wörter genau gelesen; Fehler werden erkannt und selbst korrigiert.',
       'Meist genau; wenige Fehler, meist selbst korrigiert.',
@@ -201,7 +215,6 @@
       'Häufige Fehler, auch beim Wortakzent; Verständnis teils erschwert.',
       'Stark fehlerhaft; kaum verständlich.' ] },
 
-    /* ----- Gedicht ----- */
     tex:  { n:'Textsicherheit', d:[
       'Vollständig auswendig, ohne Hilfe und fehlerfrei.',
       'Sicher; kleine Fehler selbst korrigiert; keine Hilfe nötig.',
@@ -239,7 +252,6 @@
       'Einführung lückenhaft; Inhalt kaum verständlich erklärt.',
       'Keine Einführung; Inhalt nicht erklärt.' ] },
 
-    /* ----- Unterrichtsbeitrag / Theater ----- */
     u1: { n:'Häufigkeit und Verlässlichkeit', d:[
       'Beteiligt sich regelmäßig von sich aus.',
       'Beteiligt sich häufig, auch ohne Aufforderung.',
@@ -270,38 +282,100 @@
       'Äußert sich ohne Bezug zu anderen.',
       'Unterbricht oder stört gelegentlich.',
       'Stört häufig; hört nicht zu.' ] },
-    th1: { n:'Sprechen und Artikulation', d:[
-      'Deutlich, laut genug, variantenreich in Tempo und Betonung.',
-      'Meist deutlich und gut hörbar; Betonung angemessen.',
-      'Verständlich, aber teils leise, hastig oder monoton.',
-      'Oft schwer zu verstehen.',
-      'Kaum verständlich.' ] },
-    th2: { n:'Körpersprache, Mimik und Gestik', d:[
-      'Gezielt und glaubwürdig; Raum und Haltung bewusst genutzt.',
-      'Meist passend und sicher.',
-      'Teils passend; wirkt unsicher oder wiederholt sich.',
-      'Kaum Ausdruck; steif oder unmotiviert.',
-      'Kein erkennbarer Ausdruck.' ] },
-    th3: { n:'Rollengestaltung', d:[
-      'Figur eigenständig und stimmig entwickelt; Haltung durchgehend gehalten.',
-      'Figur erkennbar und überwiegend stimmig.',
-      'Rolle ansatzweise gestaltet; fällt gelegentlich heraus.',
-      'Figur kaum erkennbar.',
-      'Keine Rollengestaltung.' ] },
-    th4: { n:'Textsicherheit und Einsatz', d:[
-      'Text sicher; Einsätze pünktlich; reagiert auf Pannen.',
-      'Text weitgehend sicher; selten Hänger.',
-      'Mehrere Hänger; Hilfen nötig.',
-      'Viele Hänger; Einsätze verpasst.',
-      'Text nicht gelernt.' ] },
-    th5: { n:'Zusammenspiel und Mitarbeit', d:[
-      'Spielt aktiv mit Partnern; bringt Ideen in die Probe ein.',
-      'Verlässlicher Partner; geht auf andere ein.',
-      'Spielt eher neben- als miteinander.',
-      'Wenig Zusammenarbeit; Probenmitarbeit schwach.',
-      'Verweigert Zusammenspiel.' ] },
 
-    /* ----- Song (Spanisch) ----- */
+    th_schauspiel: { n:'Schauspiel', d:[
+      'Rolle tief durchdrungen, körperlich und sprachlich überzeugend, hochgradig wandelbar und authentisch.',
+      'Gute schauspielerische Leistung, Text und Rolle sicher umgesetzt.',
+      'Rolle erkennbar, gelegentlich noch etwas steif oder unsicher in der Umsetzung.',
+      'Wenig Ausdruck im Spiel; agiert oft hölzern oder unbeteiligt.',
+      'Keine erkennbare schauspielerische Gestaltung.' ] },
+    th_maske: { n:'Maske & Kostüm', d:[
+      'Kostüm und Maske sind perfekt auf die Rolle abgestimmt, sorgfältig vorbereitet und unterstützen den Charakter vollkommen.',
+      'Passendes Kostüm und stimmige Maske gewählt.',
+      'Ausstattung vorhanden, aber teils ungenau oder wenig charakterfördernd.',
+      'Kostüm oder Maske unvollständig / unpassend vorbereitet.',
+      'Vorgaben bezüglich Maske und Kostüm ignoriert.' ] },
+    th_buehne: { n:'Bühnenbild', d:[
+      'Bühnenbild und Requisiten kreativ, funktional und konzeptionell stark durchdacht eingesetzt.',
+      'Sorgfältig gestaltetes Bühnenbild, das die Szene gut unterstützt.',
+      'Einfaches Bühnenbild; Erfüllung des Mindeststandards.',
+      'Bühnenbild lückenhaft, unpraktisch oder stört den Ablauf.',
+      'Kein Bühnenbild oder völlig ungeeignet.' ] },
+    th_regie: { n:'Regie', d:[
+      'Präzise Inszenierung; klare Vision, souveräne Führung der Mitspieler, gelungene Rhythmisierung der Szene.',
+      'Sicher in der Regiearbeit; stimmiger Ablauf.',
+      'Ansätze einer Inszenierung erkennbar; einige Längen im Timing.',
+      'Regiearbeit unstrukturiert; Spieler wirken oft alleingelassen.',
+      'Keine erkennbare Regiearbeit.' ] },
+    th_pr: { n:'PR & Öffentlichkeitsarbeit', d:[
+      'Hervorragend gestaltete PR (Programmheft, Plakate, digitale Medien); professionelle Werbung und Dokumentation.',
+      'Gute und ansprechende Materialien zur Öffentlichkeitsarbeit erstellt.',
+      'Einfache PR-Maßnahmen durchgeführt.',
+      'PR sehr lückenhaft oder unvollständig.',
+      'Keine PR-Leistung erbracht.' ] },
+
+    ps_projekt: { n:'Projekt', d:[
+      'Zielgerichtete, hochgradig selbstständige und innovative Umsetzung des Projektvorhabens; herausragendes Ergebnis.',
+      'Projekt erfolgreich und zuverlässig durchgeführt.',
+      'Projekt im Wesentlichen realisiert; kleinere Reibungsverluste.',
+      'Deutliche Defizite bei der Projektrealisierung; viele Hilfen nötig.',
+      'Projekt nicht erfolgreich durchgeführt.' ] },
+    ps_referat: { n:'Referat', d:[
+      'Präsentation des Projekts überzeugend, frei, methodisch glänzend und absolut zielgruppengerecht.',
+      'Sichere und informative Projektpräsentation.',
+      'Präsentation verständlich, aber wenig mitreißend oder etwas holprig.',
+      'Unsicherer Vortrag; schwer verständliche Struktur.',
+      'Vortrag ungenügend.' ] },
+    ps_beruf: { n:'Berufsorientierung', d:[
+      'Reflektierte Auseinandersetzung mit Berufsfeldern, klare persönliche Erkenntnisse und professionelle Dokumentation (Portfolio).',
+      'Solide Einblicke gewonnen und gut aufbereitet.',
+      'Berufsorientierung oberflächlich bearbeitet.',
+      'Kaum erkennbare Auseinandersetzung mit der Berufswelt.',
+      'Vorgaben zur Berufsorientierung nicht erfüllt.' ] },
+    ps_unterricht: { n:'Unterrichtsbeitrag', d:[
+      'Konstruktive Mitarbeit, wertvolle Impulse für das Seminar und hohe Verlässlichkeit.',
+      'Regelmäßige und sinnvolle Beiträge.',
+      'Gelegentliche Mitarbeit.',
+      'Kaum eigene Beiträge.',
+      'Keine Mitarbeit.' ] },
+    ps_org: { n:'Organisation', d:[
+      'Exzellentes Zeitmanagement, vorbildliche Teambeteiligung, eigenverantwortliches Handeln.',
+      'Gut organisiert und zuverlässig im Team.',
+      'Organisation manchmal schleppend; Absprachen wurden teils vergessen.',
+      'Häufige Koordinationsprobleme; unzuverlässig.',
+      'Völlig unorganisiert; blockiert den Prozess.' ] },
+
+    ws_referat: { n:'Referat', d:[
+      'Wissenschaftspropädeutischer Vortrag: Methodisch exakt, souveräner Umgang mit Fragen, hervorragende Präsentation.',
+      'Sicherer, wissenschaftlich orientierter Vortrag.',
+      'Vortrag verständlich, aber methodisch noch etwas oberflächlich.',
+      'Vortrag zeigt große Lücken im wissenschaftlichen Anspruch.',
+      'Vortrag ungenügend.' ] },
+    ws_unterricht: { n:'Unterrichtsbeitrag', d:[
+      'Führt gewinnbringende Fachdiskussionen, stellt kritische Fragen zum wissenschaftlichen Arbeiten.',
+      'Beteiligt sich aktiv am wissenschaftlichen Austausch.',
+      'Mitarbeit eher passiv oder sporadisch.',
+      'Kaum seminaristischer Beitrag.',
+      'Keine Beteiligung.' ] },
+    ws_gliederung: { n:'Gliederung', d:[
+      'Logisch, präzise, stringente Forschungsfrage und makelloser Aufbau der Arbeit.',
+      'Klare und sinnvolle Struktur der Gliederung.',
+      'Gliederung erkennbar, aber teils sprunghaft oder unpräzise.',
+      'Struktur unklar; Forschungsfrage kaum erkennbar.',
+      'Keine brauchbare Gliederung.' ] },
+    ws_probe: { n:'Probekapitel', d:[
+      'Exzellenter wissenschaftlicher Stil, korrekte Zitierweise, fundierte Argumentation auf universitärem Niveau.',
+      'Sauber erarbeitetes Kapitel mit guten Belegen.',
+      'Kapitel zeigt Ansätze, aber Mängel in Stil oder Zitierweise.',
+      'Erhebliche formale und inhaltliche Mängel.',
+      'Probekapitel ungenügend.' ] },
+    ws_expose: { n:'Exposé', d:[
+      'Präzise Skizze des Vorhabens, begründete Methodik, realistischer Zeit- und Quellenplan.',
+      'Aussagekräftiges und sauberes Exposé.',
+      'Exposé knapp, einige Fragen offen.',
+      'Stark lückenhaftes Exposé.',
+      'Fehlt oder unbrauchbar.' ] },
+
     s1: { n:'Aussprache und Intonation', d:[
       'Durchgehend korrekt, natürliche Betonung; r/rr, j, ll, ñ sicher; sehr flüssig.',
       'Überwiegend korrekt, einzelne Fehler ohne Verständnisstörung; meist stimmige Betonung.',
@@ -333,7 +407,6 @@
       'Wahl kaum begründet; sehr einfacher Text; kaum Eigenanteil.',
       'Keine Begründung; Vorgaben nicht erfüllt; kein Eigenanteil.' ] },
 
-    /* ----- Abfrage: Fachwissen ----- */
     f1: { n:'Sachrichtigkeit und Vollständigkeit', d:[
       'Fundiert, exakt und umfassend; zentrale Begriffe und Fakten sicher.',
       'Meist fundiert und genau; kleine Lücken.',
@@ -364,202 +437,7 @@
       'Einordnung nur mit Hilfe oder sehr allgemein.',
       'Kaum Einordnung über das Einzelthema hinaus.',
       'Keine Einordnung erkennbar.' ] },
-    /* ----- Abfrage: Vokabular ----- */
-    v1: { n:'Bedeutung und Formangaben', d:[
-      'Bedeutungen vollständig und richtig; Artikel, Plural, Formen sicher.',
-      'Bedeutungen meist richtig; wenige Fehler bei den Formen.',
-      'Hauptbedeutung meist richtig; Formangaben lückenhaft.',
-      'Viele falsche oder fehlende Bedeutungen und Formen.',
-      'Kaum Wörter bekannt.' ] },
-    v2: { n:'Anwendung im Satz', d:[
-      'Bildet sichere, passende Beispielsätze; nutzt Wörter in neuem Kontext.',
-      'Beispielsätze meist passend; kleine Fehler.',
-      'Einfache Sätze mit Fehlern; Hilfen nötig.',
-      'Anwendung nur mit starker Hilfe; Sätze oft unpassend.',
-      'Keine Anwendung möglich.' ] },
-    v3: { n:'Abrufsicherheit und Aussprache', d:[
-      'Rasch und sicher abrufbar; Aussprache korrekt.',
-      'Meist zügig abrufbar; Aussprache überwiegend korrekt.',
-      'Zögerlich; teils Aussprachefehler ohne Verständnisproblem.',
-      'Langes Suchen; Aussprache erschwert das Verständnis.',
-      'Kaum abrufbar; kaum verständlich.' ] },
-    v4: { n:'Wortfeld und Abgrenzung', d:[
-      'Erkennt und nennt verwandte oder ähnliche Begriffe sicher; grenzt sie treffend ab.',
-      'Nennt meist passende verwandte Begriffe; Abgrenzung überwiegend gelungen.',
-      'Wortfeld nur ansatzweise bekannt; Verwechslungen möglich.',
-      'Wortfeld kaum bekannt; häufige Verwechslungen.',
-      'Keine Kenntnis des Wortfelds.' ] },
-    v5: { n:'Rechtschreibung und Schreibweise', d:[
-      'Schreibt die Wörter durchgehend korrekt (Artikel, Plural, Sonderzeichen).',
-      'Schreibt überwiegend korrekt; vereinzelte kleine Fehler.',
-      'Mehrere Rechtschreibfehler, Bedeutung bleibt erkennbar.',
-      'Häufige Rechtschreibfehler erschweren das Erkennen.',
-      'Schreibweise überwiegend falsch.' ] },
-    /* ----- Abfrage: Grammatik / Formen ----- */
-    g1: { n:'Formenbildung', d:[
-      'Alle Formen richtig und sicher gebildet.',
-      'Formen meist richtig; wenige Fehler.',
-      'Gebräuchliche Formen richtig; seltenere fehlerhaft.',
-      'Viele Formen falsch oder unvollständig.',
-      'Kaum Formen beherrscht.' ] },
-    g2: { n:'Regelwissen und Begründen', d:[
-      'Regeln sicher erklärt und begründet; Ausnahmen bekannt.',
-      'Regeln meist richtig erklärt.',
-      'Grundregel genannt; Begründung lückenhaft.',
-      'Regeln ungenau oder falsch.',
-      'Kein Regelwissen erkennbar.' ] },
-    g3: { n:'Anwendung in Beispielsätzen', d:[
-      'Wendet die Regel sicher in eigenen Sätzen an.',
-      'Wendet die Regel weitgehend richtig an.',
-      'Wendet die Regel nur in bekannten Mustern an; Fehler.',
-      'Anwendung kaum möglich.',
-      'Keine Anwendung möglich.' ] },
-    g4: { n:'Fehlererkennung und Selbstkorrektur', d:[
-      'Erkennt eigene Fehler sofort und korrigiert sie selbstständig.',
-      'Erkennt die meisten eigenen Fehler, korrigiert mit kurzer Überlegung.',
-      'Erkennt Fehler nur mit Hinweis.',
-      'Erkennt Fehler auch mit Hinweis kaum.',
-      'Erkennt keine eigenen Fehler.' ] },
-    g5: { n:'Übertragung auf neue Strukturen', d:[
-      'Wendet die Regel sicher auf neue, unbekannte Beispiele an.',
-      'Übertragung auf neue Beispiele gelingt meist.',
-      'Übertragung nur bei sehr ähnlichen Beispielen.',
-      'Übertragung auf Neues gelingt kaum.',
-      'Keine Übertragung möglich.' ] },
-    /* ----- Abfrage: Textkenntnis ----- */
-    t1: { n:'Inhaltskenntnis', d:[
-      'Handlung, Figuren und Schauplätze genau und vollständig bekannt.',
-      'Inhalt weitgehend genau; kleine Lücken.',
-      'Kerninhalt bekannt; Details unsicher.',
-      'Inhalt lückenhaft; Verwechslungen.',
-      'Inhalt kaum bekannt.' ] },
-    t2: { n:'Deutung und Zusammenhänge', d:[
-      'Deutet Figuren, Motive und Zusammenhänge differenziert.',
-      'Deutet meist nachvollziehbar.',
-      'Deutung einfach und beschreibend.',
-      'Kaum Deutung; nur Nacherzählung.',
-      'Keine Deutung möglich.' ] },
-    t3: { n:'Belege am Text', d:[
-      'Belegt Aussagen sicher mit passenden Textstellen.',
-      'Belegt meist passend.',
-      'Belege nur mit Hilfe oder ungenau.',
-      'Kaum Belege; Aussagen unbegründet.',
-      'Keine Textbelege.' ] },
-    t4: { n:'Sprachliche und stilistische Mittel', d:[
-      'Erkennt und deutet sprachliche oder stilistische Mittel treffend und begründet.',
-      'Erkennt die wichtigsten Mittel und deutet sie meist richtig.',
-      'Nennt einzelne Mittel, Deutung bleibt oberflächlich.',
-      'Erkennt kaum sprachliche Mittel.',
-      'Keine Erkennung sprachlicher Mittel.' ] },
-    t5: { n:'Einordnung in größere Zusammenhänge', d:[
-      'Ordnet den Text sicher in Epoche, Werk- oder Autor/innen-Kontext ein.',
-      'Ordnet den Text überwiegend richtig ein.',
-      'Einordnung nur ansatzweise oder mit Hilfe.',
-      'Einordnung kaum möglich.',
-      'Keine Einordnung erkennbar.' ] },
-    /* ----- Lesen: zusätzliche Kriterien ----- */
-    hal: { n:'Haltung und Blickkontakt', d:[
-      'Ruhige, aufrechte Haltung; sucht bewusst Blickkontakt zum Publikum, ohne den Lesefluss zu verlieren.',
-      'Meist ruhige Haltung; blickt gelegentlich auf, Lesefluss bleibt erhalten.',
-      'Haltung eher unruhig oder verkrampft; kaum Blickkontakt.',
-      'Unruhige Haltung stört den Vortrag; kein Blickkontakt.',
-      'Keine erkennbare Haltung zum Publikum; wirkt völlig unvorbereitet.' ] },
-    glie: { n:'Gliederung und Textstruktur', d:[
-      'Macht Absätze, Kapitel- oder Sinnabschnitte durch Pausen und Stimmführung klar hörbar.',
-      'Gliederung meist erkennbar.',
-      'Gliederung nur ansatzweise hörbar.',
-      'Kaum erkennbare Gliederung; Text wirkt wie aus einem Guss ohne Absätze.',
-      'Keine Gliederung erkennbar.' ] },
-    med: { n:'Umgang mit dem Lesetext', d:[
-      'Hält Buch oder Blatt sachgerecht, blättert ruhig und störungsfrei; Text jederzeit im Blick.',
-      'Umgang mit dem Text meist sicher; selten kurze Unterbrechungen.',
-      'Umgang mit dem Text teils ungeschickt, verliert kurz die Stelle.',
-      'Umgang mit dem Text ungeschickt; wiederholt Verzögerungen beim Blättern oder Suchen.',
-      'Kommt mit dem Text nicht zurecht; Vortrag wird dadurch stark gestört.' ] },
-    /* ----- Gedicht: zusätzliche Kriterien ----- */
-    reim: { n:'Reim- und Formbewusstsein', d:[
-      'Macht Reimschema, Strophenform und Versmaß durch Betonung bewusst hörbar.',
-      'Form und Reim meist erkennbar umgesetzt.',
-      'Form nur ansatzweise beachtet.',
-      'Form und Reim werden kaum beachtet.',
-      'Keine Beachtung von Form oder Reim.' ] },
-    pause: { n:'Pausensetzung an Strophen- und Versenden', d:[
-      'Setzt bewusste Pausen an Strophen- und sinnvollen Versenden, nicht nur am Satzende.',
-      'Pausen meist passend an Vers- oder Strophengrenzen.',
-      'Pausen nur teils an passenden Stellen.',
-      'Pausen wirken zufällig, kaum an Vers- oder Strophengrenzen orientiert.',
-      'Keine erkennbare Pausensetzung.' ] },
-    deut: { n:'Eigene Interpretation und Betonungsentscheidungen', d:[
-      'Trifft eigene, begründbare Betonungsentscheidungen; persönlicher Zugang zum Gedicht erkennbar.',
-      'Eigene Deutung erkennbar, überwiegend stimmig umgesetzt.',
-      'Eigene Deutung nur ansatzweise erkennbar.',
-      'Kaum eigene Deutung; Vortrag wirkt mechanisch.',
-      'Keine eigene Deutung erkennbar.' ] },
-    /* ----- Song: zusätzliche Kriterien ----- */
-    s6: { n:'Rhythmusgefühl und Musikalität', d:[
-      'Trifft Rhythmus und Phrasierung des Songs beim Vortrag der Textpassagen sicher.',
-      'Rhythmus und Phrasierung überwiegend getroffen.',
-      'Rhythmus nur teilweise getroffen.',
-      'Rhythmus wird kaum getroffen; Vortrag wirkt losgelöst vom Song.',
-      'Kein erkennbarer Bezug zum Rhythmus des Songs.' ] },
-    s7: { n:'Vorbereitung und Medieneinsatz', d:[
-      'Technik (Abspielgerät, ggf. Visualisierung) läuft reibungslos; gut vorbereitet.',
-      'Vorbereitung meist gelungen; kleine technische Verzögerungen.',
-      'Vorbereitung lückenhaft; merkliche Verzögerungen.',
-      'Vorbereitung unzureichend; deutliche Störungen im Ablauf.',
-      'Keine erkennbare Vorbereitung; Vortrag bricht wegen Technik ab.' ] },
-    s8: { n:'Einhaltung der Vortragszeit', d:[
-      'Hält die vorgegebene Zeit sicher und sinnvoll ein.',
-      'Zeit wird mit geringer Abweichung eingehalten.',
-      'Deutliche Abweichung von der vorgegebenen Zeit.',
-      'Zeit wird stark über- oder unterschritten.',
-      'Zeitvorgabe wird ignoriert.' ] },
-    /* ----- Unterrichtsbeitrag: zusätzliche Kriterien ----- */
-    u6: { n:'Vorbereitung und Materialeinsatz', d:[
-      'Bringt benötigtes Material mit; nutzt eigene Aufzeichnungen gezielt und sinnvoll.',
-      'Meist vorbereitet; Material überwiegend vorhanden.',
-      'Vorbereitung lückenhaft; Material teils unvollständig.',
-      'Kaum vorbereitet; Material fehlt häufig.',
-      'Keine erkennbare Vorbereitung.' ] },
-    u7: { n:'Kritisches und reflektiertes Denken', d:[
-      'Hinterfragt Aussagen, prüft Argumente, bringt begründete Gegenpositionen ein.',
-      'Hinterfragt gelegentlich; Ansätze eigener Bewertung.',
-      'Übernimmt Aussagen meist unreflektiert.',
-      'Keine eigene Einordnung erkennbar.',
-      'Kein kritisches Denken erkennbar.' ] },
-    u8: { n:'Zuverlässigkeit bei Arbeitsaufträgen', d:[
-      'Erledigt Arbeitsaufträge im Unterricht zuverlässig, selbstständig und termingerecht.',
-      'Arbeitsaufträge meist zuverlässig erledigt.',
-      'Arbeitsaufträge teils unvollständig oder verspätet.',
-      'Arbeitsaufträge häufig unvollständig oder verspätet.',
-      'Arbeitsaufträge werden nicht erledigt.' ] },
-    /* ----- Theater: zusätzliche Kriterien ----- */
-    th6: { n:'Bühnenpräsenz und Raumnutzung', d:[
-      'Nutzt die Bühne bewusst; Positionierung und Wege wirken durchdacht.',
-      'Raumnutzung meist bewusst und passend.',
-      'Raumnutzung eher zufällig.',
-      'Kaum bewusste Raumnutzung; wirkt verloren auf der Bühne.',
-      'Keine erkennbare Raumnutzung.' ] },
-    th7: { n:'Umgang mit Pannen und Improvisation', d:[
-      'Reagiert souverän auf Pannen; improvisiert passend, ohne den Spielfluss zu stören.',
-      'Reagiert meist angemessen auf kleine Pannen.',
-      'Pannen bringen den Spielfluss kurz ins Stocken.',
-      'Pannen stören den Spielfluss deutlich.',
-      'Kann mit Pannen nicht umgehen; Szene bricht ab.' ] },
-    th8: { n:'Umgang mit Requisite, Kostüm und Technik', d:[
-      'Geht sachgerecht mit Requisite und Kostüm um; Einsätze bei Licht oder Ton sicher.',
-      'Umgang meist sicher; kleine Unsicherheiten.',
-      'Umgang teils ungeschickt; vereinzelte Verzögerungen.',
-      'Umgang häufig ungeschickt; wiederkehrende Störungen.',
-      'Requisite, Kostüm oder Technik werden nicht sachgerecht gehandhabt.' ] },
-    /* ----- Abfrage: immer dabei ----- */
-    dar: { n:'Darstellung und Gesprächsverhalten', d:[
-      'Klar und zusammenhängend; sichere Fachsprache; erfasst Fragen sofort.',
-      'Meist klar, fachsprachlich sicher; erfasst Fragen meist; selten Hilfe.',
-      'Einigermaßen verständlich; Fachsprache ungenau; Hilfen nötig.',
-      'Unsicher, unzusammenhängend; meidet Fachbegriffe; viele Hilfen.',
-      'Kaum verständlich; Fragen werden nicht erfasst.' ] },
-    /* ----- Referat (allgemein) ----- */
+
     r_sach: { n:'Sachkenntnis und Inhalt', d:[
       'Thema umfassend, fachlich korrekt und auf das Wesentliche konzentriert.',
       'Thema korrekt und weitgehend vollständig erfasst.',
@@ -572,18 +450,6 @@
       'Wenige oder einseitige Quellen; Angaben lückenhaft.',
       'Fragwürdige Quellen; kaum Angaben.',
       'Keine Quellen angegeben.' ] },
-    r_eigen: { n:'Eigenständigkeit', d:[
-      'Eigene Schwerpunkte, Thesen oder Beispiele; deutlich über Vorlagen hinaus.',
-      'Erkennbar eigene Verarbeitung; einzelne eigene Akzente.',
-      'Überwiegend Wiedergabe von Vorlagen; wenig Eigenes.',
-      'Weitgehend übernommen; kaum eigene Verarbeitung.',
-      'Vollständig übernommen; keine eigene Leistung erkennbar.' ] },
-    r_fragen: { n:'Umgang mit Fragen / Diskussion', d:[
-      'Beantwortet Fragen souverän und fachkundig; regt Diskussion an.',
-      'Beantwortet Fragen sicher; kleinere Unsicherheiten.',
-      'Beantwortet einfache Fragen; bei Nachfragen unsicher.',
-      'Beantwortet Fragen nur teilweise oder ungenau.',
-      'Kann keine Fragen beantworten.' ] },
     r_aufbau: { n:'Aufbau und Struktur', d:[
       'Klare, logische Gliederung; Einstieg weckt Interesse; Schluss bündelt Ergebnisse.',
       'Nachvollziehbare Gliederung; Einleitung und Schluss passend.',
@@ -602,38 +468,18 @@
       'Medien vorhanden, teils überladen oder lose mit dem Vortrag verbunden.',
       'Medien unübersichtlich, fehlerhaft oder kaum genutzt.',
       'Keine oder ungeeignete Medien.' ] },
-    r_handout: { n:'Handout / Thesenpapier', d:[
-      'Kompakt, korrekt, mit Kernaussagen und vollständigen Quellenangaben.',
-      'Übersichtlich und korrekt; Quellen weitgehend angegeben.',
-      'Brauchbar, aber lückenhaft oder zu ausführlich; Quellen unvollständig.',
-      'Unübersichtlich oder fehlerhaft; kaum Quellenangaben.',
-      'Fehlt oder unbrauchbar.' ] },
-    r_zeit: { n:'Zeitmanagement', d:[
-      'Zeitrahmen genau eingehalten; Teile sinnvoll gewichtet.',
-      'Zeitrahmen eingehalten; leichte Ungleichgewichte.',
-      'Geringe Über- oder Unterschreitung; einzelne Teile zu lang/kurz.',
-      'Deutliche Über- oder Unterschreitung.',
-      'Zeitrahmen grob verfehlt.' ] },
     r_sprache: { n:'Sprache und Fachsprache', d:[
       'Präzise, sachlich, abwechslungsreich; Fachbegriffe sicher und erklärt.',
       'Angemessener Ausdruck; Fachbegriffe überwiegend sicher.',
       'Verständlich, teils umgangssprachlich; Fachbegriffe ungenau.',
       'Unpräzise, oft umgangssprachlich; Fachbegriffe fehlen oder falsch.',
       'Kaum verständlich; keine Fachsprache.' ] },
-    /* ----- Referat Deutsch ----- */
     r_dtext: { n:'Textarbeit und Deutung', d:[
       'Text/Werk präzise erschlossen; Deutung differenziert und mit Zitaten belegt.',
       'Sichere Analyse; Deutung überwiegend am Text belegt.',
       'Analyse eher beschreibend; Belege nur vereinzelt.',
       'Inhaltswiedergabe statt Analyse; kaum Belege.',
       'Keine Analyse oder Fehldeutungen.' ] },
-    r_dkontext: { n:'Kontext (Autor/in, Epoche, Gattung)', d:[
-      'Epoche, Autor/in und Gattung sicher und funktional mit dem Thema verknüpft.',
-      'Kontext zutreffend und passend einbezogen.',
-      'Kontext genannt, aber kaum mit dem Thema verknüpft.',
-      'Kontext lückenhaft oder fehlerhaft.',
-      'Kein Kontext.' ] },
-    /* ----- Referat Geschichte ----- */
     r_gsach: { n:'Sachkenntnis und historische Einordnung', d:[
       'Ereignisse, Daten, Akteure korrekt; Ursachen und Folgen klar verknüpft.',
       'Fakten korrekt; Zusammenhänge überwiegend erklärt.',
@@ -646,19 +492,12 @@
       'Quellen genutzt, aber kaum kritisch geprüft.',
       'Quellen nur als Illustration oder falsch verstanden.',
       'Kein Quellenbezug.' ] },
-    r_gpersp: { n:'Multiperspektivität und Kontroversität', d:[
-      'Verschiedene Perspektiven und Deutungen differenziert dargestellt.',
-      'Mehrere Perspektiven berücksichtigt.',
-      'Andere Perspektiven nur angedeutet.',
-      'Überwiegend einseitige Darstellung.',
-      'Einseitig und wertend; keine Perspektiven.' ] },
     r_gurteil: { n:'Sach- und Werturteil', d:[
       'Begründetes Urteil; Sach- und Werturteil klar getrennt; Gegenwartsbezug.',
       'Begründetes Urteil; Maßstäbe überwiegend klar.',
       'Urteil vorhanden, Begründung knapp.',
       'Urteil pauschal oder unbegründet.',
       'Kein Urteil.' ] },
-    /* ----- Referat Politik und Gesellschaft ----- */
     r_psach: { n:'Sachkenntnis (Begriffe, Institutionen, Fakten)', d:[
       'Sachverhalt umfassend, aktuell und korrekt; Fachbegriffe sicher.',
       'Korrekt, weitgehend vollständig; aktuelle Bezüge.',
@@ -671,168 +510,185 @@
       'Akteure genannt; Analyse eher beschreibend.',
       'Analyse oberflächlich, teils falsch.',
       'Keine Analyse.' ] },
-    r_pkontro: { n:'Kontroversität und Ausgewogenheit', d:[
-      'Kontroverse Positionen ausgewogen und fair dargestellt.',
-      'Verschiedene Positionen dargestellt; leichte Unwucht.',
-      'Gegenpositionen nur kurz erwähnt.',
-      'Überwiegend einseitige Darstellung.',
-      'Einseitig; Meinung als Tatsache dargestellt.' ] },
     r_purteil: { n:'Politisches Urteil', d:[
       'Eigenes Urteil kriteriengeleitet (z. B. Legitimität, Effizienz) und abgewogen.',
       'Begründetes Urteil mit erkennbaren Kriterien.',
       'Urteil vorhanden, Begründung knapp.',
       'Pauschales, kaum begründetes Urteil.',
       'Kein Urteil.' ] },
-    r_pmat: { n:'Auswertung von Statistiken und Materialien', d:[
-      'Statistiken/Materialien korrekt gelesen, kritisch eingeordnet und erklärt.',
-      'Materialien korrekt ausgewertet und erklärt.',
-      'Materialien gezeigt, aber kaum ausgewertet.',
-      'Materialien teils falsch gelesen.',
-      'Kein Materialbezug.' ] },
-    /* ----- Referat Fremdsprache ----- */
     r_einhalt: { n:'Inhalt und Landeskunde', d:[
       'Thema fundiert und korrekt; landeskundliche Bezüge differenziert.',
       'Thema korrekt; landeskundliche Bezüge passend.',
       'Im Wesentlichen korrekt; Bezüge eher allgemein.',
       'Lückenhaft, teils fehlerhaft.',
-      'Thema verfehlt.' ] },
-    r_efluss: { n:'Sprechfluss und freies Sprechen', d:[
-      'Frei und flüssig; sichere Redemittel und Überleitungen; kaum Pausen.',
-      'Weitgehend frei und flüssig; kurze Pausen.',
-      'Teils abgelesen; gelegentliches Stocken.',
-      'Überwiegend abgelesen; häufiges Stocken.',
-      'Vollständig abgelesen oder abgebrochen.' ] },
-    r_eaussp: { n:'Aussprache und Intonation', d:[
-      'Durchgehend korrekt; natürliche Betonung und Satzmelodie.',
-      'Überwiegend korrekt; Fehler stören das Verständnis nicht.',
-      'Wiederkehrende Fehler, aber verständlich; teils deutsch geprägt.',
-      'Häufige Fehler; Verständnis teils erschwert.',
-      'Kaum verständlich.' ] },
-    r_ekorr: { n:'Sprachliche Korrektheit', d:[
-      'Auch komplexe Strukturen (z. B. Modus, Zeiten) sicher; kaum Fehler.',
-      'Weitgehend korrekt; Fehler bei komplexen Strukturen.',
-      'Einfache Strukturen korrekt; wiederkehrende Fehler.',
-      'Viele Fehler, auch bei Grundstrukturen.',
-      'Fehler verhindern das Verständnis.' ] },
-    r_ewort: { n:'Wortschatz und Ausdruck', d:[
-      'Differenziert, themenspezifisch, idiomatisch; neue Wörter für die Klasse erklärt.',
-      'Angemessen und themenbezogen; neue Wörter meist erklärt.',
-      'Einfach, teils wiederholend; Umschreibungen.',
-      'Begrenzt; Germanismen; Verständnishilfen fehlen.',
-      'Sehr begrenzt; häufig Deutsch.' ] }
+      'Thema verfehlt.' ] }
   };
 
+  var SOURCES = ['Referat (frei eingetragen)','Präsentation','Mitarbeit (Unterricht)','Projektbeitrag','Debatte','Rechenschaftsablage','Kurzarbeit','Stegreifaufgabe (Ex)','Lesen','Gedichtvortrag','Songvortrag','Abfrage','Sonstiges'];
   var LESEN_FS = [['aus',25],['bet',20],['fluss',20],['gen',15],['gest',10],['verst',10]];
   var GED_FS   = [['tex',20],['aus',25],['vers',15],['sinn',20],['auft',10],['einf',10]];
+
   var MOD = {
-    lesen:   { label:'Lesevortrag',   short:'Lesen',          src:'Lesen',          tt:'Text',   vars:{ de:'Deutsch', es:'Spanisch', fs:'andere Fremdsprache' },
+    lesen:   { label:'Lesevortrag',   short:'Lesen',          src:'Lesen',          tt:'Text',   vars:{ de:'Deutsch', es:'Spanisch', fs:'Fremdsprache' },
                lists:{ de:[['gen',20],['fluss',20],['bet',25],['gest',20],['verst',15]], es:LESEN_FS, fs:LESEN_FS } },
-    gedicht: { label:'Gedichtvortrag', short:'Gedicht',        src:'Gedichtvortrag', tt:'Gedicht', vars:{ de:'Deutsch', es:'Spanisch', fs:'andere Fremdsprache' },
+    gedicht: { label:'Gedichtvortrag', short:'Gedicht',        src:'Gedichtvortrag', tt:'Gedicht', vars:{ de:'Deutsch', es:'Spanisch', fs:'Fremdsprache' },
                lists:{ de:[['tex',20],['spr',15],['vers',25],['sinn',20],['auft',20]], es:GED_FS, fs:GED_FS } },
     song:    { label:'Songvortrag Spanisch',    short:'Song',           src:'Songvortrag',    tt:'Song',   vars:null,
                lists:{ '-':[['s1',25],['s2',25],['s3',20],['s4',20],['s5',10]] } },
     abfrage: { label:'Abfrage', short:'Abfrage',        src:'Abfrage',        tt:'Thema',  vars:null },
     unterricht: { label:'Unterrichtsbeitrag', short:'Unterricht', src:'Unterrichtsbeitrag', tt:'Zeitraum / Thema', vars:null,
                lists:{ '-':[['u1',15],['u2',30],['u3',25],['u4',15],['u5',15]] } },
-    theater: { label:'Theater', short:'Theater',        src:'Theater',        tt:'Stück / Szene', vars:null,
-               lists:{ '-':[['th1',25],['th2',25],['th3',25],['th4',15],['th5',10]] } },
+
+    theater: { label:'Theaterperformance', short:'Theater', src:'Theater', tt:'Inszenierung / Szene', vars:null,
+               lists:{ '-':[['th_schauspiel',30],['th_regie',25],['th_buehne',20],['th_maske',15],['th_pr',10]] } },
+
+    pseminar: { label:'P-Seminar', short:'P-Seminar', src:'P-Seminar', tt:'Projekt / Thema', vars:null,
+                lists:{ '-':[['ps_projekt',30],['ps_referat',20],['ps_beruf',20],['ps_unterricht',15],['ps_org',15]] } },
+
+    wseminar: { label:'W-Seminar', short:'W-Seminar', src:'W-Seminar', tt:'Wissenschaftliche Arbeit', vars:null,
+                lists:{ '-':[['ws_referat',25],['ws_gliederung',25],['ws_probe',25],['ws_expose',15],['ws_unterricht',10]] } },
+
     referat: { label:'Referat', short:'Referat', src:'Referat', tt:'Thema',
-               vars:{ de:'Deutsch', ge:'Geschichte', pug:'Politik und Gesellschaft', es:'Spanisch / Fremdsprache', x:'anderes Fach' },
+               vars:{ de:'Deutsch', ge:'Geschichte', pug:'Politik und Gesellschaft', es:'Spanisch', x:'Fach' },
                lists:{ de:[['r_sach',30],['r_dtext',30],['r_aufbau',9],['r_vortrag',8],['r_medien',8],['r_sprache',15]],
-                       ge:[['r_gsach',20],['r_gquellen',20],['r_gurteil',20],['r_aufbau',14],['r_vortrag',13],['r_medien',13]],
-                       pug:[['r_psach',15],['r_panalyse',15],['r_pkontro',15],['r_purteil',15],['r_aufbau',20],['r_vortrag',20]],
-                       es:[['r_einhalt',30],['r_aufbau',20],['r_efluss',13],['r_eaussp',12],['r_ekorr',12],['r_ewort',13]],
-                       x:[['r_sach',30],['r_quellen',30],['r_aufbau',9],['r_vortrag',8],['r_medien',8],['r_sprache',15]] } }
+                       ge:[['r_gsach',30],['r_gquellen',30],['r_gurteil',15],['r_aufbau',10],['r_vortrag',15]],
+                       pug:[['r_psach',30],['r_panalyse',30],['r_purteil',15],['r_aufbau',10],['r_vortrag',15]],
+                       es:[['r_einhalt',40],['r_aufbau',20],['r_vortrag',20],['r_sprache',20]],
+                       x:[['r_sach',40],['r_quellen',30],['r_aufbau',15],['r_vortrag',15]] } }
   };
-  /* Referat: Bereiche für die Schwerpunktsetzung (I = Inhalt, P = Präsentation, S = Sprache) */
-  var REF_G = { r_sach:'I', r_quellen:'I', r_eigen:'I', r_fragen:'I', r_dtext:'I', r_dkontext:'I', r_gsach:'I', r_gquellen:'I', r_gpersp:'I', r_gurteil:'I',
-                r_psach:'I', r_panalyse:'I', r_pkontro:'I', r_purteil:'I', r_pmat:'I', r_einhalt:'I',
-                r_aufbau:'P', r_vortrag:'P', r_medien:'P', r_handout:'P', r_zeit:'P',
-                r_sprache:'S', r_efluss:'S', r_eaussp:'S', r_ekorr:'S', r_ewort:'S' };
-  /* Schwerpunktsetzung: Bereiche (g), Zuordnung der Kriterien (m) und Vorschläge (p: Anteile je Bereich) je Bewertungsart */
+
+  var REF_G = { r_sach:'I', r_quellen:'I', r_dtext:'I', r_gsach:'I', r_gquellen:'I', r_gurteil:'I', r_psach:'I', r_panalyse:'I', r_purteil:'I', r_einhalt:'I', r_aufbau:'P', r_vortrag:'P', r_medien:'P', r_sprache:'S' };
+
   var WG = {
     lesen:   { g:{ T:'Lesetechnik', A:'Aussprache', G:'Gestaltung', V:'Textverständnis' },
-               m:{ gen:'T', fluss:'T', med:'T', aus:'A', bet:'G', gest:'G', glie:'G', hal:'G', verst:'V' },
-               p:[ ['tech','Schwerpunkt Lesetechnik',{ T:45, A:15, G:25, V:15 }], ['gest','Schwerpunkt Gestaltung',{ T:20, A:15, G:50, V:15 }],
-                   ['verst','Schwerpunkt Textverständnis',{ T:20, A:15, G:25, V:40 }], ['aus','Schwerpunkt Aussprache (Fremdsprache)',{ T:20, A:40, G:25, V:15 }] ] },
-    gedicht: { g:{ T:'Textsicherheit', S:'Sprechen & Aussprache', G:'Gestaltung', A:'Auftreten', I:'Einführung' },
-               m:{ tex:'T', spr:'S', aus:'S', vers:'G', sinn:'G', reim:'G', pause:'G', deut:'G', auft:'A', einf:'I' },
-               p:[ ['text','Schwerpunkt Textsicherheit',{ T:40, S:15, G:30, A:10, I:5 }], ['gest','Schwerpunkt Gestaltung',{ T:15, S:15, G:55, A:10, I:5 }],
-                   ['spr','Schwerpunkt Sprechen & Aussprache',{ T:15, S:45, G:25, A:10, I:5 }], ['auft','Schwerpunkt Auftreten',{ T:15, S:15, G:30, A:35, I:5 }] ] },
+               m:{ gen:'T', fluss:'T', aus:'A', bet:'G', gest:'G', verst:'V' },
+               p:[ ['tech','Schwerpunkt Lesetechnik',{ T:50, A:15, G:20, V:15 }], ['gest','Schwerpunkt Gestaltung',{ T:20, A:15, G:50, V:15 }] ] },
+    gedicht: { g:{ T:'Textsicherheit', S:'Sprechen', G:'Gestaltung', A:'Auftreten' },
+               m:{ tex:'T', spr:'S', vers:'G', sinn:'G', auft:'A' },
+               p:[ ['text','Schwerpunkt Textsicherheit',{ T:50, S:15, G:25, A:10 }], ['gest','Schwerpunkt Gestaltung',{ T:20, S:15, G:55, A:10 }] ] },
     song:    { g:{ S:'Sprache', I:'Interpretation', V:'Vortrag' },
-               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'V', s6:'V', s7:'V', s8:'V' },
-               p:[ ['spr','Schwerpunkt Sprache',{ S:50, I:25, V:25 }], ['int','Schwerpunkt Interpretation',{ S:25, I:50, V:25 }],
-                   ['vor','Schwerpunkt Vortrag',{ S:25, I:25, V:50 }], ['spr2','Sprache & Interpretation',{ S:40, I:40, V:20 }] ] },
+               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'V', s6:'V' },
+               p:[ ['spr','Schwerpunkt Sprache',{ S:50, I:25, V:25 }], ['int','Schwerpunkt Interpretation',{ S:25, I:50, V:25 }] ] },
     unterricht: { g:{ B:'Beteiligung', Q:'Qualität', K:'Kommunikation' },
-               m:{ u1:'B', u6:'B', u8:'B', u2:'Q', u3:'Q', u7:'Q', u4:'K', u5:'K' },
-               p:[ ['qual','Schwerpunkt Qualität',{ B:20, Q:60, K:20 }], ['bet','Schwerpunkt Beteiligung',{ B:50, Q:30, K:20 }],
-                   ['komm','Schwerpunkt Kommunikation',{ B:20, Q:30, K:50 }], ['denk','Schwerpunkt Denken & Transfer',{ B:15, Q:65, K:20 }] ] },
-    theater: { g:{ S:'Sprache', K:'Körper & Raum', R:'Rolle & Spiel', T:'Text & Technik' },
-               m:{ th1:'S', th2:'K', th6:'K', th3:'R', th5:'R', th7:'R', th4:'T', th8:'T' },
-               p:[ ['rolle','Schwerpunkt Rollengestaltung',{ S:20, K:20, R:45, T:15 }], ['spr','Schwerpunkt Sprache',{ S:45, K:20, R:20, T:15 }],
-                   ['koerp','Schwerpunkt Körper & Raum',{ S:20, K:45, R:20, T:15 }], ['text','Schwerpunkt Text & Technik',{ S:20, K:20, R:25, T:35 }] ] },
+               m:{ u1:'B', u6:'B', u2:'Q', u3:'Q', u4:'K', u5:'K' },
+               p:[ ['qual','Schwerpunkt Qualität',{ B:20, Q:60, K:20 }], ['bet','Schwerpunkt Beteiligung',{ B:50, Q:30, K:20 }] ] },
+    theater: { g:{ S:'Schauspiel', R:'Regie', B:'Bühne', M:'Maske', P:'PR' },
+               m:{ th_schauspiel:'S', th_regie:'R', th_buehne:'B', th_maske:'M', th_pr:'P' },
+               p:[ ['schauspiel','Schwerpunkt Schauspiel',{ S:50, R:20, B:15, M:10, P:5 }], ['regie','Schwerpunkt Regie & Bühne',{ S:25, R:40, B:25, M:5, P:5 }] ] },
+    pseminar: { g:{ P:'Projekt', R:'Referat', B:'Berufsorientierung', U:'Unterricht', O:'Organisation' },
+                m:{ ps_projekt:'P', ps_referat:'R', ps_beruf:'B', ps_unterricht:'U', ps_org:'O' },
+                p:[ ['proj','Schwerpunkt Projektarbeit',{ P:50, R:15, B:15, U:10, O:10 }] ] },
+    wseminar: { g:{ R:'Referat', G:'Gliederung', Pr:'Probekapitel', E:'Exposé', U:'Unterricht' },
+                m:{ ws_referat:'R', ws_gliederung:'G', ws_probe:'Pr', ws_expose:'E', ws_unterricht:'U' },
+                p:[ ['kapitel','Schwerpunkt Probekapitel & Gliederung',{ R:20, G:30, Pr:30, E:10, U:10 }] ] },
     abfrage: { g:{ W:'Wissen', V:'Verständnis', A:'Anwendung', D:'Darstellung' },
-               m:{ f1:'W', v1:'W', g1:'W', t1:'W', v5:'W', f2:'V', g2:'V', t2:'V', v4:'V', t4:'V', f5:'V', t5:'V',
-                   f3:'A', v2:'A', g3:'A', g5:'A', t3:'A', g4:'A', f4:'D', v3:'D', dar:'D' },
-               p:[ ['wiss','Schwerpunkt Wissen',{ W:45, V:20, A:20, D:15 }], ['verst','Schwerpunkt Verständnis',{ W:20, V:45, A:20, D:15 }],
-                   ['anw','Schwerpunkt Anwendung',{ W:20, V:20, A:45, D:15 }], ['dar','Schwerpunkt Darstellung',{ W:25, V:20, A:20, D:35 }] ] },
+               m:{ f1:'W', v1:'W', g1:'W', t1:'W', f2:'V', g2:'V', t2:'V', f3:'A', v2:'A', f4:'D', dar:'D' },
+               p:[ ['wiss','Schwerpunkt Wissen',{ W:50, V:20, A:20, D:10 }] ] },
     referat: { g:{ I:'Inhalt', P:'Präsentation', S:'Sprache' }, m:REF_G,
-               p:[ ['inhalt','Schwerpunkt Inhalt',{ I:60, P:25, S:15 }], ['praes','Schwerpunkt Präsentation',{ I:35, P:45, S:20 }],
-                   ['sprache','Schwerpunkt Sprache',{ I:30, P:20, S:50 }], ['ip','Inhalt & Präsentation',{ I:45, P:45, S:10 }] ] }
+               p:[ ['inhalt','Schwerpunkt Inhalt',{ I:60, P:25, S:15 }], ['praes','Schwerpunkt Präsentation',{ I:35, P:45, S:20 }] ] }
   };
-  /* Kriterienpools: Basisliste (MOD…lists, wie bisher immer verwendet) plus je 3
-     zusätzliche Kriterien zur freien Schwerpunktsetzung pro Bewertung. */
+
   var POOL = {
-    lesen:   { de:MOD.lesen.lists.de.concat([['hal',15],['glie',15],['med',15]]),
-               es:MOD.lesen.lists.es.concat([['hal',15],['glie',15],['med',15]]),
-               fs:MOD.lesen.lists.fs.concat([['hal',15],['glie',15],['med',15]]) },
-    gedicht: { de:MOD.gedicht.lists.de.concat([['reim',15],['pause',15],['deut',15]]),
-               es:MOD.gedicht.lists.es.concat([['reim',15],['pause',15],['deut',15]]),
-               fs:MOD.gedicht.lists.fs.concat([['reim',15],['pause',15],['deut',15]]) },
-    song:       { '-':MOD.song.lists['-'].concat([['s6',15],['s7',15],['s8',15]]) },
-    unterricht: { '-':MOD.unterricht.lists['-'].concat([['u6',15],['u7',15],['u8',15]]) },
-    theater:    { '-':MOD.theater.lists['-'].concat([['th6',15],['th7',15],['th8',15]]) },
-    referat:    { de:MOD.referat.lists.de.concat([['r_dkontext',15],['r_quellen',10],['r_eigen',10],['r_fragen',10],['r_handout',8],['r_zeit',8]]),
-                  ge:MOD.referat.lists.ge.concat([['r_gpersp',15],['r_quellen',10],['r_eigen',10],['r_fragen',10],['r_handout',8],['r_zeit',8],['r_sprache',10]]),
-                  pug:MOD.referat.lists.pug.concat([['r_pmat',15],['r_quellen',10],['r_eigen',10],['r_fragen',10],['r_medien',10],['r_handout',8],['r_zeit',8],['r_sprache',10]]),
-                  es:MOD.referat.lists.es.concat([['r_quellen',10],['r_eigen',10],['r_fragen',10],['r_vortrag',10],['r_medien',10],['r_handout',8],['r_zeit',8]]),
-                  x:MOD.referat.lists.x.concat([['r_eigen',10],['r_fragen',10],['r_handout',8],['r_zeit',8]]) }
+    lesen:   { de:MOD.lesen.lists.de, es:MOD.lesen.lists.es, fs:MOD.lesen.lists.fs },
+    gedicht: { de:MOD.gedicht.lists.de, es:MOD.gedicht.lists.es, fs:MOD.gedicht.lists.fs },
+    song:    { '-':MOD.song.lists['-'] },
+    unterricht: { '-':MOD.unterricht.lists['-'] },
+    theater: { '-':MOD.theater.lists['-'] },
+    pseminar: { '-':MOD.pseminar.lists['-'] },
+    wseminar: { '-':MOD.wseminar.lists['-'] },
+    referat: { de:MOD.referat.lists.de, ge:MOD.referat.lists.ge, pug:MOD.referat.lists.pug, es:MOD.referat.lists.es, x:MOD.referat.lists.x }
   };
+
   var SW = {
     fach: { n:'Fachwissen',            l:[['f1',30],['f2',25],['f3',20],['f4',15],['f5',10]] },
     vok:  { n:'Vokabular',             l:[['v1',30],['v2',25],['v3',20],['v4',15],['v5',10]] },
     gram: { n:'Grammatik / Formen',    l:[['g1',30],['g2',25],['g3',20],['g4',15],['g5',10]] },
     text: { n:'Textkenntnis (Lektüre)', l:[['t1',30],['t2',25],['t3',20],['t4',15],['t5',10]] }
   };
+
   var ALLW = {}, AREA_OF = {};
   Object.keys(SW).forEach(function (k) { SW[k].l.forEach(function (p) { ALLW[p[0]] = p[1]; AREA_OF[p[0]] = k; }); });
-  var TYP = { de:'Deutsch', es:'Spanisch', fs:'andere Fremdsprache', other:'anderes Fach' };
-  var SOURCES = ['Referat (frei eingetragen)','Präsentation','Mitarbeit (Unterricht)','Projektbeitrag','Debatte','Rechenschaftsablage','Kurzarbeit','Stegreifaufgabe (Ex)','Lesen','Gedichtvortrag','Songvortrag','Abfrage','Sonstiges'];
-  var MODES = [
-    ['song','Songvortrag Spanisch'], ['lesen:de','Lesen Deutsch'], ['lesen:es','Lesen Spanisch'], ['lesen:fs','Lesen andere Fremdsprache'],
-    ['gedicht:de','Gedichtvortrag Deutsch'], ['gedicht:es','Gedichtvortrag Spanisch'], ['gedicht:fs','Gedichtvortrag andere Fremdsprache'],
-    ['referat:de','Referat Deutsch'], ['referat:ge','Referat Geschichte'], ['referat:pug','Referat Politik und Gesellschaft'],
-    ['referat:es','Referat Spanisch / Fremdsprache'], ['referat:x','Referat anderes Fach'],
-    ['abfrage','Abfrage'], ['unterricht','Unterrichtsbeitrag'], ['theater','Theater']
-  ];
-  var TABS = ['student','klasse','lesen','gedicht','abfrage','song','unterricht','theater','referat','classes','settings'];
-  /* Variante je Bewertungsart: Lesen/Gedicht teilen sich state.vr (de/es/fs), Referat hat eigene Fächer (state.vrRef) */
+
+  var FACH_MODES = {
+    'Deutsch': [
+      ['lesen:de','Lesevortrag (Deutsch)'],
+      ['gedicht:de','Gedichtvortrag (Deutsch)'],
+      ['referat:de','Referat (Deutsch)'],
+      ['abfrage','Abfrage (Fachwissen/Lektüre)'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'Geschichte': [
+      ['referat:ge','Referat (Geschichte)'],
+      ['abfrage','Abfrage (Fachwissen)'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'Politik und Gesellschaft': [
+      ['referat:pug','Referat (Politik und Gesellschaft)'],
+      ['abfrage','Abfrage (Fachwissen)'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'Spanisch': [
+      ['song','Songvortrag (Spanisch)'],
+      ['lesen:es','Lesevortrag (Spanisch)'],
+      ['gedicht:es','Gedichtvortrag (Spanisch)'],
+      ['referat:es','Referat (Spanisch)'],
+      ['abfrage','Abfrage (Vokabular/Grammatik)'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'Theater': [
+      ['theater','Theaterperformance'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'P-Seminar': [
+      ['pseminar','P-Seminar Dokumentation & Projekt'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'W-Seminar': [
+      ['wseminar','W-Seminar Arbeit & Probekapitel'],
+      ['unterricht','Unterrichtsbeitrag']
+    ],
+    'Andere Fächer': [
+      ['referat:x','Referat (Allgemein)'],
+      ['abfrage','Abfrage'],
+      ['unterricht','Unterrichtsbeitrag'],
+      ['lesen:de','Lesevortrag'],
+      ['gedicht:de','Gedichtvortrag'],
+      ['theater','Theaterperformance'],
+      ['song','Songvortrag'],
+      ['pseminar','P-Seminar'],
+      ['wseminar','W-Seminar']
+    ]
+  };
+
+  function getModesForClass(c) {
+    if (!c || !c.fach) return FACH_MODES['Deutsch'];
+    return FACH_MODES[c.fach] || FACH_MODES['Andere Fächer'];
+  }
+
+  var TABS = ['student','klasse','lesen','gedicht','abfrage','song','unterricht','theater','pseminar','wseminar','referat','classes','settings'];
+
   function varOf(type) { return type === 'referat' ? (state.vrRef || 'de') : (state.vr || 'de'); }
   function setVar(type, v) { if (type === 'referat') { if (MOD.referat.vars[v]) state.vrRef = v; } else if (v === 'de' || v === 'es' || v === 'fs') state.vr = v; }
   function vk(type) { return MOD[type].vars ? ':' + varOf(type) : ''; }
   function keyA(a) { return a.type + (MOD[a.type].vars ? ':' + a.variant : '') + '|' + a.sid; }
-  function modeLabel(type) { var k = type + vk(type), l = type; MODES.forEach(function (m) { if (m[0] === k) l = m[1]; }); return l; }
 
-  /* =====================================================================
-     Hilfsfunktionen
-     ===================================================================== */
+  function modeLabel(type) {
+    var found = type;
+    Object.keys(FACH_MODES).forEach(function(k) {
+      FACH_MODES[k].forEach(function(m) {
+        if (m[0].split(':')[0] === type) found = m[1];
+      });
+    });
+    return found;
+  }
+
   function $(id) { return document.getElementById(id); }
   function p2(n) { return (n < 10 ? '0' : '') + n; }
   function todayISO() { var d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
   function fd(s) { if (!s) return ''; var p = String(s).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : s; }
   function fds(s) { if (!s) return ''; var p = String(s).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' : s; }
   function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function num(x, d) { var n = parseFloat(String(x).replace(',', '.')); return isNaN(n) ? d : n; }
+  function num(x, d) { if (x === null || x === undefined) return d; var n = parseFloat(String(x).replace(',', '.')); return isNaN(n) ? d : n; }
   function fmt(n, dec) { return Number(n).toLocaleString('de-DE', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec === undefined ? 2 : dec }); }
   function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36); }
   function lvOf(np) { return np >= 13 ? 0 : np >= 10 ? 1 : np >= 7 ? 2 : np >= 4 ? 3 : 4; }
@@ -845,32 +701,26 @@
     return { z:6, t:'ungenügend' };
   }
 
-  /* =====================================================================
-     Zustand
-     ===================================================================== */
-  var KEY = 'muendliche_noten_tool_v1';
+  var KEY = 'muendliche_noten_tool_v4';
   var state = load() || fresh();
   var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} };
 
-  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', mt:'song', w:{}, wp:{}, classes:[] }; }
+  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
-  function save() { clearTimeout(tmr); tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 200); }
+  function save() { clearTimeout(tmr); tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 300); }
   function sanitize(o) {
     if (!o || o.v !== 3 || !Array.isArray(o.classes)) return null;
     var f = fresh();
+    f.lastBackup = o.lastBackup || null;
     f.w = (o.w && typeof o.w === 'object') ? o.w : {};
     f.tab = TABS.indexOf(o.tab) >= 0 ? o.tab : 'student';
-    f.vr = (o.vr === 'es' || o.vr === 'fs') ? o.vr : 'de';
-    f.vrRef = MOD.referat.vars[o.vrRef] ? o.vrRef : 'de';
-    f.wp = {}; if (o.wp && typeof o.wp === 'object') Object.keys(o.wp).forEach(function (k) { f.wp[k] = String(o.wp[k]); });
-    f.mt = (MOD[o.mt] ? o.mt : 'song');
     f.classes = o.classes.map(function (c) {
       var students = (Array.isArray(c.students) ? c.students : []).map(function (s) { return { id:String(s.id || uid('s')), name:String(s.name || '') }; });
       var ids = {}; students.forEach(function (s) { ids[s.id] = 1; });
       return {
-        id:String(c.id || uid('c')), name:String(c.name || ''), fach:String(c.fach || ''),
-        typ:TYP[c.typ] ? c.typ : 'de', skala:c.skala === 'np' ? 'np' : 'note',
+        id:String(c.id || uid('c')), name:String(c.name || ''), fach:String(c.fach || 'Deutsch'),
+        skala:c.skala === 'np' ? 'np' : 'note',
         students:students, stu:(c.stu && ids[c.stu]) ? c.stu : (students[0] ? students[0].id : null),
         assessments:(Array.isArray(c.assessments) ? c.assessments : []).filter(function (a) { return ids[a.sid] && MOD[a.type]; }).map(function (a) {
           var pts = {}; if (a.pts && typeof a.pts === 'object') Object.keys(a.pts).forEach(function (k) { var n = Number(a.pts[k]); if (a.pts[k] !== null && !isNaN(n)) pts[k] = Math.max(0, Math.min(15, Math.round(n))); });
@@ -907,13 +757,8 @@
   function findA(c, id) { var a = null; c.assessments.forEach(function (x) { if (x.id === id) a = x; }); return a; }
   function findAny(c, id) { var a = findA(c, id); if (a) return a; Object.keys(ui.draft).forEach(function (k) { if (ui.draft[k].id === id) a = ui.draft[k]; }); return a; }
 
-  /* =====================================================================
-     Bewertungen: Kriterien, Berechnung
-     ===================================================================== */
-  function defVariant(c, type) { return (MOD[type].vars && (c.typ === 'es' || c.typ === 'fs')) ? c.typ : 'de'; }
-  function defSw(c) { return (c.typ === 'es' || c.typ === 'fs') ? ['vok'] : ['fach']; }
   function newA(c, type, sid) {
-    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:defSw(c), swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, _draft:true };
+    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, _draft:true };
   }
   function modKey(a) { return a.type === 'abfrage' ? 'abfrage' : a.type + ':' + (MOD[a.type].vars ? (a.variant === 'fs' && a.type !== 'referat' ? 'es' : a.variant) : '-'); }
   function poolKeyOf(a) { return MOD[a.type].vars ? a.variant : '-'; }
@@ -950,23 +795,18 @@
     var ex = sum / (sw || 1), np = Math.floor(ex + 0.5 + 1e-9);
     return { done:true, open:0, any:true, n:cr.length, ex:ex, np:np, z:zensur(np) };
   }
-  function abfrLabel(a) {
-    if (a.swMode === 'custom') return a.crit && a.crit.length ? 'individuell (' + a.crit.length + ' Kriterien)' : 'individuell – Kriterien wählen';
-    return a.sw.length ? a.sw.map(function (k) { return SW[k].n.split(' (')[0]; }).join(', ') : 'Schwerpunkt wählen';
-  }
   function sheetTitle(a) {
     var m = MOD[a.type];
-    if (a.type === 'abfrage') return 'Abfrage · ' + abfrLabel(a);
-    if (m.vars) return m.label + ' · ' + (a.variant === 'fs' ? 'Fremdsprache' : m.vars[a.variant]);
+    if (a.type === 'abfrage') return 'Abfrage';
+    if (m.vars) return m.label + ' · ' + m.vars[a.variant];
     return m.label;
   }
   function sourceOf(a) {
-    if (a.type === 'abfrage') return 'Abfrage (' + abfrLabel(a) + ')';
+    if (a.type === 'abfrage') return 'Abfrage';
     if (MOD[a.type].vars) return MOD[a.type].src + ' (' + MOD[a.type].vars[a.variant] + ')';
     return MOD[a.type].src;
   }
 
-  /* ---- aktuelle Bewertung der/des Schüler/in (Entwurf wird erst bei Eingabe gespeichert) ---- */
   function curA(type) {
     var c = cls(), s = stu(); if (!c || !s) return null;
     var key = type + vk(type) + '|' + s.id, a = ui.cur[key] ? findA(c, ui.cur[key]) : null;
@@ -990,7 +830,6 @@
     return c.assessments.filter(function (a) { return a.sid === sid && a.type === type && (!MOD[type].vars || a.variant === varOf(type)); }).sort(function (x, y) { return x.date < y.date ? -1 : x.date > y.date ? 1 : 0; });
   }
 
-  /* ---- Noten-Einträge (aus Bewertungen + manuell) ---- */
   function valueOf(c, r) { return c.skala === 'np' ? r.np : r.z.z; }
   function entriesOf(c, sid) {
     var out = [];
@@ -1010,9 +849,6 @@
   }
   function scaleLabel(c) { return c.skala === 'np' ? 'Notenpunkte (0–15)' : 'Note (1–6)'; }
 
-  /* =====================================================================
-     Bogen (Bildschirm und Druck)
-     ===================================================================== */
   function sheetHTML(c, s, a, edit) {
     var cr = critsOf(a), res = calcA(a), m = MOD[a.type];
     var h = '<section class="sheet" data-aid="' + a.id + '">';
@@ -1041,21 +877,12 @@
          '<div>Note: <b class="big">' + (res.done ? res.z.z + ' (' + res.z.t + ')' : '–') + '</b></div>' +
          '<div>' + (res.done ? '' : (res.any ? 'Noch ' + res.open + ' von ' + res.n + ' Kriterien offen' : 'Stufen antippen, die Note erscheint automatisch.')) + '</div></div>';
     h += '<div class="cmt"><b>Rückmeldung</b><div class="v"' + (edit ? ' contenteditable="true" data-f="cmt"' : '') + '>' + esc(a.cmt) + '</div></div>';
-    var foot = '';
-    if (a.type === 'song') foot = 'Nicht bewertet: Tontreffsicherheit, Stimmschönheit, Instrumentenkönnen, Begleitform.';
-    if (a.type === 'theater') foot = 'Nicht bewertet: schauspielerisches Talent an sich, Kostüm und Requisiten.';
-    if (a.type === 'unterricht') foot = 'Bewertet wird die Qualität der Beiträge im Beobachtungszeitraum, nicht allein die Menge.';
-    if (a.type === 'abfrage') foot = 'Bewertet wird die fachliche Leistung; mehrere ähnliche Fragen sichern die Aussage ab.';
-    if (a.type === 'referat') foot = 'Bewertet werden Inhalt, Aufbau und Präsentation des Referats nach den gewählten Kriterien und ihrer Gewichtung.';
-    h += '<div class="foot">' + foot + '</div></section>';
+    h += '<div class="foot">Bewertung nach fachlichen Kriterien.</div></section>';
     return h;
   }
 
-  /* =====================================================================
-     Ansichten
-     ===================================================================== */
   function noStu() {
-    return '<div class="panel"><h2>Noch keine Klasse oder keine Schüler/innen</h2><p>Lege unter <b>Klassen</b> eine Klasse an und füge Schüler/innen hinzu (Namen einfügen, je Zeile ein Name).</p></div>';
+    return '<div class="panel"><h2>Noch keine Klasse oder keine Schüler/innen</h2><p>Lege unter <b>Klassen</b> eine Klasse an und füge Schüler/innen hinzu.</p></div>';
   }
 
   function vClasses() {
@@ -1065,16 +892,18 @@
       h += '<button class="chip' + (c && x.id === c.id ? ' on' : '') + '" data-act="clsPick" data-id="' + x.id + '">' + esc(x.name || '(ohne Namen)') + ' · ' + x.students.length + '</button>';
     });
     h += '<button class="primary" data-act="clsAdd">+ Neue Klasse</button></div>';
-    if (!c) { h += '<p>Lege deine erste Klasse an. Jede Bewertung und jede Note wird einer Klasse und einer Schülerin bzw. einem Schüler zugeordnet.</p></div>'; return h; }
+    if (!c) { h += '<p>Lege deine erste Klasse an.</p></div>'; return h; }
+
+    var faecherList = ['Deutsch', 'Geschichte', 'Politik und Gesellschaft', 'Spanisch', 'Theater', 'P-Seminar', 'W-Seminar', 'Andere Fächer'];
+
     h += '<h3>Einstellungen der Klasse</h3><div class="row">' +
-         '<label>Name (z. B. 5b, Spanisch gA Q12)<input type="text" data-cf="name" value="' + esc(c.name) + '"></label>' +
-         '<label>Fach<input type="text" data-cf="fach" value="' + esc(c.fach) + '" placeholder="z. B. Deutsch"></label>' +
-         '<label>Fachtyp (steuert Voreinstellungen)<select data-cf="typ">' + Object.keys(TYP).map(function (k) { return '<option value="' + k + '"' + (c.typ === k ? ' selected' : '') + '>' + TYP[k] + '</option>'; }).join('') + '</select></label>' +
+         '<label>Name (z. B. Q11, 10a)<input type="text" data-cf="name" value="' + esc(c.name) + '"></label>' +
+         '<label>Fach<select data-cf="fach">' + faecherList.map(function(f) { return '<option value="' + f + '"' + (c.fach === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label>' +
          '<label>Notenskala<select data-cf="skala"><option value="note"' + (c.skala === 'note' ? ' selected' : '') + '>Noten 1–6 (Mittelstufe)</option><option value="np"' + (c.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15 (Oberstufe)</option></select></label>' +
          '<button class="danger" data-act="clsDel">Klasse löschen</button></div>';
     h += '<h3>Schüler/innen (' + c.students.length + ')</h3>';
     if (c.students.length) {
-      h += '<table class="t"><tr><th class="c" style="width:40px">Nr.</th><th>Name (hier umbenennen)</th><th style="width:110px"></th></tr>';
+      h += '<table class="t"><tr><th class="c" style="width:40px">Nr.</th><th>Name</th><th style="width:110px"></th></tr>';
       c.students.forEach(function (s, i) {
         h += '<tr><td class="c">' + (i + 1) + '</td><td><input type="text" data-sf="name" data-sid="' + s.id + '" value="' + esc(s.name) + '"></td><td class="c"><button class="danger" data-act="stuDel" data-sid="' + s.id + '">Löschen</button></td></tr>';
       });
@@ -1089,16 +918,16 @@
     var c = cls(), s = stu(); if (!c || !s) return noStu();
     var es = entriesOf(c, s.id), av = average(es);
     var h = '<div class="panel"><h2>' + esc(s.name) + ' <span class="sub">' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' · ' + scaleLabel(c) + '</span></h2>';
-    h += '<h3>Note eintragen (Referat, Mitarbeit, …)</h3><div class="row">' +
+    h += '<h3>Note eintragen</h3><div class="row">' +
          '<label>Datum<input type="date" id="nf-date" value="' + todayISO() + '"></label>' +
          '<label>Quelle<input type="text" id="nf-src" list="srcList" placeholder="z. B. Referat" style="width:210px"></label>' +
          '<datalist id="srcList">' + SOURCES.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>' +
-         '<label>Thema / Anlass<input type="text" id="nf-thema" style="width:240px"></label>' +
-         '<label>' + (c.skala === 'np' ? 'Notenpunkte' : 'Note') + '<input type="text" inputmode="decimal" id="nf-val" style="width:80px"></label>' +
+         '<label>Thema<input type="text" id="nf-thema" style="width:240px"></label>' +
+         '<label>' + (c.skala === 'np' ? 'Notenpunkte' : 'Note') + '<input type="text" inputmode="decimal" id="nf-val" style="width:100px"></label>' +
          '<label>Gewicht<input type="text" inputmode="decimal" id="nf-gew" value="1" style="width:70px"></label>' +
          '<button class="primary" data-act="addNote">Eintragen</button></div>';
     h += '<h3>Alle Noten</h3>';
-    if (!es.length) h += '<p class="muted">Noch keine Noten. Bewertungen aus Lesen, Gedicht, Abfrage, Song, Referat, Unterricht und Theater erscheinen hier automatisch, sobald alle Kriterien bewertet sind.</p>';
+    if (!es.length) h += '<p class="muted">Noch keine Noten.</p>';
     else {
       h += '<table class="t"><tr><th style="width:150px">Datum</th><th>Quelle</th><th>Thema</th><th class="c" style="width:90px">' + (c.skala === 'np' ? 'NP' : 'Note') + '</th><th class="c" style="width:80px">Gewicht</th><th style="width:170px"></th></tr>';
       es.forEach(function (e) {
@@ -1119,14 +948,41 @@
         h += '</tr>';
       });
       h += '</table>';
-      h += '<p>Ø (nach Gewicht): <b class="big">' + (av ? fmt(av.avg, 1) : '–') + '</b> <span class="muted">aus ' + (av ? av.n : 0) + ' Note(n); Gewicht 1 = normal, 2 = doppelt, 0 = zählt nicht.</span></p>';
+      h += '<p>Ø (nach Gewicht): <b class="big">' + (av ? fmt(av.avg, 1) : '–') + '</b></p>';
     }
     h += '<div class="row"><button class="primary" data-act="printStu">Übersicht drucken / PDF</button></div></div>';
     return h;
   }
 
   function classOverviewHTML(c) {
-    var h = '<section class="ov"><h1>Notenübersicht ' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' <span style="font-size:11pt;font-weight:normal;color:#444">(' + scaleLabel(c) + ', Stand ' + fd(todayISO()) + ')</span></h1>';
+    var counts = {};
+    c.students.forEach(function(s) {
+      var av = average(entriesOf(c, s.id));
+      if (av) {
+        var rounded = Math.round(av.avg);
+        counts[rounded] = (counts[rounded] || 0) + 1;
+      }
+    });
+    var totalGraded = Object.values(counts).reduce(function(a,b){return a+b;}, 0);
+
+    var h = '<section class="ov"><h1>Notenübersicht ' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' <span style="font-size:11pt;font-weight:normal;color:#444">(' + scaleLabel(c) + ')</span></h1>';
+
+    if (totalGraded > 0) {
+      h += '<p style="margin:4px 0 2px; font-weight:bold; font-size:10pt;">Leistungsspiegel:</p>';
+      h += '<div class="stats-bar">';
+      var keys = Object.keys(counts).sort(function(a,b){return Number(a)-Number(b);});
+      keys.forEach(function(k) {
+        var pct = (counts[k] / totalGraded) * 100;
+        var label = c.skala === 'np' ? k + ' NP' : 'Note ' + k;
+        var bg = '#8B1E2D';
+        if (c.skala !== 'np') {
+          bg = k <= 2 ? '#2e7d32' : (k <= 4 ? '#f57c00' : '#c62828');
+        }
+        h += '<div class="stats-segment" style="width:' + pct + '%; background:' + bg + ';" title="' + label + ': ' + counts[k] + ' Schüler">' + (pct > 8 ? label + ' (' + counts[k] + ')' : '') + '</div>';
+      });
+      h += '</div>';
+    }
+
     h += '<table><tr><th style="width:8mm">Nr.</th><th style="width:44mm">Name</th><th>Datum · Quelle · Note</th><th style="width:16mm">Ø</th></tr>';
     c.students.forEach(function (s, i) {
       var es = entriesOf(c, s.id), av = average(es);
@@ -1136,89 +992,88 @@
     });
     return h + '</table></section>';
   }
+
   function vClass() {
     var c = cls(); if (!c) return noStu();
-    return '<div class="panel"><h2>Klassenübersicht <span class="sub">' + esc(c.name) + '</span></h2><div class="row"><button class="primary" data-act="printCls">Übersicht drucken / PDF</button><button data-act="csv">Als CSV exportieren (Excel)</button></div></div>' + classOverviewHTML(c);
+    return '<div class="panel"><h2>Klassenübersicht <span class="sub">' + esc(c.name) + '</span></h2><div class="row"><button class="primary" data-act="printCls">Übersicht drucken / PDF</button><button data-act="csv">Als CSV exportieren</button></div></div>' + classOverviewHTML(c);
   }
+
   function studentOverviewHTML(c, s) {
     var es = entriesOf(c, s.id), av = average(es);
-    var h = '<section class="ov"><h1>Noten: ' + esc(s.name) + ' <span style="font-size:11pt;font-weight:normal;color:#444">' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' · ' + scaleLabel(c) + '</span></h1>';
+    var h = '<section class="ov"><h1>Noten: ' + esc(s.name) + ' <span style="font-size:11pt;font-weight:normal;color:#444">' + esc(c.name) + '</span></h1>';
     h += '<table><tr><th style="width:28mm">Datum</th><th style="width:60mm">Quelle</th><th>Thema</th><th style="width:20mm">' + (c.skala === 'np' ? 'NP' : 'Note') + '</th><th style="width:20mm">Gewicht</th></tr>';
     es.forEach(function (e) { h += '<tr><td>' + fd(e.date) + '</td><td>' + esc(e.source) + '</td><td>' + esc(e.thema) + '</td><td class="c"><b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b></td><td class="c">' + fmt(e.gew) + '</td></tr>'; });
-    return h + '</table><p>Ø (nach Gewicht): <b>' + (av ? fmt(av.avg, 1) : '–') + '</b></p></section>';
+    return h + '</table><p>Ø: <b>' + (av ? fmt(av.avg, 1) : '–') + '</b></p></section>';
   }
 
   function vModule(type) {
     var c = cls(), s = stu(); if (!c || !s) return noStu();
-    var m = MOD[type], a = curA(type), list = assessmentsOf(c, s.id, type);
+    var a = curA(type), list = assessmentsOf(c, s.id, type);
     var h = '<div class="panel modbar"><label>Bewertung <select data-f="pickA">';
     if (a._draft) h += '<option value="__draft" selected>neu (heute, noch leer)</option>';
     list.forEach(function (x) { h += '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + fd(x.date) + ' – ' + esc(x.thema || 'ohne Thema') + '</option>'; });
     h += '</select></label><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>';
-    h += '<span class="sep"></span><button class="primary" data-act="printOne">Diese Seite drucken / PDF</button><button data-act="printAll">Alle Bögen „' + esc(modeLabel(type)) + '“ der Klasse drucken / PDF</button></div>';
+    h += '<span class="sep"></span><button class="primary" data-act="printOne">Diese Seite drucken / PDF</button><button data-act="printAll">Alle Bögen drucken</button></div>';
+
     if (type === 'abfrage') {
       h += '<div class="panel" style="margin-top:0"><div class="row">' +
-           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="preset"' + (a.swMode !== 'custom' ? ' checked' : '') + '> Bereich nach Vorgabe wählen</label>' +
-           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="custom"' + (a.swMode === 'custom' ? ' checked' : '') + '> Kriterien individuell wählen</label>' +
+           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="preset"' + (a.swMode !== 'custom' ? ' checked' : '') + '> Nach Vorgabe</label>' +
+           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="custom"' + (a.swMode === 'custom' ? ' checked' : '') + '> Individuell</label>' +
            '</div>';
       if (a.swMode !== 'custom') {
-        h += '<div class="row"><span>Schwerpunkt(e): ' + Object.keys(SW).map(function (k) { return '<label class="chk"><input type="checkbox" data-f="sw" value="' + k + '"' + (a.sw.indexOf(k) >= 0 ? ' checked' : '') + '> ' + SW[k].n + '</label>'; }).join('') + '</span></div>' +
-             '<div class="hint">Jeder gewählte Bereich bringt seine 5 Kriterien plus „Darstellung und Gesprächsverhalten“ mit. Bis zu zwei Bereiche sind für den Druck sinnvoll.</div>';
-      } else {
-        h += '<div class="row">' + Object.keys(SW).map(function (k) {
-          return '<span style="margin-right:14px"><b>' + esc(SW[k].n) + ':</b> ' + SW[k].l.map(function (p) {
-            return '<label class="chk"><input type="checkbox" data-f="crit" value="' + p[0] + '"' + ((a.crit || []).indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>';
-          }).join('') + '</span>';
-        }).join('') + '</div>' +
-        '<div class="hint">Wähle beliebige Kriterien aus allen Bereichen frei aus; „Darstellung und Gesprächsverhalten“ wird automatisch passend mitgewichtet.</div>';
+        h += '<div class="row"><span>Schwerpunkt(e): ' + Object.keys(SW).map(function (k) { return '<label class="chk"><input type="checkbox" data-f="sw" value="' + k + '"' + (a.sw.indexOf(k) >= 0 ? ' checked' : '') + '> ' + SW[k].n + '</label>'; }).join('') + '</span></div>';
       }
       h += '</div>';
-      h += '<div class="hint">Hinweis zur Abfrage: Nur die fachliche Leistung bewerten (keine sachfremden Einflüsse) und die Aussage über mehrere ähnliche Fragen absichern.</div>';
     } else if (POOL[type]) {
       var baseIds = baseIdsOf(a), activeIds = (a.sel && a.sel.length) ? a.sel : baseIds, pool = POOL[type][poolKeyOf(a)] || [];
-      h += '<div class="panel" style="margin-top:0"><div class="row"><span>Kriterien für diese Bewertung (Standard: die ersten ' + baseIds.length + '; zum Schwerpunktsetzen beliebig an- und abwählen):</span></div><div class="row">' +
+      h += '<div class="panel" style="margin-top:0"><div class="row"><span>Kriterien für diese Bewertung:</span></div><div class="row">' +
            pool.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (activeIds.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
-           '</div><div class="row"><button data-act="selReset">Auswahl zurücksetzen (Standard)</button></div>';
-      if (type === 'referat') h += '<div class="hint">Für den Druck auf einer Seite höchstens 8 Kriterien wählen. Die fertige Note erscheint automatisch unter „Schüler/in“ und in der Klassenübersicht mit dem Vermerk „Referat“.</div>';
-      h += '</div>';
+           '</div></div>';
     }
     h += weightPanel(type, a);
     h += sheetHTML(c, s, a, true);
     return h;
   }
 
-  /* ---- Schwerpunktsetzung der Gewichtung (Vorschläge + individuell) ---- */
   function wGroup(type, id) { var W = WG[type]; return (W && W.m[id]) || Object.keys(W.g)[0]; }
+
   function weightPanel(type, a) {
     var W = WG[type]; if (!W) return '';
     var mk = modKey(a), cur = state.wp[mk] || 'std', crs = critsOf(a), tot = crs.reduce(function (x, k) { return x + k.w; }, 0) || 1;
-    var present = Object.keys(W.g).filter(function (g) { return crs.some(function (k) { return wGroup(type, k.id) === g; }); });
     var pres = [['gleich', 'Ausgewogen', null]].concat(W.p).concat([['std', 'Vorgabe', null]]);
-    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Schwerpunkt der Gewichtung:</b></div><div class="row">';
+
+    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Schwerpunkt / Gewichtung:</b></div><div class="row">';
     pres.forEach(function (p) {
-      var info = p[2] ? present.map(function (g) { return W.g[g] + ' ' + (p[2][g] || 0); }).join(' · ') : (p[0] === 'gleich' ? 'alle Kriterien gleich' : 'voreingestellte Gewichtung');
-      h += '<button class="chip' + (cur === p[0] ? ' on' : '') + '" data-act="wPreset" data-v="' + p[0] + '" title="' + esc(info) + '">' + esc(p[1]) + '</button>';
+      var descParts = [];
+      if (p[2]) { Object.keys(p[2]).forEach(function(g) { if (W.g[g]) descParts.push(W.g[g] + ' ' + p[2][g] + '%'); }); }
+      var infoText = descParts.length ? descParts.join(' · ') : 'Standard';
+      h += '<button class="chip' + (cur === p[0] ? ' on' : '') + '" data-act="wPreset" data-v="' + p[0] + '" title="' + esc(infoText) + '" style="display:inline-flex; flex-direction:column; align-items:flex-start; padding:5px 10px;">' +
+           '<span><b>' + esc(p[1]) + '</b></span>' +
+           '<span style="font-size:8.5pt; opacity:0.85;">' + esc(infoText) + '</span>' +
+           '</button>';
     });
     var open = cur === 'eigen' || ui.wOpen[mk];
-    h += '<button class="chip' + (cur === 'eigen' ? ' on' : '') + '" data-act="wOwn" data-mk="' + mk + '">Individuell …</button></div>';
-    h += '<div class="hint">Bereiche: ' + present.map(function (g) { return '<b>' + esc(W.g[g]) + '</b> (' + crs.filter(function (k) { return wGroup(type, k.id) === g; }).map(function (k) { return esc(k.n); }).join(', ') + ')'; }).join(' · ') +
-         '. Die Anteile werden auf die gewählten Kriterien verteilt und gelten für alle Bewertungen „' + esc(modeLabel(type)) + '“.</div>';
+    h += '<button class="chip' + (cur === 'eigen' ? ' on' : '') + '" data-act="wOwn" data-mk="' + mk + '">Individuell …</button>';
+    h += '<button class="primary" data-act="wApplyAll" style="margin-left:auto;">Für ganze Klasse übernehmen</button></div>';
+
     if (open) {
-      h += '<table class="t" style="max-width:640px"><tr><th>Kriterium</th><th class="c" style="width:110px">Gewicht</th><th class="c" style="width:90px">Anteil</th></tr>';
+      h += '<table class="t" style="max-width:640px; margin-top:8px;"><tr><th>Kriterium</th><th class="c" style="width:110px">Gewicht</th><th class="c" style="width:90px">Anteil</th></tr>';
       crs.forEach(function (k) {
         var key = mk + '/' + k.id, ov = state.w[key], raw = (ov !== undefined && ov !== null) ? ov : baseW(a, k.id);
         h += '<tr><td>' + esc(k.n) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(raw) + '"></td><td class="c">' + fmt(k.w / tot * 100, 0) + ' %</td></tr>';
       });
-      h += '</table><div class="hint">Es zählt das Verhältnis der Zahlen zueinander; die Summe muss nicht 100 ergeben. Änderungen wirken sofort auf den Bogen.</div>';
+      h += '</table>';
     }
     return h + '</div>';
   }
+
   function baseW(a, id) {
     if (a.type === 'abfrage') return id === 'dar' ? 25 : ALLW[id];
     var pool = POOL[a.type] ? (POOL[a.type][poolKeyOf(a)] || []) : MOD[a.type].lists[poolKeyOf(a)], w = 0;
     pool.forEach(function (p) { if (p[0] === id) w = p[1]; });
     return w;
   }
+
   function applyWPreset(a, id) {
     var W = WG[a.type], mk = modKey(a), crs = critsOf(a);
     Object.keys(state.w).forEach(function (k) { if (k.indexOf(mk + '/') === 0) delete state.w[k]; });
@@ -1228,64 +1083,54 @@
     var cnt = {}; crs.forEach(function (k) { var g = wGroup(a.type, k.id); cnt[g] = (cnt[g] || 0) + 1; });
     var tot = 0; Object.keys(cnt).forEach(function (g) { tot += pr ? (pr[2][g] || 0) : cnt[g]; });
     if (!tot) tot = 1;
-    // Abfrage: „Darstellung und Gesprächsverhalten“ wird intern mit der Summe der gewählten Kriterien skaliert
-    var scale = 1;
-    if (a.type === 'abfrage') { var sw = 0; crs.forEach(function (k) { if (k.id !== 'dar') sw += ALLW[k.id] || 0; }); scale = sw > 0 ? sw / 100 : 1; }
     crs.forEach(function (k) {
       var g = wGroup(a.type, k.id), share = pr ? (pr[2][g] || 0) / tot / cnt[g] : 1 / crs.length, w = Math.round(share * 1000) / 10;
-      if (a.type === 'abfrage' && k.id === 'dar') w = Math.round(w / scale * 10) / 10;
       state.w[mk + '/' + k.id] = w;
     });
   }
 
   function vSettings() {
-    var h = '<div class="panel"><h2>Einstellungen</h2>';
-    h += '<h3>Gewichtung der Kriterien</h3><p class="muted">Vorschläge; Änderungen gelten für alle Bewertungen. Es zählt das Verhältnis der Zahlen zueinander (die Summe muss nicht 100 ergeben).</p>';
-    var groups = [
-      ['lesen:de','Lesen · Deutsch',POOL.lesen.de], ['lesen:es','Lesen · Fremdsprache',POOL.lesen.es],
-      ['gedicht:de','Gedicht · Deutsch',POOL.gedicht.de], ['gedicht:es','Gedicht · Fremdsprache',POOL.gedicht.es],
-      ['song:-','Song',POOL.song['-']], ['unterricht:-','Unterrichtsbeitrag',POOL.unterricht['-']], ['theater:-','Theater',POOL.theater['-']]
-    ];
-    Object.keys(MOD.referat.vars).forEach(function (v) { groups.push(['referat:' + v, 'Referat · ' + MOD.referat.vars[v], POOL.referat[v]]); });
-    Object.keys(SW).forEach(function (k) { groups.push(['abfrage', 'Abfrage · ' + SW[k].n, SW[k].l]); });
-    groups.push(['abfrage', 'Abfrage · immer dabei (Gewicht skaliert automatisch mit der Summe der gewählten Kriterien)', [['dar',25]]]);
-    groups.forEach(function (g) {
-      h += '<table class="t" style="margin-bottom:10px"><tr><th colspan="2">' + esc(g[1]) + '</th></tr>';
-      g[2].forEach(function (p) {
-        var key = g[0] + '/' + p[0], ov = state.w[key], w = (ov !== undefined && ov !== null) ? ov : p[1];
-        var mk = g[0];
-        h += '<tr><td>' + esc(C[p[0]].n) + '</td><td class="c" style="width:90px"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(w) + '"></td></tr>';
-        if (mk === 'lesen:es' || mk === 'gedicht:es') { /* gilt auch für andere Fremdsprachen */ }
-      });
-      h += '</table>';
-    });
-    h += '<p class="muted">Die Gewichtung für „Fremdsprache“ gilt zugleich für Spanisch und andere Fremdsprachen.</p><div class="row"><button data-act="wReset">Gewichtung zurücksetzen</button></div>';
-    h += '<h3>Daten</h3><div class="row"><button class="primary" data-act="exp">Alle Daten sichern (JSON)</button><button data-act="imp">Sicherung laden</button><button data-act="impSong">Ältere Sicherung importieren (Song-Tool / Bewertung_Offline)</button></div>' +
-         '<p class="muted">Der Import übernimmt eine Sicherung („Sichern“) aus den früheren Dateien „Songvortrag_Bewertung_Offline“ oder „Bewertung_Offline“ in die aktuell gewählte Klasse. Sicherungen des „Mündliche-Noten-Tools“ lädst du direkt mit „Sicherung laden“. Schüler/innen werden nach Namen zugeordnet, fehlende neu angelegt; vorhandene Daten bleiben erhalten.</p>' +
-         '<p class="muted">Die Daten liegen nur in diesem Browser. Für einen Gerätewechsel oder als Sicherung bitte regelmäßig sichern.</p>';
-    h += '<h3>Berechnung</h3><p>Jede angetippte Stufe setzt einen Notenpunktwert (sehr gut = 14, gut = 11, befriedigend = 8, ausreichend = 5, mangelhaft/ungenügend = 2); mit − und + wird innerhalb der Stufe nachjustiert. Die gewichteten Notenpunkte werden auf ganze Punkte gerundet (ab ,5 aufwärts): 15–13 = Note 1, 12–10 = 2, 9–7 = 3, 6–4 = 4, 3–1 = 5, 0 = 6. In Klassen mit Notenskala 1–6 wird die Note angezeigt, in Klassen mit Notenpunkten der Punktwert. Das Ø in der Übersicht ist der gewichtete Mittelwert der Einträge (Standardgewicht 1).</p>';
-    h += '<h3>Quellen und Grundlagen der Kriterien</h3><p class="muted">Die Stufenbeschreibungen, Gewichtungen und Punktwerte sind eigene Formulierungen und Vorschläge auf Basis der folgenden Quellen, keine amtlichen Vorgaben. Für Vokabular, Grammatik und Textkenntnis (Abfrage) lag keine passende Einzelquelle vor; sie sind in Anlehnung an die ISB-Kategorie „Sprachliche Mittel / Sprachrichtigkeit“ und die Struktur Fachwissen – Verständnis – Anwendung abgeleitet.</p><ul>' +
-         '<li>Lesen: FHNW „Lernatlas Lesen/Vorlesen“ (Genauigkeit, Flüssigkeit, Betonung, Gestaltung) – <a href="https://fhnw.ch/plattformen/schul-in/wp-content/uploads/sites/344/2024/01/Lernatlas_Lesen_Vorlesen_MS.pdf" target="_blank" rel="noopener">fhnw.ch</a>; Lernnetz „Anforderungsanalyse Prosodie“ – <a href="https://sop-wiki.lernnetz.de/images/2/22/Anforderungsanalyse-Prosodie.pdf" target="_blank" rel="noopener">sop-wiki.lernnetz.de</a></li>' +
-         '<li>Lesen (Spanisch): Rubrik „lectura en voz alta“ (Volumen, Fluidez, Entonación, Pronunciación) – <a href="https://agora.xtec.cat/insgurb/wp-content/uploads/usu1744/2021/08/CAST_Rubrica_lectura_voz_alta.pdf" target="_blank" rel="noopener">agora.xtec.cat</a>; Kriterien laut Lesen – <a href="https://www.educandojuntos.cl/wp-content/uploads/2015/12/criterios_lectura_vozalta_2-_4-.pdf" target="_blank" rel="noopener">educandojuntos.cl</a></li>' +
-         '<li>Gedichtvortrag: Lernnetz „Anforderungen … (Freier) Vortrag eines Gedichts“ – <a href="https://sop-wiki.lernnetz.de/images/0/0c/Anforderungen_und_Vermittlungsgruds%C3%A4tze_-_%28Freier%29_Vortrag_eines_Gedichts.pdf" target="_blank" rel="noopener">sop-wiki.lernnetz.de</a>; Bewertungsbogen Gedicht (Grundschule aktuell) – <a href="https://grundschule-aktuell.de/sites/default/files/2024-10/Bewertungsbogen%20FSL%20Gedicht.pdf" target="_blank" rel="noopener">grundschule-aktuell.de</a></li>' +
-         '<li>Fremdsprachen Bayern: ISB, Hinweise zu mündlichen Leistungsnachweisen Jgst. 5–11 (Aussprache/Intonation, Sprachliche Mittel, Gesprächsfähigkeit, Aufgabenerfüllung) – <a href="https://www.isb.bayern.de/fileadmin/user_upload/Gymnasium/Faecher/Moderne_Fremdsprachen/Leistungserhebungen_und_Bewertungsraster/Hinweise/5-11_mod_fs_muendliche_leistungsnachweise_hinweise_01_25.pdf" target="_blank" rel="noopener">isb.bayern.de</a></li>' +
-         '<li>Abfrage: Bewertungskriterien mündliche Prüfung (Fachwissen, Verständnis/Anwendung, Fachsprache, Argumentation, Gesprächsverhalten) – <a href="https://mathi.uni-heidelberg.de/~jquintanilha/CGG/Bewertungskriterien_muendlPruefung.pdf" target="_blank" rel="noopener">uni-heidelberg.de</a>; Bewertungsschema Fachgespräch (15–0 Punkte) – <a href="https://fifa.hamburg.de/wp-content/uploads/sites/634/2022/06/schueler-bewertungsschema-fachgespraech.pdf" target="_blank" rel="noopener">fifa.hamburg.de</a></li>' +
-         '<li>Quellenarten und Gewichtung kleiner mündlicher Leistungsnachweise (Rechenschaftsablage, Unterrichts- und Projektbeiträge, Referat, Präsentation, Debatte; Gewichtung im Ermessen der Fachschaft bzw. Lehrkraft): Leistungserhebungen 2025/26 eines bayerischen Gymnasiums – <a href="https://sailer-gymnasium.de/images/Rat_Hilfe/Leistungsnachweise/Leistungserhebungen_2025_26.pdf" target="_blank" rel="noopener">sailer-gymnasium.de</a>. Bitte mit den Vorgaben deiner Fachschaft abgleichen.</li></ul></div>';
+    var h = '<div class="panel"><h2>Einstellungen & Backup</h2>';
+    h += '<p class="muted">Sichern Sie Ihre Daten regelmäßig als JSON-Datei, um Datenverlust bei Browser-Bereinigungen zu vermeiden.</p>';
+    h += '<div class="row"><button class="primary" data-act="exp">Alle Daten sichern (JSON)</button><button data-act="imp">Sicherung laden</button></div></div>';
     return h;
   }
 
-  /* =====================================================================
-     Rendern
-     ===================================================================== */
   function renderBar() {
     var c = cls(), cs = $('clsSel'), ss = $('stuSel');
     cs.innerHTML = state.classes.length ? state.classes.map(function (x) { return '<option value="' + x.id + '"' + (c && x.id === c.id ? ' selected' : '') + '>' + esc(x.name || '(ohne Namen)') + '</option>'; }).join('') : '<option value="">– keine Klasse –</option>';
     ss.innerHTML = (c && c.students.length) ? c.students.map(function (x, i) { return '<option value="' + x.id + '"' + (x.id === c.stu ? ' selected' : '') + '>' + (i + 1) + '. ' + esc(x.name || 'Schüler/in') + '</option>'; }).join('') : '<option value="">– keine Schüler/innen –</option>';
+
     document.querySelectorAll('.toolbar .tab').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === state.tab || (b.dataset.tab === 'bogen' && !!MOD[state.tab])); });
-    var ms = $('modeSel'), mt = state.mt || 'song';
-    if (!ms.options.length) ms.innerHTML = MODES.map(function (m) { return '<option value="' + m[0] + '">' + esc(m[1]) + '</option>'; }).join('');
+
+    var ms = $('modeSel'), mt = state.mt || 'deutsch';
+    var availableModes = getModesForClass(c);
+    var found = false;
+    availableModes.forEach(function(m) { if (m[0].split(':')[0] === mt) found = true; });
+    if (!found && availableModes.length > 0) {
+      mt = availableModes[0][0].split(':')[0];
+      state.mt = mt;
+    }
+
+    ms.innerHTML = availableModes.map(function (m) { return '<option value="' + m[0] + '">' + esc(m[1]) + '</option>'; }).join('');
     ms.value = mt + vk(mt);
+
+    // Backup Warnung Logik (Prüfen ob > 7 Tage her oder nie gesichert)
+    var warnBox = $('backupWarnContainer');
+    var showWarn = false;
+    if (!state.lastBackup) {
+      showWarn = true;
+    } else {
+      var diffDays = (Date.now() - new Date(state.lastBackup).getTime()) / (1000 * 3600 * 24);
+      if (diffDays > 7) showWarn = true;
+    }
+    if (showWarn) {
+      warnBox.innerHTML = '<div class="backup-alert"><span>⚠️ Backup-Hinweis (> 7 Tage)</span><button data-act="exp">Jetzt sichern</button></div>';
+    } else {
+      warnBox.innerHTML = '';
+    }
   }
+
   function render() {
     var y = window.scrollY;
     if (!cls() && state.tab !== 'settings') state.tab = 'classes';
@@ -1299,15 +1144,13 @@
     $('view').innerHTML = h;
     window.scrollTo(0, y);
   }
+
   function go(tab) {
-    if (tab === 'bogen') tab = state.mt || 'song';
+    if (tab === 'bogen') tab = state.mt || 'deutsch';
     if (MOD[tab]) state.mt = tab;
     state.tab = tab; save(); render();
   }
 
-  /* =====================================================================
-     Drucken, Export
-     ===================================================================== */
   function printHTML(html) {
     var pa = $('printArea'); pa.innerHTML = html; document.body.classList.add('printing');
     setTimeout(function () {
@@ -1329,9 +1172,6 @@
     download('noten_' + (c.name || 'klasse').replace(/[^\w\-äöüÄÖÜß]+/g, '_') + '_' + todayISO() + '.csv', '﻿' + rows.map(function (r) { return r.map(csvCell).join(';'); }).join('\r\n'), 'text/csv;charset=utf-8');
   }
 
-  /* =====================================================================
-     Ereignisse
-     ===================================================================== */
   function setLevel(a, id, k) { var cur = a.pts[id]; a.pts[id] = (cur !== undefined && cur !== null && lvOf(cur) === k) ? null : LV[k].def; if (a.pts[id] === null) delete a.pts[id]; }
   function stepPts(a, id, d) { var cur = a.pts[id]; if (cur === undefined || cur === null) return; var L = LV[lvOf(cur)]; a.pts[id] = Math.max(L.lo, Math.min(L.hi, cur + d)); }
   function gotoStu(id) { var c = cls(); if (c) { c.stu = id; save(); render(); } }
@@ -1350,14 +1190,10 @@
     $('stuNext').addEventListener('click', function () { move(1); });
     document.querySelectorAll('.toolbar .tab').forEach(function (b) { b.addEventListener('click', function () { go(b.dataset.tab); }); });
 
-    view.addEventListener('keydown', function (e) {
-      var t = e.target.closest && e.target.closest('.lv[data-act]');
-      if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); t.click(); }
-    });
-
     view.addEventListener('click', function (e) {
       var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
       var act = el.dataset.act, c = cls(), s = stu(), type = state.tab;
+
       if (act === 'lv' || act === 'st') {
         var a = curA(type); ensure(c, a);
         if (act === 'lv') setLevel(a, el.dataset.i, +el.dataset.k); else stepPts(a, el.dataset.i, +el.dataset.d);
@@ -1368,6 +1204,22 @@
         var a2 = curA(type); if (a2._draft) return;
         if (!confirm('Diese Bewertung wirklich löschen?')) return;
         c.assessments = c.assessments.filter(function (x) { return x.id !== a2.id; }); delete ui.cur[type + vk(type) + '|' + s.id]; save(); render(); return;
+      }
+      if (act === 'wApplyAll') {
+        var currentA = curA(type); if (!c || !currentA) return;
+        if (!confirm('Diesen Schwerpunkt und Kriterienauswahl wirklich für alle Schüler/innen dieser Klasse in „' + modeLabel(type) + '“ übernehmen?')) return;
+        c.students.forEach(function(stud) {
+          var existing = null;
+          c.assessments.forEach(function(x) { if (x.sid === stud.id && x.type === type && (!MOD[type].vars || x.variant === currentA.variant)) existing = x; });
+          if (existing) {
+            existing.swMode = currentA.swMode; existing.sw = [].concat(currentA.sw); existing.crit = [].concat(currentA.crit); existing.sel = [].concat(currentA.sel); existing.variant = currentA.variant;
+          } else {
+            var newOne = newA(c, type, stud.id);
+            newOne.variant = currentA.variant; newOne.swMode = currentA.swMode; newOne.sw = [].concat(currentA.sw); newOne.crit = [].concat(currentA.crit); newOne.sel = [].concat(currentA.sel);
+            c.assessments.push(newOne);
+          }
+        });
+        save(); render(); alert('Erfolgreich auf alle Schüler/innen der Klasse übertragen!'); return;
       }
       if (act === 'printOne') { var a3 = curA(type); printHTML(sheetHTML(c, s, a3, false)); return; }
       if (act === 'printAll') {
@@ -1386,16 +1238,18 @@
         save(); render(); return;
       }
       if (act === 'addNote') {
-        var v = num($('nf-val').value, null), max = c.skala === 'np' ? 15 : 6, min = c.skala === 'np' ? 0 : 1;
+        var rawVal = $('nf-val').value;
+        var v = num(rawVal, null);
+        var max = c.skala === 'np' ? 15 : 6, min = c.skala === 'np' ? 0 : 1;
         if (v === null || v < min || v > max) { alert((c.skala === 'np' ? 'Bitte Notenpunkte von 0 bis 15' : 'Bitte eine Note von 1 bis 6') + ' eintragen.'); return; }
-        var src = $('nf-src').value.trim(); if (!src) { alert('Bitte die Quelle der Note angeben (z. B. Referat).'); return; }
+        var src = $('nf-src').value.trim(); if (!src) { alert('Bitte die Quelle der Note angeben.'); return; }
         c.manual.push({ id:uid('m'), sid:s.id, date:$('nf-date').value || todayISO(), source:src, thema:$('nf-thema').value.trim(), value:v, gew:Math.max(0, num($('nf-gew').value, 1)) });
         save(); render(); return;
       }
       if (act === 'clsPick') { state.cls = el.dataset.id; save(); render(); return; }
-      if (act === 'clsAdd') { var nc = { id:uid('c'), name:'Neue Klasse', fach:'', typ:'de', skala:'note', students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
+      if (act === 'clsAdd') { var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:'note', students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
       if (act === 'clsDel') {
-        if (!confirm('Klasse „' + c.name + '“ mit allen Schüler/innen, Bewertungen und Noten löschen?')) return;
+        if (!confirm('Klasse „' + c.name + '“ löschen?')) return;
         state.classes = state.classes.filter(function (x) { return x.id !== c.id; }); state.cls = state.classes[0] ? state.classes[0].id : null; save(); render(); return;
       }
       if (act === 'stuAdd') {
@@ -1407,7 +1261,7 @@
       if (act === 'stuSort') { c.students.sort(function (x, y) { return x.name.localeCompare(y.name, 'de'); }); save(); render(); return; }
       if (act === 'stuDel') {
         var st = stuById(c, el.dataset.sid);
-        if (!confirm('„' + (st ? st.name : '') + '“ samt aller Bewertungen und Noten löschen?')) return;
+        if (!confirm('„' + (st ? st.name : '') + '“ löschen?')) return;
         c.students = c.students.filter(function (x) { return x.id !== el.dataset.sid; });
         c.assessments = c.assessments.filter(function (x) { return x.sid !== el.dataset.sid; });
         c.manual = c.manual.filter(function (x) { return x.sid !== el.dataset.sid; });
@@ -1415,125 +1269,33 @@
       }
       if (act === 'wPreset') { applyWPreset(curA(type), el.dataset.v); ui.wOpen[modKey(curA(type))] = false; save(); render(); return; }
       if (act === 'wOwn') { ui.wOpen[el.dataset.mk] = !ui.wOpen[el.dataset.mk]; render(); return; }
-      if (act === 'selReset') { var a4 = curA(type); a4.sel = []; ensure(c, a4); save(); render(); return; }
-      if (act === 'wReset') { state.w = {}; state.wp = {}; save(); render(); return; }
-      if (act === 'exp') { download('muendliche_noten_' + todayISO() + '.json', JSON.stringify(state, null, 2), 'application/json'); return; }
+      if (act === 'exp') {
+        state.lastBackup = new Date().toISOString();
+        save();
+        download('muendliche_noten_' + todayISO() + '.json', JSON.stringify(state, null, 2), 'application/json');
+        render();
+        return;
+      }
       if (act === 'imp') { $('file').click(); return; }
-      if (act === 'impSong') { if (!c) { alert('Bitte zuerst eine Klasse anlegen und auswählen.'); return; } $('fileSong').click(); return; }
     });
 
-    function onField(e) {
-      var t = e.target, c = cls(), s = stu();
-      if (t.dataset.cf !== undefined && c) { c[t.dataset.cf] = t.value; save(); renderBar(); return; }
-      if (t.dataset.sf !== undefined && c) { var st = stuById(c, t.dataset.sid); if (st) { st.name = t.value; save(); renderBar(); } return; }
-      if (t.dataset.w !== undefined) { state.w[t.dataset.w] = Math.max(0, num(t.value, 0)); state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); if (MOD[state.tab]) render(); return; }
-      if (t.dataset.ef !== undefined && c) {
-        var id = t.dataset.id, f = t.dataset.ef, obj = null;
-        c.manual.forEach(function (x) { if (x.id === id) obj = x; });
-        if (!obj) { c.assessments.forEach(function (x) { if (x.id === id) obj = x; }); }
-        if (!obj) return;
-        if (f === 'gew') obj.gew = Math.max(0, num(t.value, 1));
-        else if (f === 'value') { var v = num(t.value, null); var mx = c.skala === 'np' ? 15 : 6, mn = c.skala === 'np' ? 0 : 1; obj.value = (v === null) ? null : Math.max(mn, Math.min(mx, v)); }
-        else obj[f] = t.value;
-        save(); return;
-      }
-      var sh = t.closest && t.closest('.sheet'); if (!sh || !c) return;
-      var a = findAny(c, sh.dataset.aid); if (!a) return;
-      var f2 = t.dataset.f;
-      if (f2 === 'pickA') { if (t.value !== '__draft') { ui.cur[keyA(a)] = t.value; render(); } return; }
-    }
     view.addEventListener('input', function (e) {
       var t = e.target, c = cls(); if (!c) return;
+      if (t.id === 'nf-val' || t.classList.contains('n') || t.classList.contains('g')) {
+        t.value = t.value.replace(',', '.');
+      }
       if (t.isContentEditable && t.dataset.f) {
         var sh = t.closest('.sheet'), a = findAny(c, sh.dataset.aid); if (!a) return;
         ensure(c, a); a[t.dataset.f] = t.innerText.replace(/\n+$/, ''); save();
-        if (t.dataset.f === 'thema' || t.dataset.f === 'date') { var op = document.querySelector('[data-f="pickA"] option:checked'); if (op) { op.value = a.id; op.textContent = fd(a.date) + ' – ' + (a.thema || 'ohne Thema'); } }
       }
-    });
-    view.addEventListener('change', function (e) {
-      var t = e.target, c = cls(); if (!c) return;
-      if (t.dataset.f === 'pickA') { var s = stu(); if (t.value !== '__draft') { ui.cur[state.tab + vk(state.tab) + '|' + s.id] = t.value; render(); } return; }
-      var sh = t.closest('.sheet') || t.closest('.modbar'), a;
-      if (t.dataset.f === 'variant' || t.dataset.f === 'sw' || t.dataset.f === 'swMode' || t.dataset.f === 'crit' || t.dataset.f === 'sel') { a = curA(state.tab); }
-      else if (t.dataset.f === 'date') { a = findAny(c, t.closest('.sheet').dataset.aid); }
-      if (t.dataset.f === 'variant') { a.variant = t.value; ensure(c, a); save(); render(); return; }
-      if (t.dataset.f === 'swMode') { a.swMode = t.value; ensure(c, a); save(); render(); return; }
-      if (t.dataset.f === 'crit') {
-        var selc = []; document.querySelectorAll('input[data-f="crit"]').forEach(function (x) { if (x.checked) selc.push(x.value); });
-        a.crit = selc; ensure(c, a); save(); render(); return;
-      }
-      if (t.dataset.f === 'sel') {
-        var sels = []; document.querySelectorAll('input[data-f="sel"]').forEach(function (x) { if (x.checked) sels.push(x.value); });
-        if (!sels.length) { t.checked = true; return; }
-        a.sel = sels; ensure(c, a); save(); render(); return;
-      }
-      if (t.dataset.f === 'sw') {
-        var sel = []; document.querySelectorAll('input[data-f="sw"]').forEach(function (x) { if (x.checked) sel.push(x.value); });
-        if (!sel.length) { t.checked = true; return; }
-        if (sel.length > 2) { var keep = a.sw.filter(function (k) { return sel.indexOf(k) >= 0 && k !== t.value; }).slice(-1); sel = keep.concat([t.value]); }
-        a.sw = Object.keys(SW).filter(function (k) { return sel.indexOf(k) >= 0; }); ensure(c, a); save(); render(); return;
-      }
-      if (t.dataset.f === 'date') { ensure(c, a); a.date = t.value || todayISO(); save(); var op2 = document.querySelector('[data-f="pickA"] option:checked'); if (op2) { op2.value = a.id; op2.textContent = fd(a.date) + ' – ' + (a.thema || 'ohne Thema'); } return; }
-      onField(e);
     });
 
-    function parseOldDate(d) {
-      d = String(d || '').trim();
-      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-      var m = d.match(/(\d{1,2})\.\s*(\d{1,2})\.?\s*(\d{2,4})?/);
-      if (!m) return todayISO();
-      var y = m[3] ? (m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])) : new Date().getFullYear();
-      return y + '-' + p2(Number(m[2])) + '-' + p2(Number(m[1]));
-    }
-    $('fileSong').addEventListener('change', function (e) {
-      var f = e.target.files[0]; if (!f) return;
-      var r = new FileReader();
-      r.onload = function () {
-        try {
-          var o = JSON.parse(r.result), c = cls(), items = [], wmap = {};
-          var MAPM = { song:['song','de'], lesen_de:['lesen','de'], lesen_es:['lesen','es'], gedicht_de:['gedicht','de'], gedicht_es:['gedicht','es'], gedicht_fs:['gedicht','fs'], abfrage:['abfrage','de'] };
-          function npOf(p) { return (p !== null && p !== '' && p !== undefined && !isNaN(Number(p))) ? Math.max(0, Math.min(15, Math.round(Number(p)))) : null; }
-          if (o && o.v === 2 && Array.isArray(o.students)) {          /* Songvortrag_Bewertung_Offline */
-            var ids = ['s1','s2','s3','s4','s5'];
-            o.students.forEach(function (st) {
-              var pts = {}; (Array.isArray(st.pts) ? st.pts : []).slice(0, 5).forEach(function (x, i) { var n = npOf(x); if (n !== null) pts[ids[i]] = n; });
-              if (String(st.name || '').trim() && Object.keys(pts).length) items.push({ name:String(st.name).trim(), type:'song', variant:'de', sw:[], date:parseOldDate(st.datum), thema:String(st.song || ''), pts:pts, cmt:String(st.cmt || '') });
-            });
-            var defs = [25,25,20,20,10];
-            (Array.isArray(o.weights) ? o.weights : []).slice(0, 5).forEach(function (w, i) { if (Number(w) !== defs[i] && !isNaN(Number(w))) wmap['song:-/' + ids[i]] = Number(w); });
-          } else if (o && o.v === 3 && Array.isArray(o.students) && !o.classes) {   /* Bewertung_Offline (Zwischenversion) */
-            o.students.forEach(function (st) {
-              var nm = String(st.name || '').trim(); if (!nm || !st.r) return;
-              Object.keys(st.r).forEach(function (m) {
-                var mm = MAPM[m], x = st.r[m] || {}; if (!mm) return;
-                var pts = {}; Object.keys(x.pts || {}).forEach(function (k) { var n = npOf(x.pts[k]); if (C[k] && n !== null) pts[k] = n; });
-                if (!Object.keys(pts).length) return;
-                items.push({ name:nm, type:mm[0], variant:mm[1], sw:(Array.isArray(x.sw) ? x.sw.filter(function (k) { return SW[k]; }).slice(0, 2) : []), date:parseOldDate(x.datum), thema:String(x.thema || ''), pts:pts, cmt:String(x.cmt || '') });
-              });
-            });
-            Object.keys(o.w || {}).forEach(function (m) {
-              var mm = MAPM[m]; if (!mm) return;
-              var base = mm[0] === 'abfrage' ? 'abfrage' : mm[0] + ':' + (MOD[mm[0]].vars ? (mm[1] === 'fs' ? 'es' : mm[1]) : '-');
-              Object.keys(o.w[m] || {}).forEach(function (k) { if (C[k] && !isNaN(Number(o.w[m][k]))) wmap[base + '/' + k] = Number(o.w[m][k]); });
-            });
-          } else throw new Error('format');
-          if (!items.length) { alert('In dieser Sicherung wurden keine ausgefüllten Bewertungen gefunden.'); return; }
-          if (!confirm(items.length + ' Bewertung(en) in die Klasse „' + c.name + '“ importieren?\nSchüler/innen werden nach Namen zugeordnet, fehlende neu angelegt.')) return;
-          var added = 0, created = 0;
-          items.forEach(function (it) {
-            var st = null;
-            c.students.forEach(function (x) { if (x.name.trim().toLowerCase() === it.name.toLowerCase()) st = x; });
-            if (!st) { st = { id:uid('s'), name:it.name }; c.students.push(st); created++; if (!c.stu) c.stu = st.id; }
-            if (it.type === 'abfrage' && !it.sw.length) it.sw = ['fach'];
-            c.assessments.push({ id:uid('a'), sid:st.id, type:it.type, variant:it.variant, sw:it.type === 'abfrage' ? it.sw : [], swMode:'preset', crit:[], sel:[], date:it.date, thema:it.thema, pts:it.pts, cmt:it.cmt, gew:1 });
-            added++;
-          });
-          Object.keys(wmap).forEach(function (k) { state.w[k] = wmap[k]; });
-          save(); render();
-          alert(added + ' Bewertung(en) importiert' + (created ? ', ' + created + ' Schüler/in neu angelegt' : '') + '.');
-        } catch (err) { alert('Die Datei konnte nicht gelesen werden (erwartet: Sicherung aus „Songvortrag_Bewertung_Offline“ oder „Bewertung_Offline“).'); }
-      };
-      r.readAsText(f); e.target.value = '';
+    view.addEventListener('change', function (e) {
+      var t = e.target, c = cls(); if (!c) return;
+      if (t.dataset.cf !== undefined) { c[t.dataset.cf] = t.value; save(); render(); return; }
+      if (t.dataset.w !== undefined) { state.w[t.dataset.w] = num(t.value, 0); state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); render(); return; }
+      if (t.dataset.sf !== undefined) { var st = stuById(c, t.dataset.sid); if (st) { st.name = t.value; save(); } return; }
+      if (t.dataset.f === 'pickA') { var s = stu(); if (t.value !== '__draft') { ui.cur[state.tab + vk(state.tab) + '|' + s.id] = t.value; render(); } return; }
     });
 
     $('file').addEventListener('change', function (e) {
@@ -1542,9 +1304,9 @@
       r.onload = function () {
         try {
           var o = sanitize(JSON.parse(r.result)); if (!o) throw new Error('leer');
-          if (!confirm('Alle aktuellen Daten durch die geladene Sicherung ersetzen?')) return;
+          if (!confirm('Daten überschreiben?')) return;
           state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} }; save(); render();
-        } catch (err) { alert('Die Datei konnte nicht gelesen werden (nur Sicherungen aus diesem Tool).'); }
+        } catch (err) { alert('Fehler beim Laden.'); }
       };
       r.readAsText(f); e.target.value = '';
     });
