@@ -235,6 +235,201 @@
     f4: { n:'Begriffssicherheit und Fachsprache', d:['Verwendet Fachbegriffe präzise, sicher und in passendem Kontext.','Verwendet die wichtigsten Fachbegriffe meist richtig.','Fachbegriffe teils ungenau oder umschrieben.','Fachbegriffe selten oder falsch verwendet.','Keine Fachsprache erkennbar.'] },
     f5: { n:'Einordnung und Aktualität', d:['Ordnet das Thema sicher in größere Zusammenhänge ein; stellt Bezüge zu Aktuellem oder Bekanntem her.','Stellt meist sinnvolle Bezüge zu anderen Themen her.','Einordnung nur mit Hilfe oder sehr allgemein.','Kaum Einordnung über das Einzelthema hinaus.','Keine Einordnung erkennbar.'] },
 
+    /* ----- Abfrage: Vokabular ----- */
+    v1: { n:'Bedeutung und Formangaben', d:[
+      'Bedeutungen vollständig und richtig; Artikel, Plural, Formen sicher.',
+      'Bedeutungen meist richtig; wenige Fehler bei den Formen.',
+      'Hauptbedeutung meist richtig; Formangaben lückenhaft.',
+      'Viele falsche oder fehlende Bedeutungen und Formen.',
+      'Kaum Wörter bekannt.' ] },
+    v2: { n:'Anwendung im Satz', d:[
+      'Bildet sichere, passende Beispielsätze; nutzt Wörter in neuem Kontext.',
+      'Beispielsätze meist passend; kleine Fehler.',
+      'Einfache Sätze mit Fehlern; Hilfen nötig.',
+      'Anwendung nur mit starker Hilfe; Sätze oft unpassend.',
+      'Keine Anwendung möglich.' ] },
+    v3: { n:'Abrufsicherheit und Aussprache', d:[
+      'Rasch und sicher abrufbar; Aussprache korrekt.',
+      'Meist zügig abrufbar; Aussprache überwiegend korrekt.',
+      'Zögerlich; teils Aussprachefehler ohne Verständnisproblem.',
+      'Langes Suchen; Aussprache erschwert das Verständnis.',
+      'Kaum abrufbar; kaum verständlich.' ] },
+    v4: { n:'Wortfeld und Abgrenzung', d:[
+      'Erkennt und nennt verwandte oder ähnliche Begriffe sicher; grenzt sie treffend ab.',
+      'Nennt meist passende verwandte Begriffe; Abgrenzung überwiegend gelungen.',
+      'Wortfeld nur ansatzweise bekannt; Verwechslungen möglich.',
+      'Wortfeld kaum bekannt; häufige Verwechslungen.',
+      'Keine Kenntnis des Wortfelds.' ] },
+    v5: { n:'Rechtschreibung und Schreibweise', d:[
+      'Schreibt die Wörter durchgehend korrekt (Artikel, Plural, Sonderzeichen).',
+      'Schreibt überwiegend korrekt; vereinzelte kleine Fehler.',
+      'Mehrere Rechtschreibfehler, Bedeutung bleibt erkennbar.',
+      'Häufige Rechtschreibfehler erschweren das Erkennen.',
+      'Schreibweise überwiegend falsch.' ] },
+    /* ----- Abfrage: Grammatik / Formen ----- */
+    g1: { n:'Formenbildung', d:[
+      'Alle Formen richtig und sicher gebildet.',
+      'Formen meist richtig; wenige Fehler.',
+      'Gebräuchliche Formen richtig; seltenere fehlerhaft.',
+      'Viele Formen falsch oder unvollständig.',
+      'Kaum Formen beherrscht.' ] },
+    g2: { n:'Regelwissen und Begründen', d:[
+      'Regeln sicher erklärt und begründet; Ausnahmen bekannt.',
+      'Regeln meist richtig erklärt.',
+      'Grundregel genannt; Begründung lückenhaft.',
+      'Regeln ungenau oder falsch.',
+      'Kein Regelwissen erkennbar.' ] },
+    g3: { n:'Anwendung in Beispielsätzen', d:[
+      'Wendet die Regel sicher in eigenen Sätzen an.',
+      'Wendet die Regel weitgehend richtig an.',
+      'Wendet die Regel nur in bekannten Mustern an; Fehler.',
+      'Anwendung kaum möglich.',
+      'Keine Anwendung möglich.' ] },
+    g4: { n:'Fehlererkennung und Selbstkorrektur', d:[
+      'Erkennt eigene Fehler sofort und korrigiert sie selbstständig.',
+      'Erkennt die meisten eigenen Fehler, korrigiert mit kurzer Überlegung.',
+      'Erkennt Fehler nur mit Hinweis.',
+      'Erkennt Fehler auch mit Hinweis kaum.',
+      'Erkennt keine eigenen Fehler.' ] },
+    g5: { n:'Übertragung auf neue Strukturen', d:[
+      'Wendet die Regel sicher auf neue, unbekannte Beispiele an.',
+      'Übertragung auf neue Beispiele gelingt meist.',
+      'Übertragung nur bei sehr ähnlichen Beispielen.',
+      'Übertragung auf Neues gelingt kaum.',
+      'Keine Übertragung möglich.' ] },
+    /* ----- Abfrage: Textkenntnis ----- */
+    t1: { n:'Inhaltskenntnis', d:[
+      'Handlung, Figuren und Schauplätze genau und vollständig bekannt.',
+      'Inhalt weitgehend genau; kleine Lücken.',
+      'Kerninhalt bekannt; Details unsicher.',
+      'Inhalt lückenhaft; Verwechslungen.',
+      'Inhalt kaum bekannt.' ] },
+    t2: { n:'Deutung und Zusammenhänge', d:[
+      'Deutet Figuren, Motive und Zusammenhänge differenziert.',
+      'Deutet meist nachvollziehbar.',
+      'Deutung einfach und beschreibend.',
+      'Kaum Deutung; nur Nacherzählung.',
+      'Keine Deutung möglich.' ] },
+    t3: { n:'Belege am Text', d:[
+      'Belegt Aussagen sicher mit passenden Textstellen.',
+      'Belegt meist passend.',
+      'Belege nur mit Hilfe oder ungenau.',
+      'Kaum Belege; Aussagen unbegründet.',
+      'Keine Textbelege.' ] },
+    t4: { n:'Sprachliche und stilistische Mittel', d:[
+      'Erkennt und deutet sprachliche oder stilistische Mittel treffend und begründet.',
+      'Erkennt die wichtigsten Mittel und deutet sie meist richtig.',
+      'Nennt einzelne Mittel, Deutung bleibt oberflächlich.',
+      'Erkennt kaum sprachliche Mittel.',
+      'Keine Erkennung sprachlicher Mittel.' ] },
+    t5: { n:'Einordnung in größere Zusammenhänge', d:[
+      'Ordnet den Text sicher in Epoche, Werk- oder Autor/innen-Kontext ein.',
+      'Ordnet den Text überwiegend richtig ein.',
+      'Einordnung nur ansatzweise oder mit Hilfe.',
+      'Einordnung kaum möglich.',
+      'Keine Einordnung erkennbar.' ] },
+    /* ----- Lesen: zusätzliche Kriterien ----- */
+    hal: { n:'Haltung und Blickkontakt', d:[
+      'Ruhige, aufrechte Haltung; sucht bewusst Blickkontakt zum Publikum, ohne den Lesefluss zu verlieren.',
+      'Meist ruhige Haltung; blickt gelegentlich auf, Lesefluss bleibt erhalten.',
+      'Haltung eher unruhig oder verkrampft; kaum Blickkontakt.',
+      'Unruhige Haltung stört den Vortrag; kein Blickkontakt.',
+      'Keine erkennbare Haltung zum Publikum; wirkt völlig unvorbereitet.' ] },
+    glie: { n:'Gliederung und Textstruktur', d:[
+      'Macht Absätze, Kapitel- oder Sinnabschnitte durch Pausen und Stimmführung klar hörbar.',
+      'Gliederung meist erkennbar.',
+      'Gliederung nur ansatzweise hörbar.',
+      'Kaum erkennbare Gliederung; Text wirkt wie aus einem Guss ohne Absätze.',
+      'Keine Gliederung erkennbar.' ] },
+    med: { n:'Umgang mit dem Lesetext', d:[
+      'Hält Buch oder Blatt sachgerecht, blättert ruhig und störungsfrei; Text jederzeit im Blick.',
+      'Umgang mit dem Text meist sicher; selten kurze Unterbrechungen.',
+      'Umgang mit dem Text teils ungeschickt, verliert kurz die Stelle.',
+      'Umgang mit dem Text ungeschickt; wiederholt Verzögerungen beim Blättern oder Suchen.',
+      'Kommt mit dem Text nicht zurecht; Vortrag wird dadurch stark gestört.' ] },
+    /* ----- Gedicht: zusätzliche Kriterien ----- */
+    reim: { n:'Reim- und Formbewusstsein', d:[
+      'Macht Reimschema, Strophenform und Versmaß durch Betonung bewusst hörbar.',
+      'Form und Reim meist erkennbar umgesetzt.',
+      'Form nur ansatzweise beachtet.',
+      'Form und Reim werden kaum beachtet.',
+      'Keine Beachtung von Form oder Reim.' ] },
+    pause: { n:'Pausensetzung an Strophen- und Versenden', d:[
+      'Setzt bewusste Pausen an Strophen- und sinnvollen Versenden, nicht nur am Satzende.',
+      'Pausen meist passend an Vers- oder Strophengrenzen.',
+      'Pausen nur teils an passenden Stellen.',
+      'Pausen wirken zufällig, kaum an Vers- oder Strophengrenzen orientiert.',
+      'Keine erkennbare Pausensetzung.' ] },
+    deut: { n:'Eigene Interpretation und Betonungsentscheidungen', d:[
+      'Trifft eigene, begründbare Betonungsentscheidungen; persönlicher Zugang zum Gedicht erkennbar.',
+      'Eigene Deutung erkennbar, überwiegend stimmig umgesetzt.',
+      'Eigene Deutung nur ansatzweise erkennbar.',
+      'Kaum eigene Deutung; Vortrag wirkt mechanisch.',
+      'Keine eigene Deutung erkennbar.' ] },
+    /* ----- Song: zusätzliche Kriterien ----- */
+    s6: { n:'Rhythmusgefühl und Musikalität', d:[
+      'Trifft Rhythmus und Phrasierung des Songs beim Vortrag der Textpassagen sicher.',
+      'Rhythmus und Phrasierung überwiegend getroffen.',
+      'Rhythmus nur teilweise getroffen.',
+      'Rhythmus wird kaum getroffen; Vortrag wirkt losgelöst vom Song.',
+      'Kein erkennbarer Bezug zum Rhythmus des Songs.' ] },
+    s7: { n:'Vorbereitung und Medieneinsatz', d:[
+      'Technik (Abspielgerät, ggf. Visualisierung) läuft reibungslos; gut vorbereitet.',
+      'Vorbereitung meist gelungen; kleine technische Verzögerungen.',
+      'Vorbereitung lückenhaft; merkliche Verzögerungen.',
+      'Vorbereitung unzureichend; deutliche Störungen im Ablauf.',
+      'Keine erkennbare Vorbereitung; Vortrag bricht wegen Technik ab.' ] },
+    s8: { n:'Einhaltung der Vortragszeit', d:[
+      'Hält die vorgegebene Zeit sicher und sinnvoll ein.',
+      'Zeit wird mit geringer Abweichung eingehalten.',
+      'Deutliche Abweichung von der vorgegebenen Zeit.',
+      'Zeit wird stark über- oder unterschritten.',
+      'Zeitvorgabe wird ignoriert.' ] },
+    /* ----- Unterrichtsbeitrag: zusätzliche Kriterien ----- */
+    u6: { n:'Vorbereitung und Materialeinsatz', d:[
+      'Bringt benötigtes Material mit; nutzt eigene Aufzeichnungen gezielt und sinnvoll.',
+      'Meist vorbereitet; Material überwiegend vorhanden.',
+      'Vorbereitung lückenhaft; Material teils unvollständig.',
+      'Kaum vorbereitet; Material fehlt häufig.',
+      'Keine erkennbare Vorbereitung.' ] },
+    u7: { n:'Kritisches und reflektiertes Denken', d:[
+      'Hinterfragt Aussagen, prüft Argumente, bringt begründete Gegenpositionen ein.',
+      'Hinterfragt gelegentlich; Ansätze eigener Bewertung.',
+      'Übernimmt Aussagen meist unreflektiert.',
+      'Keine eigene Einordnung erkennbar.',
+      'Kein kritisches Denken erkennbar.' ] },
+    u8: { n:'Zuverlässigkeit bei Arbeitsaufträgen', d:[
+      'Erledigt Arbeitsaufträge im Unterricht zuverlässig, selbstständig und termingerecht.',
+      'Arbeitsaufträge meist zuverlässig erledigt.',
+      'Arbeitsaufträge teils unvollständig oder verspätet.',
+      'Arbeitsaufträge häufig unvollständig oder verspätet.',
+      'Arbeitsaufträge werden nicht erledigt.' ] },
+    /* ----- Theater: zusätzliche Kriterien ----- */
+    th6: { n:'Bühnenpräsenz und Raumnutzung', d:[
+      'Nutzt die Bühne bewusst; Positionierung und Wege wirken durchdacht.',
+      'Raumnutzung meist bewusst und passend.',
+      'Raumnutzung eher zufällig.',
+      'Kaum bewusste Raumnutzung; wirkt verloren auf der Bühne.',
+      'Keine erkennbare Raumnutzung.' ] },
+    th7: { n:'Umgang mit Pannen und Improvisation', d:[
+      'Reagiert souverän auf Pannen; improvisiert passend, ohne den Spielfluss zu stören.',
+      'Reagiert meist angemessen auf kleine Pannen.',
+      'Pannen bringen den Spielfluss kurz ins Stocken.',
+      'Pannen stören den Spielfluss deutlich.',
+      'Kann mit Pannen nicht umgehen; Szene bricht ab.' ] },
+    th8: { n:'Umgang mit Requisite, Kostüm und Technik', d:[
+      'Geht sachgerecht mit Requisite und Kostüm um; Einsätze bei Licht oder Ton sicher.',
+      'Umgang meist sicher; kleine Unsicherheiten.',
+      'Umgang teils ungeschickt; vereinzelte Verzögerungen.',
+      'Umgang häufig ungeschickt; wiederkehrende Störungen.',
+      'Requisite, Kostüm oder Technik werden nicht sachgerecht gehandhabt.' ] },
+    /* ----- Abfrage: immer dabei ----- */
+    dar: { n:'Darstellung und Gesprächsverhalten', d:[
+      'Klar und zusammenhängend; sichere Fachsprache; erfasst Fragen sofort.',
+      'Meist klar, fachsprachlich sicher; erfasst Fragen meist; selten Hilfe.',
+      'Einigermaßen verständlich; Fachsprache ungenau; Hilfen nötig.',
+      'Unsicher, unzusammenhängend; meidet Fachbegriffe; viele Hilfen.',
+      'Kaum verständlich; Fragen werden nicht erfasst.' ] },
     r_sach: { n:'Sachkenntnis und Inhalt', d:['Thema umfassend, fachlich korrekt und auf das Wesentliche konzentriert.','Thema korrekt und weitgehend vollständig erfasst.','Im Wesentlichen korrekt; Lücken oder Nebensächliches.','Lückenhaft, teils fehlerhaft; Wesentliches fehlt.','Thema verfehlt oder grob fehlerhaft.'] },
     r_quellen: { n:'Recherche und Quellenangaben', d:['Vielfältige, seriöse Quellen, kritisch geprüft und korrekt angegeben.','Geeignete Quellen, überwiegend korrekt angegeben.','Wenige oder einseitige Quellen; Angaben lückenhaft.','Fragwürdige Quellen; kaum Angaben.','Keine Quellen angegeben.'] },
     r_aufbau: { n:'Aufbau und Struktur', d:['Klare, logische Gliederung; Einstieg weckt Interesse; Schluss bündelt Ergebnisse.','Nachvollziehbare Gliederung; Einleitung und Schluss passend.','Gliederung erkennbar, Übergänge teils unklar; Einleitung/Schluss knapp.','Gliederung kaum erkennbar; Sprünge; Einleitung oder Schluss fehlen.','Ungeordnet, kein roter Faden erkennbar.'] },
