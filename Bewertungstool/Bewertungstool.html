@@ -490,7 +490,9 @@
     ws_q_kritik: { n:'Quellenkritik', d:['Entstehung, Autorschaft und Interessenlage jeder Quelle kritisch geprüft.','Quellen überwiegend kritisch eingeordnet.','Quellenkritik knapp oder oberflächlich.','Kaum Quellenkritik.','Keine Quellenkritik.'] },
     ws_q_vielfalt: { n:'Vielfalt der Literatur', d:['Breites Spektrum an Positionen und Fachliteratur.','Mehrere Positionen berücksichtigt.','Wenig Vielfalt; überwiegend eine Richtung.','Einseitige Literatur.','Nur eine Quelle oder Quellen fehlen.'] },
     ws_q_zitat: { n:'Zitierweise', d:['Zitate durchgehend korrekt und einheitlich.','Zitate meist korrekt.','Zitierweise uneinheitlich.','Zitate häufig fehlerhaft.','Nicht zitiert.'] },
-    ws_q_verz: { n:'Literaturverzeichnis', d:['Vollständig, korrekt und einheitlich formatiert.','Weitgehend vollständig und korrekt.','Lückenhaft oder uneinheitlich.','Stark fehlerhaft.','Fehlt.'] }
+    ws_q_verz: { n:'Literaturverzeichnis', d:['Vollständig, korrekt und einheitlich formatiert.','Weitgehend vollständig und korrekt.','Lückenhaft oder uneinheitlich.','Stark fehlerhaft.','Fehlt.'] },
+    th_team: { n:'Zusammenarbeit im Ensemble', d:['Fördert das Zusammenspiel aktiv; hilft Mitspielenden und gibt Impulse.','Arbeitet verlässlich im Ensemble mit.','Arbeitet mit, bleibt im Zusammenspiel aber zurückhaltend.','Zusammenspiel gelingt nur mit Hilfe.','Stört das Zusammenspiel.'] },
+    u8: { n:'Verständlichkeit der Beiträge', d:['Beiträge klar, geordnet und für alle gut nachvollziehbar.','Beiträge meist verständlich und gut strukturiert.','Beiträge teils unklar oder unstrukturiert.','Beiträge oft schwer nachvollziehbar.','Beiträge kaum verständlich.'] }
   };
 
   var SOURCES = ['Referat','Präsentation','Mitarbeit (Unterricht)','Projektbeitrag','Debatte','Rechenschaftsablage','Kurzarbeit','Stegreifaufgabe (Ex)','Lesen','Gedichtvortrag','Songvortrag','Abfrage','Sonstiges'];
@@ -504,13 +506,13 @@
     gedicht: { label:'Gedichtvortrag', short:'Gedicht',        src:'Gedichtvortrag', tt:'Gedicht', vars:{ de:'Deutsch', es:'Spanisch', fs:'Fremdsprache' },
                lists:{ de:[['tex',18],['spr',15],['vers',18],['sinn',18],['auft',16],['empa',15]], es:GED_FS, fs:GED_FS } },
     song:    { label:'Songvortrag Spanisch',    short:'Song',           src:'Songvortrag',    tt:'Song',   vars:null,
-               lists:{ '-':[['s1',25],['s2',25],['s3',20],['s4',20],['s5',10]] } },
+               lists:{ '-':[['s1',20],['s2',20],['s3',15],['s4',15],['s5',10],['inton',20]] } },
     abfrage: { label:'Abfrage', short:'Abfrage',        src:'Abfrage',        tt:'Thema',  vars:null },
     unterricht: { label:'Unterrichtsbeitrag', short:'Unterricht', src:'Unterrichtsbeitrag', tt:'Zeitraum / Thema', vars:null,
-               lists:{ '-':[['u1',15],['u2',25],['u3',20],['u4',15],['u5',10],['u6',10],['u7',5]] } },
+               lists:{ '-':[['u1',12],['u2',18],['u3',15],['u4',10],['u5',10],['u6',12],['u7',8],['u8',15]] } },
 
     theater: { label:'Theaterperformance', short:'Theater', src:'Theater', tt:'Inszenierung / Szene', vars:null,
-               lists:{ '-':[['th_schauspiel',30],['th_regie',25],['th_buehne',20],['th_maske',15],['th_pr',10]] } },
+               lists:{ '-':[['th_schauspiel',25],['korpo',15],['th_regie',15],['th_buehne',15],['th_maske',10],['th_pr',10],['th_team',10]] } },
 
     pseminar: { label:'P-Seminar', short:'P-Seminar', src:'P-Seminar', tt:'Projekt / Thema',
                 vars:{ referat:'Referat', unterricht:'Unterrichtsbeitrag', portfolio:'Portfolio', projekt:'Fertiges Projekt', organisation:'Organisation / Projektmanagement' },
@@ -531,33 +533,42 @@
 
   var REF_G = { r_sach:'I', r_quellen:'I', r_dtext:'I', r_gsach:'I', r_gquellen:'I', r_gurteil:'I', r_psach:'I', r_panalyse:'I', r_purteil:'I', r_einhalt:'I', r_aufbau:'P', r_vortrag:'P', r_medien:'P', r_sprache:'S' };
 
+var G_DESC = {
+    I: 'Inhalt: richtig, vollständig und durchdacht – was gesagt oder geschrieben wird.',
+    S: 'Sprache: Wortschatz, Grammatik, Aussprache und Lesetechnik – wie korrekt und verständlich formuliert wird.',
+    K: 'Kommunikation: Vortrag, Ausdruck, Blickkontakt, Umgang mit Fragen – wie wirkungsvoll gesprochen und auf andere eingegangen wird.',
+    G: 'Gestaltung: Aufbau, Medien, Form und künstlerische Umsetzung – wie das Ergebnis strukturiert und gestaltet ist.',
+    O: 'Organisation & Mitarbeit: Planung, Zusammenarbeit, Beteiligung und Dokumentation – wie gearbeitet und mitgewirkt wird.'
+  };
+
   var WG = {
-    lesen:   { g:{ T:'Lesetechnik', A:'Aussprache', G:'Gestaltung', V:'Textverständnis' },
-               m:{ gen:'T', fluss:'T', aus:'A', bet:'G', gest:'G', verst:'V', inton:'G', atmos:'G' },
-               p:[ ['tech','Schwerpunkt Lesetechnik',{ T:50, A:15, G:20, V:15 }], ['gest','Schwerpunkt Gestaltung',{ T:20, A:15, G:50, V:15 }] ] },
-    gedicht: { g:{ T:'Textsicherheit', S:'Sprechen', G:'Gestaltung', A:'Auftreten' },
-               m:{ tex:'T', spr:'S', vers:'G', sinn:'G', auft:'A', korpo:'A', empa:'G' },
-               p:[ ['text','Schwerpunkt Textsicherheit',{ T:50, S:15, G:25, A:10 }], ['gest','Schwerpunkt Gestaltung',{ T:20, S:15, G:55, A:10 }] ] },
-    song:    { g:{ S:'Sprache', I:'Interpretation', V:'Vortrag' },
-               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'V' },
-               p:[ ['spr','Schwerpunkt Sprache',{ S:50, I:25, V:25 }], ['int','Schwerpunkt Interpretation',{ S:25, I:50, V:25 }] ] },
-    unterricht: { g:{ B:'Beteiligung', Q:'Qualität', K:'Kommunikation' },
-               m:{ u1:'B', u6:'B', u2:'Q', u3:'Q', u4:'K', u5:'K', u7:'Q' },
-               p:[ ['qual','Schwerpunkt Qualität',{ B:20, Q:60, K:20 }], ['bet','Schwerpunkt Beteiligung',{ B:50, Q:30, K:20 }] ] },
-    theater: { g:{ S:'Schauspiel', R:'Regie', B:'Bühne', M:'Maske', P:'PR' },
-               m:{ th_schauspiel:'S', th_regie:'R', th_buehne:'B', th_maske:'M', th_pr:'P' },
-               p:[ ['schauspiel','Schwerpunkt Schauspiel',{ S:50, R:20, B:15, M:10, P:5 }], ['regie','Schwerpunkt Regie & Bühne',{ S:25, R:40, B:25, M:5, P:5 }] ] },
-    pseminar: { g:{ I:'Inhalt', F:'Form & Darstellung', P:'Prozess & Zusammenarbeit' },
-                m:{ ps_r_inhalt:'I', ps_r_aufbau:'F', ps_r_vortrag:'F', ps_r_medien:'F', ps_r_diskussion:'P', ps_u_beteiligung:'P', ps_u_qualitaet:'I', ps_u_kooperation:'P', ps_u_impulse:'I', ps_u_sprache:'F', ps_p_vollst:'I', ps_p_reflex:'P', ps_p_doku:'F', ps_beruf:'I', ps_p_gestalt:'F', ps_projekt:'I', ps_j_ziel:'I', ps_j_qual:'F', ps_j_zielgr:'F', ps_j_wirk:'P', ps_org:'P', ps_o_zeit:'P', ps_o_rollen:'P', ps_o_doku:'F', ps_o_probleme:'P' },
-                p:[ ['inhalt','Schwerpunkt Inhalt',{ I:60, F:20, P:20 }], ['form','Schwerpunkt Form & Darstellung',{ I:25, F:50, P:25 }] ] },
-    wseminar: { g:{ I:'Inhalt', F:'Form & Darstellung', P:'Prozess & Zusammenarbeit' },
-                m:{ ws_referat:'I', ws_w_methode:'I', ws_w_aufbau:'F', ws_w_fragen:'P', ws_w_medien:'F', ws_unterricht:'P', ws_u_fach:'I', ws_u_kritik:'I', ws_u_zusammen:'P', ws_u_regel:'P', ws_gliederung:'I', ws_g_frage:'I', ws_g_logik:'F', ws_g_abgrenz:'I', ws_g_tiefe:'F', ws_expose:'I', ws_e_method:'I', ws_e_plan:'P', ws_e_stand:'I', ws_e_sprache:'F', ws_probe:'I', ws_pr_stil:'F', ws_pr_arg:'I', ws_pr_beleg:'F', ws_pr_eig:'P', ws_q_auswahl:'I', ws_q_kritik:'I', ws_q_vielfalt:'I', ws_q_zitat:'F', ws_q_verz:'F' },
-                p:[ ['inhalt','Schwerpunkt Inhalt',{ I:60, F:20, P:20 }], ['form','Schwerpunkt Form & Darstellung',{ I:25, F:50, P:25 }] ] },
+    lesen: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ gen:'S', fluss:'S', bet:'S', aus:'S', gest:'K', inton:'K', verst:'K' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    gedicht: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ tex:'I', empa:'I', einf:'I', spr:'S', vers:'S', aus:'S', sinn:'K', auft:'K' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    song: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'K', inton:'K' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    unterricht: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ u1:'O', u6:'O', u2:'I', u3:'I', u4:'S', u8:'S', u5:'K', u7:'K' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    theater: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ th_schauspiel:'K', korpo:'K', th_regie:'G', th_buehne:'G', th_maske:'G', th_pr:'O', th_team:'O' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    pseminar: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ ps_r_inhalt:'I', ps_r_aufbau:'I', ps_r_vortrag:'K', ps_r_diskussion:'K', ps_r_medien:'G', ps_u_beteiligung:'O', ps_u_kooperation:'O', ps_u_qualitaet:'I', ps_u_impulse:'I', ps_u_sprache:'S', ps_p_vollst:'O', ps_p_reflex:'I', ps_p_doku:'G', ps_beruf:'I', ps_p_gestalt:'G', ps_projekt:'I', ps_j_ziel:'I', ps_j_qual:'G', ps_j_zielgr:'K', ps_j_wirk:'K', ps_org:'O', ps_o_zeit:'O', ps_o_rollen:'O', ps_o_doku:'G', ps_o_probleme:'K' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    wseminar: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ ws_referat:'I', ws_w_methode:'I', ws_w_aufbau:'G', ws_w_fragen:'K', ws_w_medien:'G', ws_unterricht:'O', ws_u_fach:'I', ws_u_kritik:'I', ws_u_zusammen:'O', ws_u_regel:'O', ws_gliederung:'I', ws_g_frage:'I', ws_g_logik:'G', ws_g_abgrenz:'I', ws_g_tiefe:'G', ws_expose:'I', ws_e_method:'I', ws_e_plan:'O', ws_e_stand:'I', ws_e_sprache:'S', ws_probe:'I', ws_pr_stil:'S', ws_pr_arg:'I', ws_pr_beleg:'G', ws_pr_eig:'O', ws_q_auswahl:'I', ws_q_kritik:'I', ws_q_vielfalt:'I', ws_q_zitat:'G', ws_q_verz:'G' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
+    referat: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
+               m:{ r_sach:'I', r_dtext:'I', r_gsach:'I', r_gquellen:'I', r_gurteil:'I', r_psach:'I', r_panalyse:'I', r_purteil:'I', r_einhalt:'I', r_quellen:'I', r_aufbau:'G', r_medien:'G', r_vortrag:'K', r_sprache:'S' },
+               p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
     abfrage: { g:{ W:'Wissen', V:'Verständnis', A:'Anwendung', D:'Darstellung' },
                m:{ f1:'W', v1:'W', g1:'W', t1:'W', f2:'V', g2:'V', t2:'V', f3:'A', v2:'A', f4:'D', dar:'D' },
-               p:[ ['wiss','Schwerpunkt Wissen',{ W:50, V:20, A:20, D:10 }] ] },
-    referat: { g:{ I:'Inhalt', P:'Präsentation', S:'Sprache' }, m:REF_G,
-               p:[ ['inhalt','Schwerpunkt Inhalt',{ I:60, P:25, S:15 }], ['praes','Schwerpunkt Präsentation',{ I:35, P:45, S:20 }] ] }
+               p:[ ['wiss','Schwerpunkt Wissen',{ W:50, V:20, A:20, D:10 }] ] }
   };
 
   var POOL = {
@@ -691,9 +702,9 @@
 
   var KEY = 'muendliche_noten_tool_v6';
   var state = load() || fresh();
-  var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} };
+  var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} };
 
-  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
+  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, muster:[], mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
   function save() { clearTimeout(tmr); tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 300); }
@@ -704,6 +715,7 @@
     f.w = (o.w && typeof o.w === 'object') ? o.w : {};
     f.tab = TABS.indexOf(o.tab) >= 0 ? o.tab : 'student';
     f.vt = (o.vt && typeof o.vt === 'object') ? o.vt : {};
+    f.muster = (Array.isArray(o.muster) ? o.muster : []).filter(function (m) { return m && typeof m.name === 'string' && typeof m.mk === 'string' && Array.isArray(m.sel); });
     f.classes = o.classes.map(function (c) {
       var students = (Array.isArray(c.students) ? c.students : []).map(function (s) { return { id:String(s.id || uid('s')), name:String(s.name || '') }; });
       var ids = {}; students.forEach(function (s) { ids[s.id] = 1; });
@@ -752,6 +764,16 @@
   function modKey(a) { return a.type === 'abfrage' ? 'abfrage' : a.type + ':' + (MOD[a.type].vars ? (a.variant === 'fs' && a.type !== 'referat' ? 'es' : a.variant) : '-'); }
   function poolKeyOf(a) { return MOD[a.type].vars ? a.variant : '-'; }
   function baseIdsOf(a) { return MOD[a.type].lists[poolKeyOf(a)].map(function (p) { return p[0]; }); }
+  function shareList(crs) {
+    var tot = crs.reduce(function (x, k) { return x + k.w; }, 0);
+    if (!tot) return crs.map(function () { return 0; });
+    var raw = crs.map(function (k) { return k.w / tot * 100; });
+    var fl = raw.map(function (r) { return Math.floor(r); });
+    var rest = 100 - fl.reduce(function (x, y) { return x + y; }, 0);
+    raw.map(function (r, i) { return [r - fl[i], i]; }).sort(function (x, y) { return y[0] - x[0]; })
+      .slice(0, rest).forEach(function (p) { fl[p[1]]++; });
+    return fl;
+  }
   function critsOf(a) {
     var mk = modKey(a), list = [], scale = 1;
     if (a.type === 'abfrage') {
@@ -765,8 +787,7 @@
       list.push(['dar', 25]);
     } else if (POOL[a.type]) {
       var pool = POOL[a.type][poolKeyOf(a)] || [];
-      var activeIds = (a.sel && a.sel.length) ? a.sel : baseIdsOf(a);
-      list = pool.filter(function (p) { return activeIds.indexOf(p[0]) >= 0; });
+      list = pool.filter(function (p) { return (a.sel || []).indexOf(p[0]) >= 0; });
     } else {
       list = MOD[a.type].lists[MOD[a.type].vars ? a.variant : '-'];
     }
@@ -848,9 +869,10 @@
     h += '<div class="fld"><b>Datum</b>' + (edit ? '<input type="date" data-f="date" value="' + esc(a.date) + '">' : '<span class="v">' + fd(a.date) + '</span>') + '</div></div>';
     h += '<div class="grid" style="grid-template-rows:auto repeat(' + Math.max(1, cr.length) + ',1fr)"><div class="gh">Kriterium</div>';
     LV.forEach(function (l) { h += '<div class="gh">' + l.n + '<span>' + l.np + ' NP</span></div>'; });
-    cr.forEach(function (k) {
+    var shs = shareList(cr);
+    cr.forEach(function (k, ki) {
       var p = a.pts[k.id], has = (p !== undefined && p !== null), L = has ? LV[lvOf(p)] : null;
-      h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (Gew.: ' + fmt(k.w, 1) + ')</span><span class="np">';
+      h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (' + shs[ki] + ' %)</span><span class="np">';
       if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="-1" aria-label="Einen Punkt weniger"' + ((!has || p <= L.lo) ? ' disabled' : '') + '>−</button>';
       h += '<b class="nv">' + (has ? p : '–') + '</b>';
       if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="1" aria-label="Einen Punkt mehr"' + ((!has || p >= L.hi) ? ' disabled' : '') + '>+</button>';
@@ -976,7 +998,7 @@
     c.students.forEach(function (s, i) {
       var es = entriesOf(c, s.id), av = average(es);
       h += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(s.name) + '</td><td>' + es.map(function (e) {
-        return '<span style="display:inline-block;margin:0 10px 2px 0;white-space:nowrap">' + fds(e.date) + ' ' + esc(e.source) + (e.thema ? ' (' + esc(e.thema) + ')' : '') + ': <b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b>' + (e.gew !== 1 ? ' ×' + fmt(e.gew) : '') + '</span>';
+        return '<div style="white-space:nowrap">' + fds(e.date) + ' ' + esc(e.source) + (e.thema ? ' (' + esc(e.thema) + ')' : '') + ': <b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b>' + (e.gew !== 1 ? ' ×' + fmt(e.gew) : '') + '</div>';
       }).join('') + '</td><td class="c"><b>' + (av ? fmt(av.avg, 1) : '–') + '</b></td></tr>';
     });
     return h + '</table></section>';
@@ -1039,10 +1061,27 @@
       }
       h += '</div>';
     } else if (POOL[type]) {
-      var baseIds = baseIdsOf(a), activeIds = (a.sel && a.sel.length) ? a.sel : baseIds, pool = POOL[type][poolKeyOf(a)] || [];
-      h += '<div class="panel" style="margin-top:0"><div class="row"><span>Kriterien für diese Bewertung (aktivierbar / abwählbar):</span></div><div class="row">' +
-           pool.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (activeIds.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
-           '</div></div>';
+      var mk = modKey(a), pool = POOL[type][poolKeyOf(a)] || [], act = a.sel || [], W = WG[type], open = !!ui.sOpen[mk];
+      h += '<div class="panel" style="margin-top:0"><div class="row"><button data-act="sOwn" data-mk="' + mk + '">Kriterien wählen ' + (open ? '▲' : '▼') + '</button>' +
+           '<span class="muted">' + (act.length ? act.length + ' Kriterien gewählt' : 'noch keine Kriterien gewählt') + '</span></div>';
+      if (open) {
+        Object.keys(W.g).forEach(function (g) {
+          var items = pool.filter(function (p) { return wGroup(type, p[0]) === g; });
+          if (!items.length) return;
+          h += '<div style="margin:8px 0"><b>' + esc(W.g[g]) + '</b> <span class="muted">' + esc(G_DESC[g]) + '</span><div class="row">' +
+               items.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (act.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
+               '</div></div>';
+        });
+        var musters = state.muster.filter(function (m) { return m.mk === mk; });
+        h += '<div class="row"><b>Muster:</b> ' + (musters.length ? musters.map(function (m) {
+               return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
+             }).join(' ') : '<span class="muted">noch keine gespeichert</span>') + '</div>';
+        h += '<div class="row"><label>Neues Muster (z. B. „Referat 5. Klasse“)<input type="text" id="mName" style="width:260px"></label>' +
+             '<button data-act="mSave">Aktuelle Auswahl als Muster speichern</button></div>';
+        h += '<div class="row"><button class="primary" data-act="wApplyAll">Als Klassenarbeit für alle Schüler/innen anlegen</button></div>';
+        h += '<div class="hint">Alle bekommen dasselbe Thema und dieselben Kriterien. Jede Schüler/in hat eine eigene Bewertung, deren Datum Sie einzeln ändern können. Gelöschte Muster wirken sich nicht auf Noten aus.</div>';
+      }
+      h += '</div>';
     }
     h += weightPanel(type, a);
     h += sheetHTML(c, s, a, true);
@@ -1053,30 +1092,27 @@
 
   function weightPanel(type, a) {
     var W = WG[type]; if (!W) return '';
-    var mk = modKey(a), cur = state.wp[mk] || 'std', crs = critsOf(a), tot = crs.reduce(function (x, k) { return x + k.w; }, 0) || 1;
+    var mk = modKey(a), cur = state.wp[mk] || 'std', crs = critsOf(a);
+    if (!crs.length) return '';
+    var shs = shareList(crs);
     var pres = [['gleich', 'Ausgewogen', null]].concat(W.p).concat([['std', 'Vorgabe', null]]);
-
-    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Schwerpunkt / Gewichtung der Kriterien:</b></div><div class="row">';
+    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Gewichtung (Anteile ergeben zusammen 100 %):</b></div><div class="row">';
     pres.forEach(function (p) {
       var descParts = [];
-      if (p[2]) { Object.keys(p[2]).forEach(function(g) { if (W.g[g]) descParts.push(W.g[g] + ' ' + p[2][g] + '%'); }); }
+      if (p[2]) { Object.keys(p[2]).forEach(function (g) { if (W.g[g] && crs.some(function (k) { return wGroup(type, k.id) === g; })) descParts.push(W.g[g] + ' ' + p[2][g] + '%'); }); }
       var infoText = descParts.length ? descParts.join(' · ') : 'Standard';
       h += '<button class="chip' + (cur === p[0] ? ' on' : '') + '" data-act="wPreset" data-v="' + p[0] + '" title="' + esc(infoText) + '" style="display:inline-flex; flex-direction:column; align-items:flex-start; padding:5px 10px;">' +
-           '<span><b>' + esc(p[1]) + '</b></span>' +
-           '<span style="font-size:8.5pt; opacity:0.85;">' + esc(infoText) + '</span>' +
-           '</button>';
+           '<span><b>' + esc(p[1]) + '</b></span><span style="font-size:8.5pt; opacity:0.85;">' + esc(infoText) + '</span></button>';
     });
     var open = cur === 'eigen' || ui.wOpen[mk];
-    h += '<button class="chip' + (cur === 'eigen' ? ' on' : '') + '" data-act="wOwn" data-mk="' + mk + '">Individuell …</button>';
-    h += '<button class="primary" data-act="wApplyAll" style="margin-left:auto;">Für ganze Klasse übernehmen</button></div>';
-
+    h += '<button class="chip' + (cur === 'eigen' ? ' on' : '') + '" data-act="wOwn" data-mk="' + mk + '">Individuell …</button></div>';
     if (open) {
-      h += '<table class="t" style="max-width:640px; margin-top:8px;"><tr><th>Kriterium</th><th class="c" style="width:110px">Gewicht</th><th class="c" style="width:90px">Anteil</th></tr>';
-      crs.forEach(function (k) {
+      h += '<table class="t" style="max-width:640px; margin-top:8px;"><tr><th>Kriterium</th><th class="c" style="width:120px">Gewicht (Zahl)</th><th class="c" style="width:110px">Anteil</th></tr>';
+      crs.forEach(function (k, i) {
         var key = mk + '/' + k.id, ov = state.w[key], raw = (ov !== undefined && ov !== null) ? ov : baseW(a, k.id);
-        h += '<tr><td>' + esc(k.n) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(raw) + '"></td><td class="c">' + fmt(k.w / tot * 100, 0) + ' %</td></tr>';
+        h += '<tr><td>' + esc(k.n) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(raw) + '"></td><td class="c">' + shs[i] + ' %</td></tr>';
       });
-      h += '</table>';
+      h += '</table><div class="hint">Die Anteile werden aus den Zahlen berechnet und ergeben immer 100 %.</div>';
     }
     return h + '</div>';
   }
@@ -1220,21 +1256,37 @@
         if (!confirm('Diese Bewertung wirklich löschen?')) return;
         c.assessments = c.assessments.filter(function (x) { return x.id !== a2.id; }); delete ui.cur[type + vk(type) + '|' + s.id]; save(); render(); return;
       }
+      if (act === 'sOwn') { ui.sOpen[el.dataset.mk] = !ui.sOpen[el.dataset.mk]; render(); return; }
+      if (act === 'mSave') {
+        var nm = ($('mName') ? $('mName').value : '').trim();
+        if (!nm) { alert('Bitte einen Namen für das Muster eingeben.'); return; }
+        var ca = curA(type); if (!ca.sel || !ca.sel.length) { alert('Bitte zuerst Kriterien wählen.'); return; }
+        var mks = modKey(ca), wv = {};
+        ca.sel.forEach(function (id) { var ov = state.w[mks + '/' + id]; if (ov !== undefined && ov !== null) wv[id] = ov; });
+        state.muster.push({ id:uid('mu'), name:nm, mk:mks, sel:ca.sel.slice(), w:wv }); save(); render(); return;
+      }
+      if (act === 'mLoad') {
+        var mu = null; state.muster.forEach(function (x) { if (x.id === el.dataset.id) mu = x; }); if (!mu) return;
+        var la = curA(type); if (mu.mk !== modKey(la)) { alert('Dieses Muster gehört zu einer anderen Bewertungsart.'); return; }
+        ensure(c, la); la.sel = mu.sel.slice();
+        Object.keys(mu.w || {}).forEach(function (id) { state.w[mu.mk + '/' + id] = mu.w[id]; });
+        ui.sOpen[mu.mk] = true; save(); render(); return;
+      }
+      if (act === 'mDel') {
+        if (!confirm('Dieses Muster löschen? Die Noten bleiben unverändert.')) return;
+        state.muster = state.muster.filter(function (x) { return x.id !== el.dataset.id; }); save(); render(); return;
+      }
       if (act === 'wApplyAll') {
-        var currentA = curA(type); if (!c || !currentA) return;
-        if (!confirm('Diesen Schwerpunkt und Kriterienauswahl wirklich für alle Schüler/innen dieser Klasse in „' + modeLabel(type) + '“ übernehmen?')) return;
-        c.students.forEach(function(stud) {
-          var existing = null;
-          c.assessments.forEach(function(x) { if (x.sid === stud.id && x.type === type && (!MOD[type].vars || x.variant === currentA.variant)) existing = x; });
-          if (existing) {
-            existing.swMode = currentA.swMode; existing.sw = [].concat(currentA.sw); existing.crit = [].concat(currentA.crit); existing.sel = [].concat(currentA.sel); existing.variant = currentA.variant;
-          } else {
-            var newOne = newA(c, type, stud.id);
-            newOne.variant = currentA.variant; newOne.swMode = currentA.swMode; newOne.sw = [].concat(currentA.sw); newOne.crit = [].concat(currentA.crit); newOne.sel = [].concat(currentA.sel);
-            c.assessments.push(newOne);
-          }
+        var ka = curA(type); if (!c || !ka) return;
+        if (!ka.sel || !ka.sel.length) { alert('Bitte zuerst Kriterien wählen.'); return; }
+        if (!confirm('Für alle ' + c.students.length + ' Schüler/innen eine Bewertung „' + modeLabel(type) + '“ mit dem Thema „' + (ka.thema || 'ohne Thema') + '“ und den gewählten Kriterien anlegen?')) return;
+        c.students.forEach(function (stud) {
+          if (stud.id === ka.sid) { ensure(c, ka); return; }
+          var na = newA(c, type, stud.id); delete na._draft;
+          na.variant = ka.variant; na.thema = ka.thema; na.sel = ka.sel.slice(); na.swMode = ka.swMode; na.sw = ka.sw.slice(); na.crit = ka.crit.slice();
+          c.assessments.push(na);
         });
-        save(); render(); alert('Erfolgreich auf alle Schüler/innen der Klasse übertragen!'); return;
+        save(); render(); alert('Klassenarbeit für ' + c.students.length + ' Schüler/innen angelegt. Das Datum können Sie je Schüler/in ändern.'); return;
       }
       if (act === 'printOne') { var a3 = curA(type); printHTML(sheetHTML(c, s, a3, false)); return; }
       if (act === 'printAll') {
@@ -1328,7 +1380,7 @@
         try {
           var o = sanitize(JSON.parse(r.result)); if (!o) throw new Error('leer');
           if (!confirm('Daten überschreiben?')) return;
-          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} }; save(); render();
+          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} }; save(); render();
         } catch (err) { alert('Fehler beim Laden.'); }
       };
       r.readAsText(f); e.target.value = '';
