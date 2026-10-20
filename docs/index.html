@@ -898,10 +898,9 @@
 
   function printHTML(html) {
     var pa = $('printArea'); pa.innerHTML = html; document.body.classList.add('printing');
-    setTimeout(function () {
-      window.print();
-      setTimeout(function () { document.body.classList.remove('printing'); pa.innerHTML = ''; }, 400);
-    }, 60);
+    function done() { window.removeEventListener('afterprint', done); document.body.classList.remove('printing'); pa.innerHTML = ''; }
+    window.addEventListener('afterprint', done);
+    setTimeout(function () { window.print(); }, 60);
   }
   function download(name, text, type) {
     var blob = new Blob([text], { type:type });
