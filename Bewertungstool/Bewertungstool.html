@@ -148,7 +148,6 @@
 </div>
 <div id="printArea"></div>
 <input type="file" id="file" accept="application/json,.json" style="display:none">
-<input type="file" id="fileSong" accept="application/json,.json" style="display:none">
 
 <script>
 (function () {
@@ -163,372 +162,97 @@
   ];
 
   var C = {
-    gen:  { n:'Lesegenauigkeit', d:[
-      'Alle Wörter genau gelesen; Fehler werden erkannt und selbst korrigiert.',
-      'Meist genau; wenige Fehler, meist selbst korrigiert.',
-      'Einzelne Lesefehler oder Auslassungen; Verständnis bleibt gesichert.',
-      'Viele Lesefehler, Auslassungen oder erfundene Wörter.',
-      'Sehr fehlerhaft; Text kaum erkennbar.' ] },
-    fluss:{ n:'Leseflüssigkeit und Tempo', d:[
-      'Flüssig in Sinneinheiten; Tempo passt zum Inhalt und wird gezielt variiert.',
-      'Überwiegend flüssig; seltenes Stocken; Tempo meist passend.',
-      'Teils Wort für Wort; gelegentlich Stocken oder Wiederholungen; Tempo schwankt.',
-      'Häufiges Stocken, Wiederholungen, falsche Anfänge; zu langsam oder gehetzt.',
-      'Abgehackt mit vielen Pausen; kaum zu folgen.' ] },
-    bet:  { n:'Betonung und Satzmelodie', d:[
-      'Betont sinnvoll; Satzzeichen, Frage und Ausruf hörbar umgesetzt; Stimme variiert.',
-      'Meist sinnvoll betont; Satzzeichen weitgehend beachtet.',
-      'Betonung nur teilweise passend; Satzmelodie eher gleichförmig.',
-      'Kaum Betonung; monoton; Satzzeichen oft ignoriert.',
-      'Völlig flach; keine erkennbare Sinnbetonung.' ] },
-    gest: { n:'Pausen, Lautstärke und Ausdruck', d:[
-      'Pausen an Sinngrenzen; Lautstärke und Ausdruck passen zur Stelle.',
-      'Pausen und Lautstärke meist passend; Ausdruck erkennbar.',
-      'Pausen oder Lautstärke teils unpassend; Ausdruck zurückhaltend.',
-      'Pausen fehlen oder stören; zu leise oder zu laut; kaum Ausdruck.',
-      'Kaum hörbar oder unpassend; keine Gestaltung.' ] },
-    verst:{ n:'Textverständnis im Vortrag', d:[
-      'Inhalt, Stimmung und Figuren hörbar verstanden und gestaltet.',
-      'Inhalt erkennbar verstanden; Gestaltung meist passend zum Text.',
-      'Inhalt im Wesentlichen verstanden; Gestaltung wenig inhaltsbezogen.',
-      'Verständnis lückenhaft; Gestaltung passt oft nicht zum Text.',
-      'Kein Textverständnis erkennbar.' ] },
-    aus:  { n:'Aussprache und Lautbildung', d:[
-      'Laute, Wortakzent und Aussprache durchgehend korrekt und natürlich.',
-      'Überwiegend korrekt; einzelne Fehler ohne Verständnisstörung.',
-      'Wiederkehrende Fehler, Verständnis nie gefährdet; deutsch geprägt.',
-      'Häufige Fehler; Verständnis teils erschwert.',
-      'Stark fehlerhaft; kaum verständlich.' ],
-      es:[
-      'Durchgehend korrekt (r/rr, j, ll, ñ, b/v, Wortakzent); natürlich.',
-      'Überwiegend korrekt; einzelne Fehler bei r/rr, j oder ll.',
-      'Wiederkehrende Fehler bei typischen Lauten; deutsch geprägt; verständlich.',
-      'Häufige Fehler, auch beim Wortakzent; Verständnis teils erschwert.',
-      'Stark fehlerhaft; kaum verständlich.' ] },
+    // Lesevortrag & Gedicht (unter 7 Kriterien -> 2 zusätzliche Kriterien ergänzt)
+    gen:  { n:'Lesegenauigkeit', d:['Alle Wörter genau gelesen; Fehler werden erkannt und selbst korrigiert.','Meist genau; wenige Fehler, meist selbst korrigiert.','Einzelne Lesefehler oder Auslassungen; Verständnis bleibt gesichert.','Viele Lesefehler, Auslassungen oder erfundene Wörter.','Sehr fehlerhaft; Text kaum erkennbar.'] },
+    fluss:{ n:'Leseflüssigkeit und Tempo', d:['Flüssig in Sinneinheiten; Tempo passt zum Inhalt und wird gezielt variiert.','Überwiegend flüssig; seltenes Stocken; Tempo meist passend.','Teils Wort für Wort; gelegentlich Stocken oder Wiederholungen; Tempo schwankt.','Häufiges Stocken, Wiederholungen, falsche Anfänge; zu langsam oder gehetzt.','Abgehackt mit vielen Pausen; kaum zu folgen.'] },
+    bet:  { n:'Betonung und Satzmelodie', d:['Betont sinnvoll; Satzzeichen, Frage und Ausruf hörbar umgesetzt; Stimme variiert.','Meist sinnvoll betont; Satzzeichen weitgehend beachtet.','Betonung nur teilweise passend; Satzmelodie eher gleichförmig.','Kaum Betonung; monoton; Satzzeichen oft ignoriert.','Völlig flach; keine erkennbare Sinnbetonung.'] },
+    gest: { n:'Pausen, Lautstärke und Ausdruck', d:['Pausen an Sinngrenzen; Lautstärke und Ausdruck passen zur Stelle.','Pausen und Lautstärke meist passend; Ausdruck erkennbar.','Pausen oder Lautstärke teils unpassend; Ausdruck zurückhaltend.','Pausen fehlen oder stören; zu leise oder zu laut; kaum Ausdruck.','Kaum hörbar oder unpassend; keine Gestaltung.'] },
+    verst:{ n:'Textverständnis im Vortrag', d:['Inhalt, Stimmung und Figuren hörbar verstanden und gestaltet.','Inhalt erkennbar verstanden; Gestaltung meist passend zum Text.','Inhalt im Wesentlichen verstanden; Gestaltung wenig inhaltsbezogen.','Verständnis lückenhaft; Gestaltung passt oft nicht zum Text.','Kein Textverständnis erkennbar.'] },
+    aus:  { n:'Aussprache und Lautbildung', d:['Laute, Wortakzent und Aussprache durchgehend korrekt und natürlich.','Überwiegend korrekt; einzelne Fehler ohne Verständnisstörung.','Wiederkehrende Fehler, Verständnis nie gefährdet; deutsch geprägt.','Häufige Fehler; Verständnis teils erschwert.','Stark fehlerhaft; kaum verständlich.'],
+            es:['Durchgehend korrekt (r/rr, j, ll, ñ, b/v, Wortakzent); natürlich.','Überwiegend korrekt; einzelne Fehler bei r/rr, j oder ll.','Wiederkehrende Fehler bei typischen Lauten; deutsch geprägt; verständlich.','Häufige Fehler, auch beim Wortakzent; Verständnis teils erschwert.','Stark fehlerhaft; kaum verständlich.'] },
+    inton:{ n:'Stimmführung & Modulation', d:['Äußerst differenzierter Einsatz der Stimme zur Spannungssteuerung.','Stimme lebendig geführt; passende Modulation.','Stimme wechselt zwischen ausdrucksstark und gleichförmig.','Kaum Modulation; recht eintönig.','Völlig monotone Stimmführung.'] },
+    atmos:{ n:'Atmosphäre & Raumwirkung', d:['Zieht das Publikum vom ersten Moment an in den Bann.','Erzeugt eine spürbare, passende Atmosphäre.','Atmosphäre bricht zeitweise ein.','Kaum stimmungsvoll.','Keine Wirkung im Raum.'] },
 
-    tex:  { n:'Textsicherheit', d:[
-      'Vollständig auswendig, ohne Hilfe und fehlerfrei.',
-      'Sicher; kleine Fehler selbst korrigiert; keine Hilfe nötig.',
-      'Einzelne Stockungen oder Fehler; ein- bis zweimal Hilfe.',
-      'Mehrfach Aussetzer; deutliche Hilfen nötig.',
-      'Text nicht beherrscht; Vortrag bricht ab.' ] },
-    spr:  { n:'Deutlichkeit, Lautstärke und Tempo', d:[
-      'Klar und gut verständlich; Lautstärke und Tempo passen und werden gezielt variiert.',
-      'Meist klar; Lautstärke und Tempo überwiegend passend.',
-      'Teils undeutlich, zu leise oder zu schnell bzw. langsam.',
-      'Oft undeutlich; Lautstärke oder Tempo stören den Vortrag.',
-      'Kaum verständlich oder nicht hörbar.' ] },
-    vers: { n:'Betonung, Rhythmus und Pausen', d:[
-      'Betonung trifft den Sinn; Rhythmus und Reim hörbar; Pausen an passenden Stellen.',
-      'Betonung meist sinnvoll; Rhythmus erkennbar; Pausen meist passend.',
-      'Betonung nur teilweise passend; Rhythmus wackelig; Pausen zufällig.',
-      'Kaum Betonung; leiert oder Wort für Wort; Pausen unpassend.',
-      'Keine Gestaltung; Vers wird heruntergesprochen.' ] },
-    sinn: { n:'Sinngestaltung und Ausdruck', d:[
-      'Stimmung und Aussage werden hörbar; Stimmlage und Melodie lebendig variiert.',
-      'Stimmung meist erkennbar; Stimme abwechslungsreich.',
-      'Ansätze von Gestaltung; Stimme eher gleichförmig.',
-      'Monoton; Inhalt wird kaum gestaltet.',
-      'Keine erkennbare Gestaltung.' ] },
-    auft: { n:'Auftreten: Haltung, Blick, Mimik, Gestik', d:[
-      'Ruhiger Stand, Blick zum Publikum, gezielte Mimik und Gestik; Titel und Autor/in genannt.',
-      'Sicheres Auftreten; Blick meist beim Publikum; Mimik und Gestik passend.',
-      'Unruhiger Stand; wenig Blickkontakt; Mimik und Gestik zufällig.',
-      'Wirkt unsicher; Blick auf Boden oder Manuskript; keine Gestik.',
-      'Kein sicherer Auftritt; abgewandt oder abgebrochen.' ] },
-    einf: { n:'Einführung und Inhalt', d:[
-      'Nennt Titel und Autor/in; fasst den Inhalt in der Zielsprache sicher zusammen.',
-      'Nennt Titel und Autor/in; Inhalt weitgehend richtig erklärt.',
-      'Einführung knapp; Inhalt nur teilweise erklärt.',
-      'Einführung lückenhaft; Inhalt kaum verständlich erklärt.',
-      'Keine Einführung; Inhalt nicht erklärt.' ] },
+    tex:  { n:'Textsicherheit', d:['Vollständig auswendig, ohne Hilfe und fehlerfrei.','Sicher; kleine Fehler selbst korrigiert; keine Hilfe nötig.','Einzelne Stockungen oder Fehler; ein- bis zweimal Hilfe.','Mehrfach Aussetzer; deutliche Hilfen nötig.','Text nicht beherrscht; Vortrag bricht ab.'] },
+    spr:  { n:'Deutlichkeit, Lautstärke und Tempo', d:['Klar und gut verständlich; Lautstärke und Tempo passen und werden gezielt variiert.','Meist klar; Lautstärke und Tempo überwiegend passend.','Teils undeutlich, zu leise oder zu schnell bzw. langsam.','Oft undeutlich; Lautstärke oder Tempo stören den Vortrag.','Kaum verständlich oder nicht hörbar.'] },
+    vers: { n:'Betonung, Rhythmus und Pausen', d:['Betonung trifft den Sinn; Rhythmus und Reim hörbar; Pausen an passenden Stellen.','Betonung meist sinnvoll; Rhythmus erkennbar; Pausen meist passend.','Betonung nur teilweise passend; Rhythmus wackelig; Pausen zufällig.','Kaum Betonung; leiert oder Wort für Wort; Pausen unpassend.','Keine Gestaltung; Vers wird heruntergesprochen.'] },
+    sinn: { n:'Sinngestaltung und Ausdruck', d:['Stimmung und Aussage werden hörbar; Stimmlage und Melodie lebendig variiert.','Stimmung meist erkennbar; Stimme abwechslungsreich.','Ansätze von Gestaltung; Stimme eher gleichförmig.','Monoton; Inhalt wird kaum gestaltet.','Keine erkennbare Gestaltung.'] },
+    auft: { n:'Auftreten: Haltung, Blick, Mimik, Gestik', d:['Ruhiger Stand, Blick zum Publikum, gezielte Mimik und Gestik; Titel und Autor/in genannt.','Sicheres Auftreten; Blick meist beim Publikum; Mimik und Gestik passend.','Unruhiger Stand; wenig Blickkontakt; Mimik und Gestik zufällig.','Wirkt unsicher; Blick auf Boden oder Manuskript; keine Gestik.','Kein sicherer Auftritt; abgewandt oder abgebrochen.'] },
+    einf: { n:'Einführung und Inhalt', d:['Nennt Titel und Autor/in; fasst den Inhalt in der Zielsprache sicher zusammen.','Nennt Titel und Autor/in; Inhalt weitgehend richtig erklärt.','Einführung knapp; Inhalt nur teilweise erklärt.','Einführung lückenhaft; Inhalt kaum verständlich erklärt.','Keine Einführung; Inhalt nicht erklärt.'] },
+    korpo:{ n:'Körpersprache & Raumpräsenz', d:['Körpersprache unterstützt das gesprochene Wort absolut stimmig.','Sichere und offene Körpersprache.','Körperhaltung zu starr oder unruhig.','Unsichere Gestik; abgewandt.','Keine Raumpräsenz.'] },
+    empa: { n:'Empathie & Textidentifikation', d:['Identifiziert sich vollkommen mit der Intention des Autors.','Guter emotionaler Zugang zum Werk.','Zugang zum Text wirkt konstruiert.','Kaum innerer Bezug zum Text erkennbar.','Völlig hölzerne Darbietung.'] },
 
-    u1: { n:'Häufigkeit und Verlässlichkeit', d:[
-      'Beteiligt sich regelmäßig von sich aus.',
-      'Beteiligt sich häufig, auch ohne Aufforderung.',
-      'Beteiligt sich gelegentlich, meist auf Aufforderung.',
-      'Beteiligt sich selten; nur auf direkte Ansprache.',
-      'Keine erkennbare Beteiligung.' ] },
-    u2: { n:'Fachliche Qualität', d:[
-      'Treffend, differenziert und fachlich richtig.',
-      'Meist richtig und zum Thema passend.',
-      'Teilweise richtig; Kernaussage erkennbar.',
-      'Oft ungenau oder falsch.',
-      'Fachlich nicht verwertbar.' ] },
-    u3: { n:'Selbstständigkeit und Transfer', d:[
-      'Stellt Zusammenhänge her, überträgt auf Neues, bringt eigene Ideen ein.',
-      'Verknüpft Gelerntes meist sinnvoll.',
-      'Gibt Gelerntes wieder; wenig Eigenes.',
-      'Braucht viele Hilfen; reproduziert Bruchstücke.',
-      'Kein selbstständiger Beitrag.' ] },
-    u4: { n:'Sprache und Fachsprache', d:[
-      'Klar, präzise, fachsprachlich sicher.',
-      'Verständlich, meist fachsprachlich korrekt.',
-      'Verständlich, aber ungenau; wenig Fachsprache.',
-      'Schwer verständlich; Fachbegriffe fehlen.',
-      'Kaum verständlich.' ] },
-    u5: { n:'Gesprächsverhalten', d:[
-      'Hört zu, greift Beiträge anderer auf, argumentiert sachlich.',
-      'Geht meist auf andere ein.',
-      'Äußert sich ohne Bezug zu anderen.',
-      'Unterbricht oder stört gelegentlich.',
-      'Stört häufig; hört nicht zu.' ] },
+    // Unterrichtsbeitrag (unter 7 Kriterien -> 2 zusätzliche Kriterien ergänzt)
+    u1: { n:'Häufigkeit und Verlässlichkeit', d:['Beteiligt sich regelmäßig von sich aus.','Beteiligt sich häufig, auch ohne Aufforderung.','Beteiligt sich gelegentlich, meist auf Aufforderung.','Beteiligt sich selten; nur auf direkte Ansprache.','Keine erkennbare Beteiligung.'] },
+    u2: { n:'Fachliche Qualität', d:['Treffend, differenziert und fachlich richtig.','Meist richtig und zum Thema passend.','Teilweise richtig; Kernaussage erkennbar.','Oft ungenau oder falsch.','Fachlich nicht verwertbar.'] },
+    u3: { n:'Selbstständigkeit und Transfer', d:['Stellt Zusammenhänge her, überträgt auf Neues, bringt eigene Ideen ein.','Verknüpft Gelerntes meist sinnvoll.','Gibt Gelerntes wieder; wenig Eigenes.','Braucht viele Hilfen; reproduziert Bruchstücke.','Kein selbstständiger Beitrag.'] },
+    u4: { n:'Sprache und Fachsprache', d:['Klar, präzise, fachsprachlich sicher.','Verständlich, meist fachsprachlich korrekt.','Verständlich, aber ungenau; wenig Fachsprache.','Schwer verständlich; Fachbegriffe fehlen.','Kaum verständlich.'] },
+    u5: { n:'Gesprächsverhalten', d:['Hört zu, greift Beiträge anderer auf, argumentiert sachlich.','Geht meist auf andere ein.','Äußert sich ohne Bezug zu anderen.','Unterbricht oder stört gelegentlich.','Stört häufig; hört nicht zu.'] },
+    u6: { n:'Konstruktive Kooperation', d:['Fördert die Zusammenarbeit in Partner- und Gruppenphasen vorbildlich.','Kooperiert zuverlässig mit anderen.','Arbeitet mit, bleibt aber passiv in der Gruppe.','Beteiligt sich unzureichend an Gruppenarbeit.','Stört kooperatives Arbeiten.'] },
+    u7: { n:'Fehlerkultur & Reflexion', d:['Geht konstruktiv mit eigenen und fremden Fehlern um; reflektiert tiefgehend.','Reflektiert Ergebnisse sachlich.','Akzeptiert Korrekturen nur zögerlich.','Schwer belehrbar bei Fehlern.','Völlig uneinsichtig.'] },
 
-    th_schauspiel: { n:'Schauspiel', d:[
-      'Rolle tief durchdrungen, körperlich und sprachlich überzeugend, hochgradig wandelbar und authentisch.',
-      'Gute schauspielerische Leistung, Text und Rolle sicher umgesetzt.',
-      'Rolle erkennbar, gelegentlich noch etwas steif oder unsicher in der Umsetzung.',
-      'Wenig Ausdruck im Spiel; agiert oft hölzern oder unbeteiligt.',
-      'Keine erkennbare schauspielerische Gestaltung.' ] },
-    th_maske: { n:'Maske & Kostüm', d:[
-      'Kostüm und Maske sind perfekt auf die Rolle abgestimmt, sorgfältig vorbereitet und unterstützen den Charakter vollkommen.',
-      'Passendes Kostüm und stimmige Maske gewählt.',
-      'Ausstattung vorhanden, aber teils ungenau oder wenig charakterfördernd.',
-      'Kostüm oder Maske unvollständig / unpassend vorbereitet.',
-      'Vorgaben bezüglich Maske und Kostüm ignoriert.' ] },
-    th_buehne: { n:'Bühnenbild', d:[
-      'Bühnenbild und Requisiten kreativ, funktional und konzeptionell stark durchdacht eingesetzt.',
-      'Sorgfältig gestaltetes Bühnenbild, das die Szene gut unterstützt.',
-      'Einfaches Bühnenbild; Erfüllung des Mindeststandards.',
-      'Bühnenbild lückenhaft, unpraktisch oder stört den Ablauf.',
-      'Kein Bühnenbild oder völlig ungeeignet.' ] },
-    th_regie: { n:'Regie', d:[
-      'Präzise Inszenierung; klare Vision, souveräne Führung der Mitspieler, gelungene Rhythmisierung der Szene.',
-      'Sicher in der Regiearbeit; stimmiger Ablauf.',
-      'Ansätze einer Inszenierung erkennbar; einige Längen im Timing.',
-      'Regiearbeit unstrukturiert; Spieler wirken oft alleingelassen.',
-      'Keine erkennbare Regiearbeit.' ] },
-    th_pr: { n:'PR & Öffentlichkeitsarbeit', d:[
-      'Hervorragend gestaltete PR (Programmheft, Plakate, digitale Medien); professionelle Werbung und Dokumentation.',
-      'Gute und ansprechende Materialien zur Öffentlichkeitsarbeit erstellt.',
-      'Einfache PR-Maßnahmen durchgeführt.',
-      'PR sehr lückenhaft oder unvollständig.',
-      'Keine PR-Leistung erbracht.' ] },
+    // Umfangreiche Module (> 7 Kriterien) – urspünglicher, kompakter Standard (rückgängig gemacht)
+    th_schauspiel: { n:'Schauspiel', d:['Rolle tief durchdrungen, körperlich und sprachlich überzeugend, hochgradig wandelbar und authentisch.','Gute schauspielerische Leistung, Text und Rolle sicher umgesetzt.','Rolle erkennbar, gelegentlich noch etwas steif oder unsicher in der Umsetzung.','Wenig Ausdruck im Spiel; agiert oft hölzern oder unbeteiligt.','Keine erkennbare schauspielerische Gestaltung.'] },
+    th_maske: { n:'Maske & Kostüm', d:['Kostüm und Maske sind perfekt auf die Rolle abgestimmt, sorgfältig vorbereitet und unterstützen den Charakter vollkommen.','Passendes Kostüm und stimmige Maske gewählt.','Ausstattung vorhanden, aber teils ungenau oder wenig charakterfördernd.','Kostüm oder Maske unvollständig / unpassend vorbereitet.','Vorgaben bezüglich Maske und Kostüm ignoriert.'] },
+    th_buehne: { n:'Bühnenbild', d:['Bühnenbild und Requisiten kreativ, funktional und konzeptionell stark durchdacht eingesetzt.','Sorgfältig gestaltetes Bühnenbild, das die Szene gut unterstützt.','Einfaches Bühnenbild; Erfüllung des Mindeststandards.','Bühnenbild lückenhaft, unpraktisch oder stört den Ablauf.','Kein Bühnenbild oder völlig ungeeignet.'] },
+    th_regie: { n:'Regie', d:['Präzise Inszenierung; klare Vision, souveräne Führung der Mitspieler, gelungene Rhythmisierung der Szene.','Sicher in der Regiearbeit; stimmiger Ablauf.','Ansätze einer Inszenierung erkennbar; einige Längen im Timing.','Regiearbeit unstrukturiert; Spieler wirken oft alleingelassen.','Keine erkennbare Regiearbeit.'] },
+    th_pr: { n:'PR & Öffentlichkeitsarbeit', d:['Hervorragend gestaltete PR (Programmheft, Plakate, digitale Medien); professionelle Werbung und Dokumentation.','Gute und ansprechende Materialien zur Öffentlichkeitsarbeit erstellt.','Einfache PR-Maßnahmen durchgeführt.','PR sehr lückenhaft oder unvollständig.','Keine PR-Leistung erbracht.'] },
 
-    ps_projekt: { n:'Projekt', d:[
-      'Zielgerichtete, hochgradig selbstständige und innovative Umsetzung des Projektvorhabens; herausragendes Ergebnis.',
-      'Projekt erfolgreich und zuverlässig durchgeführt.',
-      'Projekt im Wesentlichen realisiert; kleinere Reibungsverluste.',
-      'Deutliche Defizite bei der Projektrealisierung; viele Hilfen nötig.',
-      'Projekt nicht erfolgreich durchgeführt.' ] },
-    ps_referat: { n:'Referat', d:[
-      'Präsentation des Projekts überzeugend, frei, methodisch glänzend und absolut zielgruppengerecht.',
-      'Sichere und informative Projektpräsentation.',
-      'Präsentation verständlich, aber wenig mitreißend oder etwas holprig.',
-      'Unsicherer Vortrag; schwer verständliche Struktur.',
-      'Vortrag ungenügend.' ] },
-    ps_beruf: { n:'Berufsorientierung', d:[
-      'Reflektierte Auseinandersetzung mit Berufsfeldern, klare persönliche Erkenntnisse und professionelle Dokumentation (Portfolio).',
-      'Solide Einblicke gewonnen und gut aufbereitet.',
-      'Berufsorientierung oberflächlich bearbeitet.',
-      'Kaum erkennbare Auseinandersetzung mit der Berufswelt.',
-      'Vorgaben zur Berufsorientierung nicht erfüllt.' ] },
-    ps_unterricht: { n:'Unterrichtsbeitrag', d:[
-      'Konstruktive Mitarbeit, wertvolle Impulse für das Seminar und hohe Verlässlichkeit.',
-      'Regelmäßige und sinnvolle Beiträge.',
-      'Gelegentliche Mitarbeit.',
-      'Kaum eigene Beiträge.',
-      'Keine Mitarbeit.' ] },
-    ps_org: { n:'Organisation', d:[
-      'Exzellentes Zeitmanagement, vorbildliche Teambeteiligung, eigenverantwortliches Handeln.',
-      'Gut organisiert und zuverlässig im Team.',
-      'Organisation manchmal schleppend; Absprachen wurden teils vergessen.',
-      'Häufige Koordinationsprobleme; unzuverlässig.',
-      'Völlig unorganisiert; blockiert den Prozess.' ] },
+    ps_projekt: { n:'Projekt', d:['Zielgerichtete, hochgradig selbstständige und innovative Umsetzung des Projektvorhabens; herausragendes Ergebnis.','Projekt erfolgreich und zuverlässig durchgeführt.','Projekt im Wesentlichen realisiert; kleinere Reibungsverluste.','Deutliche Defizite bei der Projektrealisierung; viele Hilfen nötig.','Projekt nicht erfolgreich durchgeführt.'] },
+    ps_referat: { n:'Referat', d:['Präsentation des Projekts überzeugend, frei, methodisch glänzend und absolut zielgruppengerecht.','Sichere und informative Projektpräsentation.','Präsentation verständlich, aber wenig mitreißend oder etwas holprig.','Unsicherer Vortrag; schwer verständliche Struktur.','Vortrag ungenügend.'] },
+    ps_beruf: { n:'Berufsorientierung', d:['Reflektierte Auseinandersetzung mit Berufsfeldern, klare persönliche Erkenntnisse und professionelle Dokumentation (Portfolio).','Solide Einblicke gewonnen und gut aufbereitet.','Berufsorientierung oberflächlich bearbeitet.','Kaum erkennbare Auseinandersetzung mit der Berufswelt.','Vorgaben zur Berufsorientierung nicht erfüllt.'] },
+    ps_unterricht: { n:'Unterrichtsbeitrag', d:['Konstruktive Mitarbeit, wertvolle Impulse für das Seminar und hohe Verlässlichkeit.','Regelmäßige und sinnvolle Beiträge.','Gelegentliche Mitarbeit.','Kaum eigene Beiträge.','Keine Mitarbeit.'] },
+    ps_org: { n:'Organisation', d:['Exzellentes Zeitmanagement, vorbildliche Teambeteiligung, eigenverantwortliches Handeln.','Gut organisiert und zuverlässig im Team.','Organisation manchmal schleppend; Absprachen wurden teils vergessen.','Häufige Koordinationsprobleme; unzuverlässig.','Völlig unorganisiert; blockiert den Prozess.'] },
 
-    ws_referat: { n:'Referat', d:[
-      'Wissenschaftspropädeutischer Vortrag: Methodisch exakt, souveräner Umgang mit Fragen, hervorragende Präsentation.',
-      'Sicherer, wissenschaftlich orientierter Vortrag.',
-      'Vortrag verständlich, aber methodisch noch etwas oberflächlich.',
-      'Vortrag zeigt große Lücken im wissenschaftlichen Anspruch.',
-      'Vortrag ungenügend.' ] },
-    ws_unterricht: { n:'Unterrichtsbeitrag', d:[
-      'Führt gewinnbringende Fachdiskussionen, stellt kritische Fragen zum wissenschaftlichen Arbeiten.',
-      'Beteiligt sich aktiv am wissenschaftlichen Austausch.',
-      'Mitarbeit eher passiv oder sporadisch.',
-      'Kaum seminaristischer Beitrag.',
-      'Keine Beteiligung.' ] },
-    ws_gliederung: { n:'Gliederung', d:[
-      'Logisch, präzise, stringente Forschungsfrage und makelloser Aufbau der Arbeit.',
-      'Klare und sinnvolle Struktur der Gliederung.',
-      'Gliederung erkennbar, aber teils sprunghaft oder unpräzise.',
-      'Struktur unklar; Forschungsfrage kaum erkennbar.',
-      'Keine brauchbare Gliederung.' ] },
-    ws_probe: { n:'Probekapitel', d:[
-      'Exzellenter wissenschaftlicher Stil, korrekte Zitierweise, fundierte Argumentation auf universitärem Niveau.',
-      'Sauber erarbeitetes Kapitel mit guten Belegen.',
-      'Kapitel zeigt Ansätze, aber Mängel in Stil oder Zitierweise.',
-      'Erhebliche formale und inhaltliche Mängel.',
-      'Probekapitel ungenügend.' ] },
-    ws_expose: { n:'Exposé', d:[
-      'Präzise Skizze des Vorhabens, begründete Methodik, realistischer Zeit- und Quellenplan.',
-      'Aussagekräftiges und sauberes Exposé.',
-      'Exposé knapp, einige Fragen offen.',
-      'Stark lückenhaftes Exposé.',
-      'Fehlt oder unbrauchbar.' ] },
+    ws_referat: { n:'Referat', d:['Wissenschaftspropädeutischer Vortrag: Methodisch exakt, souveräner Umgang mit Fragen, hervorragende Präsentation.','Sicherer, wissenschaftlich orientierter Vortrag.','Vortrag verständlich, aber methodisch noch etwas oberflächlich.','Vortrag zeigt große Lücken im wissenschaftlichen Anspruch.','Vortrag ungenügend.'] },
+    ws_unterricht: { n:'Unterrichtsbeitrag', d:['Führt gewinnbringende Fachdiskussionen, stellt kritische Fragen zum wissenschaftlichen Arbeiten.','Beteiligt sich aktiv am wissenschaftlichen Austausch.','Mitarbeit eher passiv oder sporadisch.','Kaum seminaristischer Beitrag.','Keine Beteiligung.'] },
+    ws_gliederung: { n:'Gliederung', d:['Logisch, präzise, stringente Forschungsfrage und makelloser Aufbau der Arbeit.','Klare und sinnvolle Struktur der Gliederung.','Gliederung erkennbar, aber teils sprunghaft oder unpräzise.','Struktur unklar; Forschungsfrage kaum erkennbar.','Keine brauchbare Gliederung.'] },
+    ws_probe: { n:'Probekapitel', d:['Exzellenter wissenschaftlicher Stil, korrekte Zitierweise, fundierte Argumentation auf universitärem Niveau.','Sauber erarbeitetes Kapitel mit guten Belegen.','Kapitel zeigt Ansätze, aber Mängel in Stil oder Zitierweise.','Erhebliche formale und inhaltliche Mängel.','Probekapitel ungenügend.'] },
+    ws_expose: { n:'Exposé', d:['Präzise Skizze des Vorhabens, begründete Methodik, realistischer Zeit- und Quellenplan.','Aussagekräftiges und sauberes Exposé.','Exposé knapp, einige Fragen offen.','Stark lückenhaftes Exposé.','Fehlt oder unbrauchbar.'] },
 
-    s1: { n:'Aussprache und Intonation', d:[
-      'Durchgehend korrekt, natürliche Betonung; r/rr, j, ll, ñ sicher; sehr flüssig.',
-      'Überwiegend korrekt, einzelne Fehler ohne Verständnisstörung; meist stimmige Betonung.',
-      'Wiederkehrende Fehler, aber verständlich; Betonung teils deutsch geprägt; gelegentlich Stocken.',
-      'Häufige Fehler, Verständnis teils erschwert; unsicherer Rhythmus; deutliches Stocken.',
-      'Stark fehlerhaft, schwer verständlich; sehr stockend oder nicht erbracht.' ] },
-    s2: { n:'Textverständnis und Interpretation', d:[
-      'Inhalt präzise erfasst; Aussage, Stilmittel, Kontext differenziert gedeutet; eigene Deutung.',
-      'Inhalt sicher erfasst; Aussage und mind. ein Stilmittel erklärt; Deutung weitgehend begründet.',
-      'Inhalt im Wesentlichen richtig; Deutung eher beschreibend; Stilmittel nur ansatzweise.',
-      'Inhalt lückenhaft; vage Erklärungen, teils Fehldeutungen; kaum Kontext.',
-      'Inhalt kaum verstanden; Text nur aufgesagt oder übersetzt; keine Deutung.' ] },
-    s3: { n:'Sprachliche Qualität der Anmoderation', d:[
-      'Frei und klar gegliedert; differenzierter Wortschatz, sichere Grammatik; Fehler stören nicht.',
-      'Weitgehend frei und gegliedert; angemessener Wortschatz; einzelne Fehler, gut verständlich.',
-      'Teils abgelesen; einfacher Wortschatz; wiederkehrende Fehler, aber verständlich.',
-      'Überwiegend abgelesen; begrenzter Wortschatz; viele Fehler erschweren das Verständnis.',
-      'Anmoderation fehlt, kaum verständlich oder nicht auf Spanisch.' ] },
-    s4: { n:'Vortragsleistung', d:[
-      'Text sicher, höchstens kurze Stütze; wirkungsvoller Ausdruck und Blickkontakt; Tempo sicher.',
-      'Text weitgehend sicher; Ausdruck erkennbar; meist Blickkontakt; Tempo überwiegend stimmig.',
-      'Einzelne Textlücken, überbrückt; zurückhaltender Ausdruck; Tempo schwankt.',
-      'Deutliche Textunsicherheit, auf Vorlage angewiesen; kaum Ausdruck.',
-      'Vortrag bricht ab oder wirkt unvorbereitet; Text nicht beherrscht.' ] },
-    s5: { n:'Eigenständigkeit und Songwahl', d:[
-      'Überzeugend begründete, anspruchsvolle Wahl; klar persönlicher Zugang.',
-      'Wahl nachvollziehbar begründet; angemessener Anspruch; persönlicher Bezug erkennbar.',
-      'Wahl nur kurz begründet; durchschnittlicher Anspruch; Bezug eher allgemein.',
-      'Wahl kaum begründet; sehr einfacher Text; kaum Eigenanteil.',
-      'Keine Begründung; Vorgaben nicht erfüllt; kein Eigenanteil.' ] },
+    s1: { n:'Aussprache und Intonation', d:['Durchgehend korrekt, natürliche Betonung; r/rr, j, ll, ñ sicher; sehr flüssig.','Überwiegend korrekt, einzelne Fehler ohne Verständnisstörung; meist stimmige Betonung.','Wiederkehrende Fehler, aber verständlich; Betonung teils deutsch geprägt; gelegentlich Stocken.','Häufige Fehler, Verständnis teils erschwert; unsicherer Rhythmus; deutliches Stocken.','Stark fehlerhaft, schwer verständlich; sehr stockend oder nicht erbracht.'] },
+    s2: { n:'Textverständnis und Interpretation', d:['Inhalt präzise erfasst; Aussage, Stilmittel, Kontext differenziert gedeutet; eigene Deutung.','Inhalt sicher erfasst; Aussage und mind. ein Stilmittel erklärt; Deutung weitgehend begründet.','Inhalt im Wesentlichen richtig; Deutung eher beschreibend; Stilmittel nur ansatzweise.','Inhalt lückenhaft; vage Erklärungen, teils Fehldeutungen; kaum Kontext.','Inhalt kaum verstanden; Text nur aufgesagt oder übersetzt; keine Deutung.'] },
+    s3: { n:'Sprachliche Qualität der Anmoderation', d:['Frei und klar gegliedert; differenzierter Wortschatz, sichere Grammatik; Fehler stören nicht.','Weitgehend frei und gegliedert; angemessener Wortschatz; einzelne Fehler, gut verständlich.','Teils abgelesen; einfacher Wortschatz; wiederkehrende Fehler, aber verständlich.','Überwiegend abgelesen; begrenzter Wortschatz; viele Fehler erschweren das Verständnis.','Anmoderation fehlt, kaum verständlich oder nicht auf Spanisch.'] },
+    s4: { n:'Vortragsleistung', d:['Text sicher, höchstens kurze Stütze; wirkungsvoller Ausdruck und Blickkontakt; Tempo sicher.','Text weitgehend sicher; Ausdruck erkennbar; meist Blickkontakt; Tempo überwiegend stimmig.','Einzelne Textlücken, überbrückt; zurückhaltender Ausdruck; Tempo schwankt.','Deutliche Textunsicherheit, auf Vorlage angewiesen; kaum Ausdruck.','Vortrag bricht ab oder wirkt unvorbereitet; Text nicht beherrscht.'] },
+    s5: { n:'Eigenständigkeit und Songwahl', d:['Überzeugend begründete, anspruchsvolle Wahl; klar persönlicher Zugang.','Wahl nachvollziehbar begründet; angemessener Anspruch; persönlicher Bezug erkennbar.','Wahl nur kurz begründet; durchschnittlicher Anspruch; Bezug eher allgemein.','Wahl kaum begründet; sehr einfacher Text; kaum Eigenanteil.','Keine Begründung; Vorgaben nicht erfüllt; kein Eigenanteil.'] },
 
-    f1: { n:'Sachrichtigkeit und Vollständigkeit', d:[
-      'Fundiert, exakt und umfassend; zentrale Begriffe und Fakten sicher.',
-      'Meist fundiert und genau; kleine Lücken.',
-      'Kernwissen überwiegend vorhanden; teils ungenau oder falsch.',
-      'Grundlagen lückenhaft; oft ungenau oder sachlich falsch.',
-      'Sehr lückenhaft; fast keine Kenntnisse.' ] },
-    f2: { n:'Verständnis und Zusammenhänge', d:[
-      'Tiefes Verständnis; erkennt übergeordnete Zusammenhänge.',
-      'Gutes Verständnis; erkennt meist Zusammenhänge.',
-      'Grundverständnis; wenige Zusammenhänge klar.',
-      'Begriffe bekannt, aber kaum Zusammenhänge.',
-      'Kein Verständnis erkennbar.' ] },
-    f3: { n:'Anwendung und Transfer', d:[
-      'Wendet Wissen frei auf neue Beispiele an; nennt eigene Beispiele.',
-      'Wendet Wissen weitgehend auf neue Fälle an.',
-      'Anwendung nur bei bekannten Beispielen oder mit Hilfe.',
-      'Anwendung kaum möglich; nur Wiedergabe.',
-      'Keine Anwendung möglich.' ] },
-    f4: { n:'Begriffssicherheit und Fachsprache', d:[
-      'Verwendet Fachbegriffe präzise, sicher und in passendem Kontext.',
-      'Verwendet die wichtigsten Fachbegriffe meist richtig.',
-      'Fachbegriffe teils ungenau oder umschrieben.',
-      'Fachbegriffe selten oder falsch verwendet.',
-      'Keine Fachsprache erkennbar.' ] },
-    f5: { n:'Einordnung und Aktualität', d:[
-      'Ordnet das Thema sicher in größere Zusammenhänge ein; stellt Bezüge zu Aktuellem oder Bekanntem her.',
-      'Stellt meist sinnvolle Bezüge zu anderen Themen her.',
-      'Einordnung nur mit Hilfe oder sehr allgemein.',
-      'Kaum Einordnung über das Einzelthema hinaus.',
-      'Keine Einordnung erkennbar.' ] },
+    f1: { n:'Sachrichtigkeit und Vollständigkeit', d:['Fundiert, exakt und umfassend; zentrale Begriffe und Fakten sicher.','Meist fundiert und genau; kleine Lücken.','Kernwissen überwiegend vorhanden; teils ungenau oder falsch.','Grundlagen lückenhaft; oft ungenau oder sachlich falsch.','Sehr lückenhaft; fast keine Kenntnisse.'] },
+    f2: { n:'Verständnis und Zusammenhänge', d:['Tiefes Verständnis; erkennt übergeordnete Zusammenhänge.','Gutes Verständnis; erkennt meist Zusammenhänge.','Grundverständnis; wenige Zusammenhänge klar.','Begriffe bekannt, aber kaum Zusammenhänge.','Kein Verständnis erkennbar.'] },
+    f3: { n:'Anwendung und Transfer', d:['Wendet Wissen frei auf neue Beispiele an; nennt eigene Beispiele.','Wendet Wissen weitgehend auf neue Fälle an.','Anwendung nur bei bekannten Beispielen oder mit Hilfe.','Anwendung kaum möglich; nur Wiedergabe.','Keine Anwendung möglich.'] },
+    f4: { n:'Begriffssicherheit und Fachsprache', d:['Verwendet Fachbegriffe präzise, sicher und in passendem Kontext.','Verwendet die wichtigsten Fachbegriffe meist richtig.','Fachbegriffe teils ungenau oder umschrieben.','Fachbegriffe selten oder falsch verwendet.','Keine Fachsprache erkennbar.'] },
+    f5: { n:'Einordnung und Aktualität', d:['Ordnet das Thema sicher in größere Zusammenhänge ein; stellt Bezüge zu Aktuellem oder Bekanntem her.','Stellt meist sinnvolle Bezüge zu anderen Themen her.','Einordnung nur mit Hilfe oder sehr allgemein.','Kaum Einordnung über das Einzelthema hinaus.','Keine Einordnung erkennbar.'] },
 
-    r_sach: { n:'Sachkenntnis und Inhalt', d:[
-      'Thema umfassend, fachlich korrekt und auf das Wesentliche konzentriert.',
-      'Thema korrekt und weitgehend vollständig erfasst.',
-      'Im Wesentlichen korrekt; Lücken oder Nebensächliches.',
-      'Lückenhaft, teils fehlerhaft; Wesentliches fehlt.',
-      'Thema verfehlt oder grob fehlerhaft.' ] },
-    r_quellen: { n:'Recherche und Quellenangaben', d:[
-      'Vielfältige, seriöse Quellen, kritisch geprüft und korrekt angegeben.',
-      'Geeignete Quellen, überwiegend korrekt angegeben.',
-      'Wenige oder einseitige Quellen; Angaben lückenhaft.',
-      'Fragwürdige Quellen; kaum Angaben.',
-      'Keine Quellen angegeben.' ] },
-    r_aufbau: { n:'Aufbau und Struktur', d:[
-      'Klare, logische Gliederung; Einstieg weckt Interesse; Schluss bündelt Ergebnisse.',
-      'Nachvollziehbare Gliederung; Einleitung und Schluss passend.',
-      'Gliederung erkennbar, Übergänge teils unklar; Einleitung/Schluss knapp.',
-      'Gliederung kaum erkennbar; Sprünge; Einleitung oder Schluss fehlen.',
-      'Ungeordnet, kein roter Faden erkennbar.' ] },
-    r_vortrag: { n:'Vortragsweise', d:[
-      'Frei und lebendig; Blickkontakt, Tempo, Lautstärke und Körpersprache sicher.',
-      'Weitgehend frei; meist Blickkontakt; gut verständlich.',
-      'Teils abgelesen; Blickkontakt wechselhaft; Tempo oder Lautstärke schwanken.',
-      'Überwiegend abgelesen; kaum Blickkontakt; schwer zu folgen.',
-      'Vollständig abgelesen, unverständlich oder abgebrochen.' ] },
-    r_medien: { n:'Medien und Visualisierung', d:[
-      'Medien übersichtlich, funktional und gezielt eingesetzt; stützen den Vortrag.',
-      'Medien übersichtlich und hilfreich; kleine Schwächen in der Gestaltung.',
-      'Medien vorhanden, teils überladen oder lose mit dem Vortrag verbunden.',
-      'Medien unübersichtlich, fehlerhaft oder kaum genutzt.',
-      'Keine oder ungeeignete Medien.' ] },
-    r_sprache: { n:'Sprache und Fachsprache', d:[
-      'Präzise, sachlich, abwechslungsreich; Fachbegriffe sicher und erklärt.',
-      'Angemessener Ausdruck; Fachbegriffe überwiegend sicher.',
-      'Verständlich, teils umgangssprachlich; Fachbegriffe ungenau.',
-      'Unpräzise, oft umgangssprachlich; Fachbegriffe fehlen oder falsch.',
-      'Kaum verständlich; keine Fachsprache.' ] },
-    r_dtext: { n:'Textarbeit und Deutung', d:[
-      'Text/Werk präzise erschlossen; Deutung differenziert und mit Zitaten belegt.',
-      'Sichere Analyse; Deutung überwiegend am Text belegt.',
-      'Analyse eher beschreibend; Belege nur vereinzelt.',
-      'Inhaltswiedergabe statt Analyse; kaum Belege.',
-      'Keine Analyse oder Fehldeutungen.' ] },
-    r_gsach: { n:'Sachkenntnis und historische Einordnung', d:[
-      'Ereignisse, Daten, Akteure korrekt; Ursachen und Folgen klar verknüpft.',
-      'Fakten korrekt; Zusammenhänge überwiegend erklärt.',
-      'Fakten im Wesentlichen korrekt; Zusammenhänge kaum erklärt.',
-      'Lückenhaft, teils fehlerhaft; Chronologie unsicher.',
-      'Grob fehlerhaft oder Thema verfehlt.' ] },
-    r_gquellen: { n:'Umgang mit Quellen und Darstellungen', d:[
-      'Quellen gezielt gewählt und kritisch eingeordnet (Urheber, Zeit, Absicht).',
-      'Quellen passend genutzt und meist eingeordnet.',
-      'Quellen genutzt, aber kaum kritisch geprüft.',
-      'Quellen nur als Illustration oder falsch verstanden.',
-      'Kein Quellenbezug.' ] },
-    r_gurteil: { n:'Sach- und Werturteil', d:[
-      'Begründetes Urteil; Sach- und Werturteil klar getrennt; Gegenwartsbezug.',
-      'Begründetes Urteil; Maßstäbe überwiegend klar.',
-      'Urteil vorhanden, Begründung knapp.',
-      'Urteil pauschal oder unbegründet.',
-      'Kein Urteil.' ] },
-    r_psach: { n:'Sachkenntnis (Begriffe, Institutionen, Fakten)', d:[
-      'Sachverhalt umfassend, aktuell und korrekt; Fachbegriffe sicher.',
-      'Korrekt, weitgehend vollständig; aktuelle Bezüge.',
-      'Im Wesentlichen korrekt; Lücken; wenig aktuell.',
-      'Lückenhaft, teils fehlerhaft.',
-      'Grob fehlerhaft oder Thema verfehlt.' ] },
-    r_panalyse: { n:'Analyse (Problem, Akteure, Interessen)', d:[
-      'Problem, Akteure, Interessen und Lösungswege präzise herausgearbeitet.',
-      'Akteure und Interessen klar benannt; Zusammenhänge erklärt.',
-      'Akteure genannt; Analyse eher beschreibend.',
-      'Analyse oberflächlich, teils falsch.',
-      'Keine Analyse.' ] },
-    r_purteil: { n:'Politisches Urteil', d:[
-      'Eigenes Urteil kriteriengeleitet (z. B. Legitimität, Effizienz) und abgewogen.',
-      'Begründetes Urteil mit erkennbaren Kriterien.',
-      'Urteil vorhanden, Begründung knapp.',
-      'Pauschales, kaum begründetes Urteil.',
-      'Kein Urteil.' ] },
-    r_einhalt: { n:'Inhalt und Landeskunde', d:[
-      'Thema fundiert und korrekt; landeskundliche Bezüge differenziert.',
-      'Thema korrekt; landeskundliche Bezüge passend.',
-      'Im Wesentlichen korrekt; Bezüge eher allgemein.',
-      'Lückenhaft, teils fehlerhaft.',
-      'Thema verfehlt.' ] }
+    r_sach: { n:'Sachkenntnis und Inhalt', d:['Thema umfassend, fachlich korrekt und auf das Wesentliche konzentriert.','Thema korrekt und weitgehend vollständig erfasst.','Im Wesentlichen korrekt; Lücken oder Nebensächliches.','Lückenhaft, teils fehlerhaft; Wesentliches fehlt.','Thema verfehlt oder grob fehlerhaft.'] },
+    r_quellen: { n:'Recherche und Quellenangaben', d:['Vielfältige, seriöse Quellen, kritisch geprüft und korrekt angegeben.','Geeignete Quellen, überwiegend korrekt angegeben.','Wenige oder einseitige Quellen; Angaben lückenhaft.','Fragwürdige Quellen; kaum Angaben.','Keine Quellen angegeben.'] },
+    r_aufbau: { n:'Aufbau und Struktur', d:['Klare, logische Gliederung; Einstieg weckt Interesse; Schluss bündelt Ergebnisse.','Nachvollziehbare Gliederung; Einleitung und Schluss passend.','Gliederung erkennbar, Übergänge teils unklar; Einleitung/Schluss knapp.','Gliederung kaum erkennbar; Sprünge; Einleitung oder Schluss fehlen.','Ungeordnet, kein roter Faden erkennbar.'] },
+    r_vortrag: { n:'Vortragsweise', d:['Frei und lebendig; Blickkontakt, Tempo, Lautstärke und Körpersprache sicher.','Weitgehend frei; meist Blickkontakt; gut verständlich.','Teils abgelesen; Blickkontakt wechselhaft; Tempo oder Lautstärke schwanken.','Überwiegend abgelesen; kaum Blickkontakt; schwer zu folgen.','Vollständig abgelesen, unverständlich oder abgebrochen.'] },
+    r_medien: { n:'Medien und Visualisierung', d:['Medien übersichtlich, funktional und gezielt eingesetzt; stützen den Vortrag.','Medien übersichtlich und hilfreich; kleine Schwächen in der Gestaltung.','Medien vorhanden, teils überladen oder lose mit dem Vortrag verbunden.','Medien unübersichtlich, fehlerhaft oder kaum genutzt.','Keine oder ungeeignete Medien.'] },
+    r_sprache: { n:'Sprache und Fachsprache', d:['Präzise, sachlich, abwechslungsreich; Fachbegriffe sicher und erklärt.','Angemessener Ausdruck; Fachbegriffe überwiegend sicher.','Verständlich, teils umgangssprachlich; Fachbegriffe ungenau.','Unpräzise, oft umgangssprachlich; Fachbegriffe fehlen oder falsch.','Kaum verständlich; keine Fachsprache.'] },
+    r_dtext: { n:'Textarbeit und Deutung', d:['Text/Werk präzise erschlossen; Deutung differenziert und mit Zitaten belegt.','Sichere Analyse; Deutung überwiegend am Text belegt.','Analyse eher beschreibend; Belege nur vereinzelt.','Inhaltswiedergabe statt Analyse; kaum Belege.','Keine Analyse oder Fehldeutungen.'] },
+    r_gsach: { n:'Sachkenntnis und historische Einordnung', d:['Ereignisse, Daten, Akteure korrekt; Ursachen und Folgen klar verknüpft.','Fakten korrekt; Zusammenhänge überwiegend erklärt.','Fakten im Wesentlichen korrekt; Zusammenhänge kaum erklärt.','Lückenhaft, teils fehlerhaft; Chronologie unsicher.','Grob fehlerhaft oder Thema verfehlt.'] },
+    r_gquellen: { n:'Umgang mit Quellen und Darstellungen', d:['Quellen gezielt gewählt und kritisch eingeordnet (Urheber, Zeit, Absicht).','Quellen passend genutzt und meist eingeordnet.','Quellen genutzt, aber kaum kritisch geprüft.','Quellen nur als Illustration oder falsch verstanden.','Kein Quellenbezug.'] },
+    r_gurteil: { n:'Sach- und Werturteil', d:['Begründetes Urteil; Sach- und Werturteil klar getrennt; Gegenwartsbezug.','Begründetes Urteil; Maßstäbe überwiegend klar.','Urteil vorhanden, Begründung knapp.','Urteil pauschal oder unbegründet.','Kein Urteil.'] },
+    r_psach: { n:'Sachkenntnis (Begriffe, Institutionen, Fakten)', d:['Sachverhalt umfassend, aktuell und korrekt; Fachbegriffe sicher.','Korrekt, weitgehend vollständig; aktuelle Bezüge.','Im Wesentlichen korrekt; Lücken; wenig aktuell.','Lückenhaft, teils fehlerhaft.','Grob fehlerhaft oder Thema verfehlt.'] },
+    r_panalyse: { n:'Analyse (Problem, Akteure, Interessen)', d:['Problem, Akteure, Interessen und Lösungswege präzise herausgearbeitet.','Akteure und Interessen klar benannt; Zusammenhänge erklärt.','Akteure genannt; Analyse eher beschreibend.','Analyse oberflächlich, teils falsch.','Keine Analyse.'] },
+    r_purteil: { n:'Politisches Urteil', d:['Eigenes Urteil kriteriengeleitet (z. B. Legitimität, Effizienz) und abgewogen.','Begründetes Urteil mit erkennbaren Kriterien.','Urteil vorhanden, Begründung knapp.','Pauschales, kaum begründetes Urteil.','Kein Urteil.'] },
+    r_einhalt: { n:'Inhalt und Landeskunde', d:['Thema fundiert und korrekt; landeskundliche Bezüge differenziert.','Thema korrekt; landeskundliche Bezüge passend.','Im Wesentlichen korrekt; Bezüge eher allgemein.','Lückenhaft, teils fehlerhaft.','Thema verfehlt.'] }
   };
 
-  var SOURCES = ['Referat (frei eingetragen)','Präsentation','Mitarbeit (Unterricht)','Projektbeitrag','Debatte','Rechenschaftsablage','Kurzarbeit','Stegreifaufgabe (Ex)','Lesen','Gedichtvortrag','Songvortrag','Abfrage','Sonstiges'];
-  var LESEN_FS = [['aus',25],['bet',20],['fluss',20],['gen',15],['gest',10],['verst',10]];
-  var GED_FS   = [['tex',20],['aus',25],['vers',15],['sinn',20],['auft',10],['einf',10]];
+  var SOURCES = ['Referat','Präsentation','Mitarbeit (Unterricht)','Projektbeitrag','Debatte','Rechenschaftsablage','Kurzarbeit','Stegreifaufgabe (Ex)','Lesen','Gedichtvortrag','Songvortrag','Abfrage','Sonstiges'];
+
+  var LESEN_FS = [['aus',20],['bet',18],['fluss',18],['gen',15],['gest',15],['verst',14]];
+  var GED_FS   = [['tex',18],['aus',20],['vers',16],['sinn',18],['auft',14],['einf',14]];
 
   var MOD = {
     lesen:   { label:'Lesevortrag',   short:'Lesen',          src:'Lesen',          tt:'Text',   vars:{ de:'Deutsch', es:'Spanisch', fs:'Fremdsprache' },
-               lists:{ de:[['gen',20],['fluss',20],['bet',25],['gest',20],['verst',15]], es:LESEN_FS, fs:LESEN_FS } },
+               lists:{ de:[['gen',18],['fluss',18],['bet',18],['gest',16],['verst',15],['inton',15]], es:LESEN_FS, fs:LESEN_FS } },
     gedicht: { label:'Gedichtvortrag', short:'Gedicht',        src:'Gedichtvortrag', tt:'Gedicht', vars:{ de:'Deutsch', es:'Spanisch', fs:'Fremdsprache' },
-               lists:{ de:[['tex',20],['spr',15],['vers',25],['sinn',20],['auft',20]], es:GED_FS, fs:GED_FS } },
+               lists:{ de:[['tex',18],['spr',15],['vers',18],['sinn',18],['auft',16],['empa',15]], es:GED_FS, fs:GED_FS } },
     song:    { label:'Songvortrag Spanisch',    short:'Song',           src:'Songvortrag',    tt:'Song',   vars:null,
                lists:{ '-':[['s1',25],['s2',25],['s3',20],['s4',20],['s5',10]] } },
     abfrage: { label:'Abfrage', short:'Abfrage',        src:'Abfrage',        tt:'Thema',  vars:null },
     unterricht: { label:'Unterrichtsbeitrag', short:'Unterricht', src:'Unterrichtsbeitrag', tt:'Zeitraum / Thema', vars:null,
-               lists:{ '-':[['u1',15],['u2',30],['u3',25],['u4',15],['u5',15]] } },
+               lists:{ '-':[['u1',15],['u2',25],['u3',20],['u4',15],['u5',10],['u6',10],['u7',5]] } },
 
     theater: { label:'Theaterperformance', short:'Theater', src:'Theater', tt:'Inszenierung / Szene', vars:null,
                lists:{ '-':[['th_schauspiel',30],['th_regie',25],['th_buehne',20],['th_maske',15],['th_pr',10]] } },
@@ -552,16 +276,16 @@
 
   var WG = {
     lesen:   { g:{ T:'Lesetechnik', A:'Aussprache', G:'Gestaltung', V:'Textverständnis' },
-               m:{ gen:'T', fluss:'T', aus:'A', bet:'G', gest:'G', verst:'V' },
+               m:{ gen:'T', fluss:'T', aus:'A', bet:'G', gest:'G', verst:'V', inton:'G', atmos:'G' },
                p:[ ['tech','Schwerpunkt Lesetechnik',{ T:50, A:15, G:20, V:15 }], ['gest','Schwerpunkt Gestaltung',{ T:20, A:15, G:50, V:15 }] ] },
     gedicht: { g:{ T:'Textsicherheit', S:'Sprechen', G:'Gestaltung', A:'Auftreten' },
-               m:{ tex:'T', spr:'S', vers:'G', sinn:'G', auft:'A' },
+               m:{ tex:'T', spr:'S', vers:'G', sinn:'G', auft:'A', korpo:'A', empa:'G' },
                p:[ ['text','Schwerpunkt Textsicherheit',{ T:50, S:15, G:25, A:10 }], ['gest','Schwerpunkt Gestaltung',{ T:20, S:15, G:55, A:10 }] ] },
     song:    { g:{ S:'Sprache', I:'Interpretation', V:'Vortrag' },
-               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'V', s6:'V' },
+               m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'V' },
                p:[ ['spr','Schwerpunkt Sprache',{ S:50, I:25, V:25 }], ['int','Schwerpunkt Interpretation',{ S:25, I:50, V:25 }] ] },
     unterricht: { g:{ B:'Beteiligung', Q:'Qualität', K:'Kommunikation' },
-               m:{ u1:'B', u6:'B', u2:'Q', u3:'Q', u4:'K', u5:'K' },
+               m:{ u1:'B', u6:'B', u2:'Q', u3:'Q', u4:'K', u5:'K', u7:'Q' },
                p:[ ['qual','Schwerpunkt Qualität',{ B:20, Q:60, K:20 }], ['bet','Schwerpunkt Beteiligung',{ B:50, Q:30, K:20 }] ] },
     theater: { g:{ S:'Schauspiel', R:'Regie', B:'Bühne', M:'Maske', P:'PR' },
                m:{ th_schauspiel:'S', th_regie:'R', th_buehne:'B', th_maske:'M', th_pr:'P' },
@@ -570,7 +294,7 @@
                 m:{ ps_projekt:'P', ps_referat:'R', ps_beruf:'B', ps_unterricht:'U', ps_org:'O' },
                 p:[ ['proj','Schwerpunkt Projektarbeit',{ P:50, R:15, B:15, U:10, O:10 }] ] },
     wseminar: { g:{ R:'Referat', G:'Gliederung', Pr:'Probekapitel', E:'Exposé', U:'Unterricht' },
-                m:{ ws_referat:'R', ws_gliederung:'G', ws_probe:'Pr', ws_expose:'E', ws_unterricht:'U' },
+                m:{ ws_referat:'R', ws_unterricht:'U', ws_gliederung:'G', ws_probe:'Pr', ws_expose:'E' },
                 p:[ ['kapitel','Schwerpunkt Probekapitel & Gliederung',{ R:20, G:30, Pr:30, E:10, U:10 }] ] },
     abfrage: { g:{ W:'Wissen', V:'Verständnis', A:'Anwendung', D:'Darstellung' },
                m:{ f1:'W', v1:'W', g1:'W', t1:'W', f2:'V', g2:'V', t2:'V', f3:'A', v2:'A', f4:'D', dar:'D' },
@@ -692,7 +416,7 @@
     return { z:6, t:'ungenügend' };
   }
 
-  var KEY = 'muendliche_noten_tool_v4';
+  var KEY = 'muendliche_noten_tool_v6';
   var state = load() || fresh();
   var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{} };
 
@@ -827,7 +551,7 @@
     c.assessments.forEach(function (a) {
       if (a.sid !== sid) return;
       var r = calcA(a);
-      out.push({ k:'a', id:a.id, type:a.type, date:a.date, source:sourceOf(a), thema:a.thema, value:r.done ? valueOf(c, r) : null, open:r.done ? 0 : r.open, gew:a.gew });
+      out.push({ k:'a', id:a.id, type:a.type, date:a.date, source:sourceOf(a), thema:a.thema, value:r.done ? valueOf(c, r) : null, open:r.done ? 0 : r.open, gew:a.gew, assessmentObj:a });
     });
     c.manual.forEach(function (m) { if (m.sid === sid) out.push({ k:'m', id:m.id, date:m.date, source:m.source, thema:m.thema, value:m.value, gew:m.gew }); });
     out.sort(function (x, y) { return x.date < y.date ? -1 : x.date > y.date ? 1 : 0; });
@@ -852,7 +576,7 @@
     LV.forEach(function (l) { h += '<div class="gh">' + l.n + '<span>' + l.np + ' NP</span></div>'; });
     cr.forEach(function (k) {
       var p = a.pts[k.id], has = (p !== undefined && p !== null), L = has ? LV[lvOf(p)] : null;
-      h += '<div class="crit"><span class="cn">' + esc(k.n) + '</span><span class="np">';
+      h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (Gew.: ' + fmt(k.w, 1) + ')</span><span class="np">';
       if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="-1" aria-label="Einen Punkt weniger"' + ((!has || p <= L.lo) ? ' disabled' : '') + '>−</button>';
       h += '<b class="nv">' + (has ? p : '–') + '</b>';
       if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="1" aria-label="Einen Punkt mehr"' + ((!has || p >= L.hi) ? ' disabled' : '') + '>+</button>';
@@ -941,7 +665,7 @@
       h += '</table>';
       h += '<p>Ø (nach Gewicht): <b class="big">' + (av ? fmt(av.avg, 1) : '–') + '</b></p>';
     }
-    h += '<div class="row"><button class="primary" data-act="printStu">Übersicht drucken / PDF</button></div></div>';
+    h += '<div class="row"><button class="primary" data-act="printStu">Übersicht drucken / PDF</button><button class="primary" data-act="printStuDetailed">Detaillierten Schülerbericht drucken (inkl. Kriterien & Punkten)</button></div></div>';
     return h;
   }
 
@@ -997,6 +721,28 @@
     return h + '</table><p>Ø: <b>' + (av ? fmt(av.avg, 1) : '–') + '</b></p></section>';
   }
 
+  function studentDetailedReportHTML(c, s) {
+    var es = entriesOf(c, s.id);
+    var h = '';
+    es.forEach(function(e) {
+      if (e.k === 'a' && e.assessmentObj) {
+        h += sheetHTML(c, s, e.assessmentObj, false);
+      } else {
+        h += '<section class="sheet"><div class="head"><h1>Manuelle Note / Eintrag</h1>';
+        h += '<div class="fld"><b>Name</b><span class="v">' + esc(s.name) + '</span></div>';
+        h += '<div class="fld"><b>Klasse</b><span class="v">' + esc(c.name) + '</span></div>';
+        h += '<div class="fld"><b>Thema</b><span class="v">' + esc(e.thema || e.source) + '</span></div>';
+        h += '<div class="fld"><b>Datum</b><span class="v">' + fd(e.date) + '</span></div></div>';
+        h += '<p style="margin:20px 0;">Manuell eingetragene Note: <b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b> (Gewicht: ' + fmt(e.gew) + ')</p>';
+        h += '</section>';
+      }
+    });
+    if (!h) {
+      h = '<div class="panel"><h2>Keine Bewertungen vorhanden</h2><p>Für diesen Schüler sind noch keine bewerteten Bögen oder Noten hinterlegt.</p></div>';
+    }
+    return h;
+  }
+
   function vModule(type) {
     var c = cls(), s = stu(); if (!c || !s) return noStu();
     var a = curA(type), list = assessmentsOf(c, s.id, type);
@@ -1017,7 +763,7 @@
       h += '</div>';
     } else if (POOL[type]) {
       var baseIds = baseIdsOf(a), activeIds = (a.sel && a.sel.length) ? a.sel : baseIds, pool = POOL[type][poolKeyOf(a)] || [];
-      h += '<div class="panel" style="margin-top:0"><div class="row"><span>Kriterien für diese Bewertung:</span></div><div class="row">' +
+      h += '<div class="panel" style="margin-top:0"><div class="row"><span>Kriterien für diese Bewertung (aktivierbar / abwählbar):</span></div><div class="row">' +
            pool.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (activeIds.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
            '</div></div>';
     }
@@ -1033,7 +779,7 @@
     var mk = modKey(a), cur = state.wp[mk] || 'std', crs = critsOf(a), tot = crs.reduce(function (x, k) { return x + k.w; }, 0) || 1;
     var pres = [['gleich', 'Ausgewogen', null]].concat(W.p).concat([['std', 'Vorgabe', null]]);
 
-    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Schwerpunkt / Gewichtung:</b></div><div class="row">';
+    var h = '<div class="panel" style="margin-top:0"><div class="row"><b>Schwerpunkt / Gewichtung der Kriterien:</b></div><div class="row">';
     pres.forEach(function (p) {
       var descParts = [];
       if (p[2]) { Object.keys(p[2]).forEach(function(g) { if (W.g[g]) descParts.push(W.g[g] + ' ' + p[2][g] + '%'); }); }
@@ -1106,7 +852,6 @@
     ms.innerHTML = availableModes.map(function (m) { return '<option value="' + m[0] + '">' + esc(m[1]) + '</option>'; }).join('');
     ms.value = mt + vk(mt);
 
-    // Backup Warnung Logik (Prüfen ob > 7 Tage her oder nie gesichert)
     var warnBox = $('backupWarnContainer');
     var showWarn = false;
     if (!state.lastBackup) {
@@ -1219,6 +964,7 @@
         printHTML(all.join('')); return;
       }
       if (act === 'printStu') { printHTML(studentOverviewHTML(c, s)); return; }
+      if (act === 'printStuDetailed') { printHTML(studentDetailedReportHTML(c, s)); return; }
       if (act === 'printCls') { printHTML(classOverviewHTML(c)); return; }
       if (act === 'csv') { exportCsv(); return; }
       if (act === 'openE') { var ao = findA(c, el.dataset.id); if (!ao) return; if (MOD[ao.type].vars) setVar(ao.type, ao.variant); state.mt = ao.type; ui.cur[keyA(ao)] = ao.id; state.tab = ao.type; save(); render(); return; }
@@ -1287,6 +1033,13 @@
       if (t.dataset.w !== undefined) { state.w[t.dataset.w] = num(t.value, 0); state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); render(); return; }
       if (t.dataset.sf !== undefined) { var st = stuById(c, t.dataset.sid); if (st) { st.name = t.value; save(); } return; }
       if (t.dataset.f === 'pickA') { var s = stu(); if (t.value !== '__draft') { ui.cur[state.tab + vk(state.tab) + '|' + s.id] = t.value; render(); } return; }
+      if (t.dataset.f === 'sel') {
+        var a = curA(state.tab); ensure(c, a);
+        var pool = POOL[a.type][poolKeyOf(a)] || [];
+        var active = [];
+        view.querySelectorAll('input[data-f="sel"]:checked').forEach(function(box) { active.push(box.value); });
+        a.sel = active; save(); render(); return;
+      }
     });
 
     $('file').addEventListener('change', function (e) {
