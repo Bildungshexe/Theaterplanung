@@ -887,11 +887,20 @@
     state.tab = tab; save(); render();
   }
 
-  function printHTML(html) {
+  function printInPage(html) {
     var pa = $('printArea'); pa.innerHTML = html; document.body.classList.add('printing');
     function done() { window.removeEventListener('afterprint', done); document.body.classList.remove('printing'); pa.innerHTML = ''; }
     window.addEventListener('afterprint', done);
     setTimeout(function () { window.print(); }, 60);
+  }
+  /* Druck in einem eigenen Fenster: funktioniert auch in Safari auf dem iPad, wo der Druckbereich der Seite leer bleiben kann */
+  function printHTML(html) {
+    var css = document.querySelector('style').textContent;
+    var w = window.open('', '_blank');
+    if (!w) { printInPage(html); return; }
+    w.document.write('<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Druck</title><style>' + css + '</style></head><body class="printing"><div id="printArea" style="display:block">' + html + '</div></body></html>');
+    w.document.close();
+    setTimeout(function () { w.focus(); w.print(); }, 400);
   }
   function download(name, text, type) {
     var blob = new Blob([text], { type:type });
