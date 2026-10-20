@@ -110,11 +110,24 @@
     .sum > div { border-bottom: 1px solid var(--line); border-right: none; }
   }
 
+  /* ---------- Druckansicht in der App ---------- */
+  #printArea.open { display:block; position:fixed; top:0; left:0; right:0; bottom:0; z-index:100; overflow:auto; background:#d9d9d9; }
+  .printbar { position:sticky; top:0; z-index:1; background:#2b2b2b; padding:8px 12px; display:flex; flex-wrap:wrap; gap:8px; }
+  .printbar button { font:inherit; padding:8px 12px; min-height:42px; border-radius:6px; border:1px solid #777; background:#fff; color:#111; }
+  .printbar button.primary { background:var(--acc); color:#fff; border-color:var(--acc); }
+  .printdoc { padding:14px 10px 40px; }
+  .rep table { border-collapse:collapse; width:100%; font-size:11pt; margin:0 auto 6mm; }
+  .rep th, .rep td { border:1px solid var(--line); padding:2mm; text-align:left; vertical-align:top; }
+  .rep th { background:var(--gray); font-weight:bold; }
+  .rep td.c, .rep th.c { text-align:center; }
+
   @page { size: A4 landscape; margin: 0; }
   @media print {
     body { background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #app { display:none !important; }
-    body.printing #printArea { display:block; }
+    #printArea { display:block !important; position:static !important; background:#fff !important; }
+    .printbar { display:none !important; }
+    .printdoc { padding:0 !important; }
     #printArea .sheet { box-shadow:none; margin:0; width:297mm; height:209mm; min-height:0; overflow:hidden; break-after:page; display:grid !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #printArea .sheet:last-child { break-after:auto; }
     #printArea .head { display:grid !important; grid-template-columns: auto 1.1fr 46mm 1.2fr 42mm !important; }
@@ -721,26 +734,29 @@
     return h + '</table><p>Ø: <b>' + (av ? fmt(av.avg, 1) : '–') + '</b></p></section>';
   }
 
+  /* Je Bewertung eine Tabelle mit zwei Zeilen: Kriterien mit Gewichtung, erreichte Notenpunkte */
   function studentDetailedReportHTML(c, s) {
     var es = entriesOf(c, s.id);
-    var h = '';
-    es.forEach(function(e) {
+    if (!es.length) {
+      return '<div class="panel"><h2>Keine Bewertungen vorhanden</h2><p>Für diesen Schüler sind noch keine bewerteten Bögen oder Noten hinterlegt.</p></div>';
+    }
+    var h = '<section class="ov rep"><h1>Detaillierter Bericht: ' + esc(s.name) + ' <span style="font-size:11pt;font-weight:normal;color:#444">' + esc(c.name) + '</span></h1>';
+    es.forEach(function (e) {
       if (e.k === 'a' && e.assessmentObj) {
-        h += sheetHTML(c, s, e.assessmentObj, false);
+        var a = e.assessmentObj, cr = critsOf(a), r = calcA(a);
+        var gesamt = r.done ? fmt(r.np) + ' NP · Note ' + r.z.z + ' (' + r.z.t + ')' : 'offen';
+        h += '<table><tr><th style="width:40mm">' + esc(sourceOf(a)) + '<br>' + fd(a.date) + '</th>' +
+             cr.map(function (k) { return '<th class="c">' + esc(k.n) + '<br><span style="font-weight:normal">Gewicht ' + fmt(k.w, 1) + '</span></th>'; }).join('') +
+             '<th class="c" style="width:44mm">Gesamtnote</th></tr>';
+        h += '<tr><td>Erreichte Notenpunkte</td>' +
+             cr.map(function (k) { var p = a.pts[k.id]; return '<td class="c">' + ((p === undefined || p === null) ? '–' : p) + '</td>'; }).join('') +
+             '<td class="c"><b>' + gesamt + '</b></td></tr></table>';
       } else {
-        h += '<section class="sheet"><div class="head"><h1>Manuelle Note / Eintrag</h1>';
-        h += '<div class="fld"><b>Name</b><span class="v">' + esc(s.name) + '</span></div>';
-        h += '<div class="fld"><b>Klasse</b><span class="v">' + esc(c.name) + '</span></div>';
-        h += '<div class="fld"><b>Thema</b><span class="v">' + esc(e.thema || e.source) + '</span></div>';
-        h += '<div class="fld"><b>Datum</b><span class="v">' + fd(e.date) + '</span></div></div>';
-        h += '<p style="margin:20px 0;">Manuell eingetragene Note: <b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b> (Gewicht: ' + fmt(e.gew) + ')</p>';
-        h += '</section>';
+        h += '<table><tr><th style="width:40mm">' + esc(e.source) + '<br>' + fd(e.date) + '</th><th>' + esc(e.thema) + '</th><th class="c" style="width:44mm">Gesamtnote</th></tr>' +
+             '<tr><td>Manuelle Note</td><td></td><td class="c"><b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b></td></tr></table>';
       }
     });
-    if (!h) {
-      h = '<div class="panel"><h2>Keine Bewertungen vorhanden</h2><p>Für diesen Schüler sind noch keine bewerteten Bögen oder Noten hinterlegt.</p></div>';
-    }
-    return h;
+    return h + '</section>';
   }
 
   function vModule(type) {
@@ -887,20 +903,14 @@
     state.tab = tab; save(); render();
   }
 
-  function printInPage(html) {
-    var pa = $('printArea'); pa.innerHTML = html; document.body.classList.add('printing');
-    function done() { window.removeEventListener('afterprint', done); document.body.classList.remove('printing'); pa.innerHTML = ''; }
-    window.addEventListener('afterprint', done);
-    setTimeout(function () { window.print(); }, 60);
-  }
-  /* Druck in einem eigenen Fenster: funktioniert auch in Safari auf dem iPad, wo der Druckbereich der Seite leer bleiben kann */
+  /* Druckansicht bleibt in der App: eigener Vollbild-Bereich mit Drucken- und Zurück-Knopf */
   function printHTML(html) {
-    var css = document.querySelector('style').textContent;
-    var w = window.open('', '_blank');
-    if (!w) { printInPage(html); return; }
-    w.document.write('<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Druck</title><style>' + css + '</style></head><body class="printing"><div id="printArea" style="display:block">' + html + '</div><\/body><\/html>');
-    w.document.close();
-    setTimeout(function () { w.focus(); w.print(); }, 400);
+    var pa = $('printArea');
+    pa.innerHTML = '<div class="printbar"><button class="primary" id="prGo">Drucken</button><button id="prBack">Zurück zur Bewertung</button></div><div class="printdoc">' + html + '</div>';
+    pa.classList.add('open');
+    $('prGo').addEventListener('click', function () { window.print(); });
+    $('prBack').addEventListener('click', function () { pa.classList.remove('open'); pa.innerHTML = ''; });
+    pa.scrollTop = 0;
   }
   function download(name, text, type) {
     var blob = new Blob([text], { type:type });
