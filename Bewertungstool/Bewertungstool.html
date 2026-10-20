@@ -898,7 +898,7 @@
     var css = document.querySelector('style').textContent;
     var w = window.open('', '_blank');
     if (!w) { printInPage(html); return; }
-    w.document.write('<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Druck</title><style>' + css + '</style></head><body class="printing"><div id="printArea" style="display:block">' + html + '</div></body></html>');
+    w.document.write('<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Druck</title><style>' + css + '</style></head><body class="printing"><div id="printArea" style="display:block">' + html + '</div><\/body><\/html>');
     w.document.close();
     setTimeout(function () { w.focus(); w.print(); }, 400);
   }
