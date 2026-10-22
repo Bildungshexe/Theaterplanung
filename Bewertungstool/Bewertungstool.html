@@ -70,7 +70,7 @@
   .fld input[type=date] { font:inherit; border:none; background:transparent; padding:0; width:100%; min-height:0; }
   @media screen { .v:empty::before { content: attr(data-ph); color:#9a9a9a; } }
 
-  .grid { display:grid; grid-template-columns: 45mm repeat(5, 1fr); border-top:1px solid var(--line); border-left:1px solid var(--line); min-height:0; }
+  .grid { display:grid; grid-template-columns: 45mm repeat(var(--cols, 5), 1fr); border-top:1px solid var(--line); border-left:1px solid var(--line); min-height:0; }
   .grid > div { border-right:1px solid var(--line); border-bottom:1px solid var(--line); padding:1mm 1.5mm; line-height:1.15; hyphens:auto; -webkit-hyphens:auto; overflow:hidden; min-height:0; }
   .gh { background:var(--gray); font-weight:bold; text-align:center; display:flex; flex-direction:column; justify-content:center; }
   .gh span { font-weight:normal; }
@@ -82,6 +82,7 @@
   .crit button.st:active { background:#e4e4e4; }
   .crit button.st:disabled { opacity:.3; cursor:default; }
   .crit button.st.on { background:var(--acc); color:#fff; }
+  .lv.na { background:#f2f2f2; }
   .lv { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color: transparent; }
   .lv[data-act] { cursor:pointer; }
   .lv[data-act]:hover { background:#fbf3f4; }
@@ -132,7 +133,7 @@
     #printArea .sheet { box-shadow:none; margin:0; width:297mm; height:209mm; min-height:0; overflow:hidden; break-after:page; display:grid !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #printArea .sheet:last-child { break-after:auto; }
     #printArea .head { display:grid !important; grid-template-columns: auto 1.1fr 46mm 1.2fr 42mm !important; }
-    #printArea .grid { display:grid !important; grid-template-columns: 45mm repeat(5, 1fr) !important; }
+    #printArea .grid { display:grid !important; grid-template-columns: 45mm repeat(var(--cols, 5), 1fr) !important; }
     #printArea .sum { display:grid !important; grid-template-columns: repeat(3, auto) 1fr !important; }
     #printArea .ov { max-width:none; width:297mm; margin:0; }
     .crit button.st { display:none !important; }
@@ -707,7 +708,7 @@ var G_DESC = {
   var ABI = [[15,0.95],[14,0.90],[13,0.85],[12,0.80],[11,0.75],[10,0.70],[9,0.65],[8,0.60],[7,0.55],[6,0.50],[5,0.45],[4,0.40],[3,0.33],[2,0.27],[1,0.20],[0,0]];
   function cdefOf(x) {
     x = x || {};
-    return { calc: x.calc === 'einheiten' ? 'einheiten' : 'gewichtet', sch: SCH_LBL[x.sch] ? x.sch : 'legacy',
+    return { calc: x.calc === 'einheiten' ? 'einheiten' : 'gewichtet', gw: x.gw === 'be' ? 'be' : 'prozent', sch: SCH_LBL[x.sch] ? x.sch : 'legacy',
              bmax: [3,4,5].indexOf(+x.bmax) >= 0 ? +x.bmax : 5, t4: num(x.t4, 50), t5: num(x.t5, 33) };
   }
   var KEY = 'muendliche_noten_tool_v6';
@@ -763,7 +764,7 @@ var G_DESC = {
                    crit:(Array.isArray(a.crit) ? a.crit.filter(function (k) { return ALLW[k] !== undefined; }) : []),
                    sel:(Array.isArray(a.sel) ? a.sel.filter(function (k) { return C[k]; }) : []),
                    date:String(a.date || todayISO()),
-                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz), ub:!!a.ub, calc:a.calc === 'einheiten' ? 'einheiten' : 'gewichtet', sch:SCH_LBL[a.sch] ? a.sch : 'legacy', bmax:[3,4,5].indexOf(+a.bmax) >= 0 ? +a.bmax : 5, t4:num(a.t4, 50), t5:num(a.t5, 33), bmx:(a.bmx && typeof a.bmx === 'object') ? a.bmx : {} };
+                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz), ub:!!a.ub, calc:a.calc === 'einheiten' ? 'einheiten' : 'gewichtet', gw:a.gw === 'be' ? 'be' : 'prozent', sch:SCH_LBL[a.sch] ? a.sch : 'legacy', bmax:[3,4,5].indexOf(+a.bmax) >= 0 ? +a.bmax : 5, t4:num(a.t4, 50), t5:num(a.t5, 33), bmx:(a.bmx && typeof a.bmx === 'object') ? a.bmx : {} };
         }),
         manual:(Array.isArray(c.manual) ? c.manual : []).filter(function (m) { return ids[m.sid]; }).map(function (m) {
           return { id:String(m.id || uid('m')), sid:m.sid, date:String(m.date || todayISO()), source:String(m.source || ''), thema:String(m.thema || ''), value:num(m.value, null), gew:Math.max(0, num(m.gew, 1)), ub:!!m.ub };
@@ -791,7 +792,7 @@ var G_DESC = {
   function findAny(c, id) { var a = findA(c, id); if (a) return a; Object.keys(ui.draft).forEach(function (k) { if (ui.draft[k].id === id) a = ui.draft[k]; }); return a; }
 
   function newA(c, type, sid) {
-    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, calc:cdefOf(c.def).calc, sch:cdefOf(c.def).sch, bmax:cdefOf(c.def).bmax, t4:cdefOf(c.def).t4, t5:cdefOf(c.def).t5, bmx:{}, _draft:true };
+    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, calc:cdefOf(c.def).calc, gw:cdefOf(c.def).gw, sch:cdefOf(c.def).sch, bmax:cdefOf(c.def).bmax, t4:cdefOf(c.def).t4, t5:cdefOf(c.def).t5, bmx:{}, _draft:true };
   }
   function modKey(a) { return a.type === 'abfrage' ? 'abfrage' : a.type + ':' + (MOD[a.type].vars ? (a.variant === 'fs' && a.type !== 'referat' ? 'es' : a.variant) : '-'); }
   function poolKeyOf(a) { return MOD[a.type].vars ? a.variant : '-'; }
@@ -888,16 +889,17 @@ var G_DESC = {
     return { z:z, t:ZNAME[z] };
   }
   function calcA(a) {
-    var cr = critsOf(a), open = 0, sw = 0, sum = 0, units = a.calc === 'einheiten';
+    var cr = critsOf(a), open = 0, sw = 0, sum = 0, sumBE = 0, denBE = 0, units = a.calc === 'einheiten';
     cr.forEach(function (c) {
       var p = a.pts[c.id];
       if (p === undefined || p === null) { open++; return; }
       sw += c.w;
-      sum += c.w * (units ? Math.min(p, maxU(a, c.id)) / maxU(a, c.id) : p / 15);
+      if (units) { var u = Math.max(0, Math.min(p, maxU(a, c.id))), mx = maxU(a, c.id); sum += c.w * u / mx; sumBE += c.w * u; denBE += c.w * mx; }
+      else sum += c.w * p / 15;
     });
     if (!cr.length) return { done:false, open:0, any:false, n:0 };
     if (open) return { done:false, open:open, any:open < cr.length, n:cr.length };
-    var pct = sum / (sw || 1), ex = pct * 15, np, z;
+    var pct = (units && a.gw === 'be') ? sumBE / (denBE || 1) : sum / (sw || 1), ex = pct * 15, np, z;
     if (!a.sch || a.sch === 'legacy') { np = Math.floor(ex + 0.5 + 1e-9); z = zensur(np); }
     else if (a.sch === 'abitur') {
       np = 0; ABI.forEach(function (r) { if (np === 0 && pct >= r[1] - 1e-9) np = r[0]; });
@@ -970,26 +972,30 @@ var G_DESC = {
     h += '<div class="fld"><b>Klasse</b><span class="v">' + esc(c.name) + '</span></div>';
     h += '<div class="fld"><b>' + esc(m.tt) + '</b><span class="v"' + (edit ? ' contenteditable="true" data-f="thema" data-ph="eintippen"' : '') + '>' + esc(a.thema) + '</span></div>';
     h += '<div class="fld"><b>Datum</b>' + (edit ? '<input type="date" data-f="date" value="' + esc(a.date) + '">' : '<span class="v">' + fd(a.date) + '</span>') + '</div></div>';
-    h += '<div class="grid" style="grid-template-rows:auto repeat(' + Math.max(1, cr.length) + ',1fr)"><div class="gh">Kriterium</div>';
-    LV.forEach(function (l) { h += '<div class="gh">' + l.n + '<span>' + l.np + ' NP</span></div>'; });
+    var units = a.calc === 'einheiten';
+    h += '<div class="grid" style="--cols:' + (units ? 6 : 5) + ';grid-template-rows:auto repeat(' + Math.max(1, cr.length) + ',1fr)"><div class="gh">Kriterium</div>';
+    if (units) [5,4,3,2,1,0].forEach(function (v) { h += '<div class="gh">' + v + ' BE</div>'; });
+    else LV.forEach(function (l) { h += '<div class="gh">' + l.n + '<span>' + l.np + ' NP</span></div>'; });
     var shs = shareList(cr);
     cr.forEach(function (k, ki) {
-      var p = a.pts[k.id], has = (p !== undefined && p !== null), L = has ? LV[lvOf(p)] : null;
-      var units = a.calc === 'einheiten', M = maxU(a, k.id);
-      h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (' + shs[ki] + ' %)</span><span class="np">';
+      var p = a.pts[k.id], has = (p !== undefined && p !== null), L = has ? LV[lvOf(p)] : null, M = maxU(a, k.id);
       if (units) {
-        h += '<b class="nv">' + (has ? p : '–') + '</b>';
-        for (var u = 0; u <= M; u++) h += '<button class="st' + (has && p === u ? ' on' : '') + '" data-act="ue" data-i="' + k.id + '" data-u="' + u + '"' + (edit ? '' : ' disabled') + '>' + u + '</button>';
-        h += '<span class="nl">BE von ' + M + '</span></span></div>';
-      } else {
-        if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="-1" aria-label="Einen Punkt weniger"' + ((!has || p <= L.lo) ? ' disabled' : '') + '>−</button>';
-        h += '<b class="nv">' + (has ? p : '–') + '</b>';
-        if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="1" aria-label="Einen Punkt mehr"' + ((!has || p >= L.hi) ? ' disabled' : '') + '>+</button>';
-        h += '<span class="nl">NP</span></span></div>';
+        h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (' + shs[ki] + ' %)</span><span class="np"><b class="nv">' + (has ? p : '–') + '</b><span class="nl">BE von ' + M + '</span></span></div>';
+        [5,4,3,2,1,0].forEach(function (v) {
+          if (v > M) { h += '<div class="lv na"></div>'; return; }
+          var tj = v === 0 ? -1 : Math.round((M - v) * 4 / Math.max(1, M - 1));
+          h += '<div class="lv' + (has && p === v ? ' hit' : '') + '"' + (edit ? ' role="button" tabindex="0" data-act="ue" data-i="' + k.id + '" data-u="' + v + '"' : '') + '>' + esc(v === 0 ? 'Keine Leistung (0 BE)' : k.d[tj]) + '</div>';
+        });
+        return;
       }
+      h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (' + shs[ki] + ' %)</span><span class="np">';
+      if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="-1" aria-label="Einen Punkt weniger"' + ((!has || p <= L.lo) ? ' disabled' : '') + '>−</button>';
+      h += '<b class="nv">' + (has ? p : '–') + '</b>';
+      if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="1" aria-label="Einen Punkt mehr"' + ((!has || p >= L.hi) ? ' disabled' : '') + '>+</button>';
+      h += '<span class="nl">NP</span></span></div>';
       k.d.forEach(function (t, j) {
-        var hit = !units && has && lvOf(p) === j;
-        h += '<div class="lv' + (hit ? ' hit' : '') + '"' + (edit && !units ? ' role="button" tabindex="0" data-act="lv" data-i="' + k.id + '" data-k="' + j + '"' : '') + '>' + esc(t) + '</div>';
+        var hit = has && lvOf(p) === j;
+        h += '<div class="lv' + (hit ? ' hit' : '') + '"' + (edit ? ' role="button" tabindex="0" data-act="lv" data-i="' + k.id + '" data-k="' + j + '"' : '') + '>' + esc(t) + '</div>';
       });
     });
     h += '</div>';
@@ -1024,6 +1030,7 @@ var G_DESC = {
          '<label>Notenskala<select data-cf="skala"><option value="note"' + (c.skala === 'note' ? ' selected' : '') + '>Noten 1–6 (Mittelstufe)</option><option value="np"' + (c.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15 (Oberstufe)</option></select></label>' +
          '<label>Standard: Berechnung<select data-cdef="calc"><option value="gewichtet"' + (cd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (cd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
          '<label>Standard: Notenschlüssel<select data-cdef="sch">' + Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + (cd.sch === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('') + '</select></label>' +
+         '<label>Standard: Gewichtung<select data-cdef="gw"><option value="prozent"' + (cd.gw !== 'be' ? ' selected' : '') + '>in Prozent</option><option value="be"' + (cd.gw === 'be' ? ' selected' : '') + '>über BE</option></select></label>' +
          '<label>Standard: max. BE<select data-cdef="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (cd.bmax === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
          '<button class="danger" data-act="clsDel">Klasse löschen</button></div>';
     h += '<h3>Schüler/innen (' + c.students.length + ')</h3>';
@@ -1174,6 +1181,7 @@ var G_DESC = {
          '<label>Bewertungsgrundlage<select data-set="calc"><option value="gewichtet"' + (a.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (a.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
          '<label>Notenschlüssel<select data-set="sch">' + schOpts + '</select></label>' +
          (a.sch === 'indiv' ? '<label>Grenze Note 4/5 (%)<input type="text" inputmode="decimal" data-set="t4" value="' + fmt(a.t4 || 50) + '" style="width:90px"></label><label>Grenze Note 5/6 (%)<input type="text" inputmode="decimal" data-set="t5" value="' + fmt(a.t5 || 33) + '" style="width:90px"></label>' : '') +
+         (a.calc === 'einheiten' ? '<label>Gewichtung der Kriterien<select data-set="gw"><option value="prozent"' + (a.gw !== 'be' ? ' selected' : '') + '>in Prozent (Anteil je Kriterium)</option><option value="be"' + (a.gw === 'be' ? ' selected' : '') + '>über BE (jede BE zählt gleich)</option></select></label>' : '') +
          (a.calc === 'einheiten' ? '<label>Max. BE je Kriterium (Standard)<select data-set="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + ((a.bmax || 5) === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' : '') +
          '</div>' + (a.sch === 'abitur' ? '<div class="hint warn">Die Abitur-Tabelle ist eine Vermutung. Bitte gegen die amtliche Tabelle prüfen, bevor Noten daraus übernommen werden.</div>' : '') + '</div>';
     if (type === 'abfrage') {
