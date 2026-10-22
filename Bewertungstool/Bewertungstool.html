@@ -719,7 +719,18 @@ var G_DESC = {
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
   /* sofort speichern, damit nichts verloren geht, wenn die App gleich geschlossen wird */
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  var MKEY = 'muendliche_muster_v1';
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); localStorage.setItem(MKEY, JSON.stringify(state.muster || [])); } catch (e) {}
+  }
+  function mergeMusters() {
+    try {
+      var extra = JSON.parse(localStorage.getItem(MKEY) || '[]');
+      (Array.isArray(extra) ? extra : []).forEach(function (m) {
+        if (m && typeof m.id === 'string' && typeof m.name === 'string' && typeof m.mk === 'string' && Array.isArray(m.sel) && !state.muster.some(function (x) { return x.id === m.id; })) state.muster.push(m);
+      });
+    } catch (e) {}
+  }
   function musterFits(m, c, type) {
     if (m.fach) return m.fach === c.fach;
     return (FACH_MODES[c.fach] || []).some(function (e) { return e[0].split(':')[0] === type; });
@@ -820,6 +831,7 @@ var G_DESC = {
   }
   function migrate() {
     var changed = false;
+    mergeMusters();
     state.classes.forEach(function (c) {
       c.assessments.forEach(function (a) {
         if (!a.fz) { freezeA(a); changed = true; }
@@ -1177,6 +1189,10 @@ var G_DESC = {
       var mk = modKey(a), pool = POOL[type][poolKeyOf(a)] || [], act = a.sel || [], W = WG[type], open = !!ui.sOpen[mk];
       h += '<div class="panel" style="margin-top:0"><div class="row"><button data-act="sOwn" data-mk="' + mk + '">Kriterien wählen ' + (open ? '▲' : '▼') + '</button>' +
            '<span class="muted">' + (act.length ? act.length + ' Kriterien gewählt' : 'noch keine Kriterien gewählt') + '</span></div>';
+      var musters = state.muster.filter(function (m) { return m.mk === mk && musterFits(m, c, type); });
+      h += '<div class="row"><b>Muster für ' + esc(c.fach) + ':</b> ' + (musters.length ? musters.map(function (m) {
+             return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
+           }).join(' ') : '<span class="muted">noch keine gespeichert</span>') + '</div>';
       if (open) {
         Object.keys(W.g).forEach(function (g) {
           var items = pool.filter(function (p) { return wGroup(type, p[0]) === g; });
@@ -1188,10 +1204,6 @@ var G_DESC = {
         var customs = (a.fz || []).filter(function (it) { return it.id.indexOf('x_') === 0; });
         h += '<div class="row"><b>Eigene Kriterien:</b> ' + (customs.length ? customs.map(function (it) { return '<span class="chip on">' + esc(it.n) + ' <button class="chip" data-act="cDel" data-id="' + it.id + '" title="entfernen">✕</button></span>'; }).join(' ') : '<span class="muted">keine</span>') + '</div>';
         h += '<div class="row"><label>Name des eigenen Kriteriums<input type="text" id="cName" style="width:260px"></label><button data-act="cAdd">Kriterium hinzufügen</button></div>';
-        var musters = state.muster.filter(function (m) { return m.mk === mk && musterFits(m, c, type); });
-        h += '<div class="row"><b>Muster für ' + esc(c.fach) + ':</b> ' + (musters.length ? musters.map(function (m) {
-               return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
-             }).join(' ') : '<span class="muted">noch keine gespeichert</span>') + '</div>';
         h += '<div class="row"><label>Neues Muster (z. B. „Referat 5. Klasse“)<input type="text" id="mName" style="width:260px"></label>' +
              '<button data-act="mSave">Aktuelle Auswahl als Muster speichern</button></div>';
         h += '<div class="row"><button class="primary" data-act="wApplyAll">Als Klassenarbeit für alle Schüler/innen anlegen</button></div>';
