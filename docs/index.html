@@ -717,7 +717,12 @@ var G_DESC = {
   function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, muster:[], mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
-  function save() { clearTimeout(tmr); tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 300); }
+  /* sofort speichern, damit nichts verloren geht, wenn die App gleich geschlossen wird */
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function musterFits(m, c, type) {
+    if (m.fach) return m.fach === c.fach;
+    return (FACH_MODES[c.fach] || []).some(function (e) { return e[0].split(':')[0] === type; });
+  }
   function sanFz(fz) {
     if (!Array.isArray(fz)) return undefined;
     return fz.filter(function (it) { return it && typeof it.id === 'string' && typeof it.n === 'string' && Array.isArray(it.d) && typeof it.w === 'number' && isFinite(it.w); })
@@ -1114,8 +1119,8 @@ var G_DESC = {
                items.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (act.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
                '</div></div>';
         });
-        var musters = state.muster.filter(function (m) { return m.mk === mk; });
-        h += '<div class="row"><b>Muster:</b> ' + (musters.length ? musters.map(function (m) {
+        var musters = state.muster.filter(function (m) { return m.mk === mk && musterFits(m, c, type); });
+        h += '<div class="row"><b>Muster für ' + esc(c.fach) + ':</b> ' + (musters.length ? musters.map(function (m) {
                return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
              }).join(' ') : '<span class="muted">noch keine gespeichert</span>') + '</div>';
         h += '<div class="row"><label>Neues Muster (z. B. „Referat 5. Klasse“)<input type="text" id="mName" style="width:260px"></label>' +
@@ -1309,11 +1314,11 @@ var G_DESC = {
         var ca = curA(type); if (!ca.sel || !ca.sel.length) { alert('Bitte zuerst Kriterien wählen.'); return; }
         var mks = modKey(ca), wv = {};
         critsOf(ca).forEach(function (it) { wv[it.id] = it.w; });
-        state.muster.push({ id:uid('mu'), name:nm, mk:mks, sel:ca.sel.slice(), w:wv }); save(); render(); return;
+        state.muster.push({ id:uid('mu'), name:nm, mk:mks, fach:c.fach, cls:c.id, sel:ca.sel.slice(), w:wv }); save(); render(); return;
       }
       if (act === 'mLoad') {
         var mu = null; state.muster.forEach(function (x) { if (x.id === el.dataset.id) mu = x; }); if (!mu) return;
-        var la = curA(type); if (mu.mk !== modKey(la)) { alert('Dieses Muster gehört zu einer anderen Bewertungsart.'); return; }
+        var la = curA(type); if (mu.mk !== modKey(la) || !musterFits(mu, c, type)) { alert('Dieses Muster gehört zu einem anderen Fach oder einer anderen Bewertungsart.'); return; }
         ensure(c, la); la.sel = mu.sel.slice(); refreshFz(la);
         Object.keys(mu.w || {}).forEach(function (id) { if (la.fz) la.fz.forEach(function (it) { if (it.id === id) it.w = mu.w[id]; }); else state.w[mu.mk + '/' + id] = mu.w[id]; });
         ui.sOpen[mu.mk] = true; save(); render(); return;
