@@ -90,6 +90,7 @@
   .crit button.st { width:9mm; height:9mm; padding:0; font-size:15pt; line-height:1; border:1px solid var(--line); border-radius:4px; background:#fff; }
   .crit button.st:active { background:#e4e4e4; }
   .crit button.st:disabled { opacity:.3; cursor:default; }
+  .crit button.st.on { background:var(--acc); color:#fff; }
   .lv { user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color: transparent; }
   .lv[data-act] { cursor:pointer; }
   .lv[data-act]:hover { background:#fbf3f4; }
@@ -518,7 +519,7 @@
                lists:{ '-':[['s1',20],['s2',20],['s3',15],['s4',15],['s5',10],['inton',20]] } },
     abfrage: { label:'Abfrage', short:'Abfrage',        src:'Abfrage',        tt:'Thema',  vars:null },
     unterricht: { label:'Unterrichtsbeitrag', short:'Unterricht', src:'Unterrichtsbeitrag', tt:'Zeitraum / Thema', vars:null,
-               lists:{ '-':[['u1',12],['u2',18],['u3',15],['u4',10],['u5',10],['u6',12],['u7',8],['u8',15]] } },
+               lists:{ '-':[['u1',14],['u2',20],['u3',16],['u4',12],['u5',12],['u7',10],['u8',16]] } },
 
     theater: { label:'Theaterperformance', short:'Theater', src:'Theater', tt:'Inszenierung / Szene', vars:null,
                lists:{ '-':[['th_schauspiel',25],['korpo',15],['th_regie',15],['th_buehne',15],['th_maske',10],['th_pr',10],['th_team',10]] } },
@@ -561,7 +562,7 @@ var G_DESC = {
                m:{ s1:'S', s3:'S', s2:'I', s5:'I', s4:'K', inton:'K' },
                p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
     unterricht: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
-               m:{ u1:'O', u6:'O', u2:'I', u3:'I', u4:'S', u8:'S', u5:'K', u7:'K' },
+               m:{ u1:'O', u2:'I', u3:'I', u4:'S', u8:'S', u5:'K', u7:'K' },
                p:[ ['inh','Schwerpunkt Inhalt',{ I:50, S:15, K:15, G:10, O:10 }], ['spr','Schwerpunkt Sprache',{ S:50, I:15, K:15, G:10, O:10 }], ['kom','Schwerpunkt Kommunikation',{ K:50, I:15, S:15, G:10, O:10 }] ] },
     theater: { g:{ I:'Inhalt', S:'Sprache', K:'Kommunikation', G:'Gestaltung', O:'Organisation & Mitarbeit' },
                m:{ th_schauspiel:'K', korpo:'K', th_regie:'G', th_buehne:'G', th_maske:'G', th_pr:'O', th_team:'O' },
@@ -709,6 +710,15 @@ var G_DESC = {
     return { z:6, t:'ungenügend' };
   }
 
+  var SCH_LBL = { legacy:'Notenpunkte-Standard', knick50:'Knick 4/5 bei 50 %, 5/6 bei 33 %', knick60:'Knick 4/5 bei 60 %, 5/6 bei 33 %', abitur:'Abitur-Tabelle (Vermutung, bitte prüfen)', aequi:'äquidistant', indiv:'individuell' };
+  var ZNAME = ['', 'sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft', 'ungenügend'];
+  /* Vermutung: Abitur-Umrechnung Notenpunkte -> Prozent (ab diesem Anteil), bitte gegen die amtliche Tabelle prüfen */
+  var ABI = [[15,0.95],[14,0.90],[13,0.85],[12,0.80],[11,0.75],[10,0.70],[9,0.65],[8,0.60],[7,0.55],[6,0.50],[5,0.45],[4,0.40],[3,0.33],[2,0.27],[1,0.20],[0,0]];
+  function cdefOf(x) {
+    x = x || {};
+    return { calc: x.calc === 'einheiten' ? 'einheiten' : 'gewichtet', sch: SCH_LBL[x.sch] ? x.sch : 'legacy',
+             bmax: [3,4,5].indexOf(+x.bmax) >= 0 ? +x.bmax : 5, t4: num(x.t4, 50), t5: num(x.t5, 33) };
+  }
   var KEY = 'muendliche_noten_tool_v6';
   var state = load() || fresh();
   var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} };
@@ -741,7 +751,7 @@ var G_DESC = {
       var ids = {}; students.forEach(function (s) { ids[s.id] = 1; });
       return {
         id:String(c.id || uid('c')), name:String(c.name || ''), fach:String(c.fach || 'Deutsch'),
-        skala:c.skala === 'np' ? 'np' : 'note',
+        skala:c.skala === 'np' ? 'np' : 'note', def:cdefOf(c.def),
         students:students, stu:(c.stu && ids[c.stu]) ? c.stu : (students[0] ? students[0].id : null),
         assessments:(Array.isArray(c.assessments) ? c.assessments : []).filter(function (a) { return ids[a.sid] && MOD[a.type]; }).map(function (a) {
           var pts = {}; if (a.pts && typeof a.pts === 'object') Object.keys(a.pts).forEach(function (k) { var n = Number(a.pts[k]); if (a.pts[k] !== null && !isNaN(n)) pts[k] = Math.max(0, Math.min(15, Math.round(n))); });
@@ -751,7 +761,7 @@ var G_DESC = {
                    crit:(Array.isArray(a.crit) ? a.crit.filter(function (k) { return ALLW[k] !== undefined; }) : []),
                    sel:(Array.isArray(a.sel) ? a.sel.filter(function (k) { return C[k]; }) : []),
                    date:String(a.date || todayISO()),
-                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz), ub:!!a.ub };
+                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz), ub:!!a.ub, calc:a.calc === 'einheiten' ? 'einheiten' : 'gewichtet', sch:SCH_LBL[a.sch] ? a.sch : 'legacy', bmax:[3,4,5].indexOf(+a.bmax) >= 0 ? +a.bmax : 5, t4:num(a.t4, 50), t5:num(a.t5, 33), bmx:(a.bmx && typeof a.bmx === 'object') ? a.bmx : {} };
         }),
         manual:(Array.isArray(c.manual) ? c.manual : []).filter(function (m) { return ids[m.sid]; }).map(function (m) {
           return { id:String(m.id || uid('m')), sid:m.sid, date:String(m.date || todayISO()), source:String(m.source || ''), thema:String(m.thema || ''), value:num(m.value, null), gew:Math.max(0, num(m.gew, 1)), ub:!!m.ub };
@@ -779,7 +789,7 @@ var G_DESC = {
   function findAny(c, id) { var a = findA(c, id); if (a) return a; Object.keys(ui.draft).forEach(function (k) { if (ui.draft[k].id === id) a = ui.draft[k]; }); return a; }
 
   function newA(c, type, sid) {
-    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, _draft:true };
+    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, calc:cdefOf(c.def).calc, sch:cdefOf(c.def).sch, bmax:cdefOf(c.def).bmax, t4:cdefOf(c.def).t4, t5:cdefOf(c.def).t5, bmx:{}, _draft:true };
   }
   function modKey(a) { return a.type === 'abfrage' ? 'abfrage' : a.type + ':' + (MOD[a.type].vars ? (a.variant === 'fs' && a.type !== 'referat' ? 'es' : a.variant) : '-'); }
   function poolKeyOf(a) { return MOD[a.type].vars ? a.variant : '-'; }
@@ -802,10 +812,11 @@ var G_DESC = {
   /* Bei Auswahländerung: bereits gespeicherte Texte und Gewichte bleiben, nur neue Kriterien kommen dazu */
   function refreshFz(a) {
     var old = {}; (a.fz || []).forEach(function (it) { old[it.id] = it; });
+    var kept = (a.fz || []).filter(function (it) { return it.id.indexOf('x_') === 0; });
     a.fz = liveItems(a).map(function (it) {
       var o = old[it.id];
       return o ? { id:o.id, n:o.n, d:o.d, w:o.w } : it;
-    });
+    }).concat(kept);
   }
   /* Einfrieren: Texte, Stufen und Gewichte werden mit der Bewertung gespeichert und ändern sich nicht mehr durch Updates */
   function freezeA(a) {
@@ -818,7 +829,16 @@ var G_DESC = {
   }
   function migrate() {
     var changed = false;
-    state.classes.forEach(function (c) { c.assessments.forEach(function (a) { if (!a.fz) { freezeA(a); changed = true; } }); });
+    state.classes.forEach(function (c) {
+      c.assessments.forEach(function (a) {
+        if (!a.fz) { freezeA(a); changed = true; }
+        if (a.sel && a.sel.indexOf('u6') >= 0) { a.sel = a.sel.filter(function (id) { return id !== 'u6'; }); changed = true; }
+        if (a.pts && a.pts.u6 !== undefined) { delete a.pts.u6; changed = true; }
+        if (a.fz && a.fz.some(function (it) { return it.id === 'u6'; })) { a.fz = a.fz.filter(function (it) { return it.id !== 'u6'; }); changed = true; }
+        if (!a.calc) { a.calc = 'gewichtet'; changed = true; }
+        if (!a.sch) { a.sch = 'legacy'; changed = true; }
+      });
+    });
     if (changed) save();
   }
   function critsLive(a) {
@@ -844,13 +864,46 @@ var G_DESC = {
       return { id:p[0], n:c.n, d:(a.type !== 'abfrage' && a.variant === 'es' && c.es) ? c.es : c.d, w:w };
     });
   }
+  function maxU(a, id) { return (a.bmx && a.bmx[id]) || a.bmax || 5; }
+  function thresholds(a) {
+    if (a.sch === 'knick60') return { t4:0.6, t5:0.33 };
+    if (a.sch === 'indiv') return { t4:(a.t4 || 50) / 100, t5:(a.t5 || 33) / 100 };
+    return { t4:0.5, t5:0.33 };
+  }
+  /* Anteil (0..1) -> Note 1..6 nach Schlüssel; Knick: linear zwischen 1 und 4, 4 und 5, 5 und 6 */
+  function gradeFromPct(p, a) {
+    var g;
+    if (a.sch === 'aequi') g = 6 - 5 * p;
+    else {
+      var T = thresholds(a);
+      if (p >= 1) g = 1;
+      else if (p >= T.t4) g = 1 + 3 * (1 - p) / (1 - T.t4);
+      else if (p >= T.t5) g = 4 + (T.t4 - p) / (T.t4 - T.t5);
+      else g = Math.min(6, 5 + (T.t5 - p) / T.t5);
+    }
+    var z = Math.max(1, Math.min(6, Math.round(g)));
+    return { z:z, t:ZNAME[z] };
+  }
   function calcA(a) {
-    var cr = critsOf(a), open = 0, sw = 0, sum = 0;
-    cr.forEach(function (c) { var p = a.pts[c.id]; if (p === undefined || p === null) open++; else sum += p * c.w; sw += c.w; });
+    var cr = critsOf(a), open = 0, sw = 0, sum = 0, units = a.calc === 'einheiten';
+    cr.forEach(function (c) {
+      var p = a.pts[c.id];
+      if (p === undefined || p === null) { open++; return; }
+      sw += c.w;
+      sum += c.w * (units ? Math.min(p, maxU(a, c.id)) / maxU(a, c.id) : p / 15);
+    });
     if (!cr.length) return { done:false, open:0, any:false, n:0 };
     if (open) return { done:false, open:open, any:open < cr.length, n:cr.length };
-    var ex = sum / (sw || 1), np = Math.floor(ex + 0.5 + 1e-9);
-    return { done:true, open:0, any:true, n:cr.length, ex:ex, np:np, z:zensur(np) };
+    var pct = sum / (sw || 1), ex = pct * 15, np, z;
+    if (!a.sch || a.sch === 'legacy') { np = Math.floor(ex + 0.5 + 1e-9); z = zensur(np); }
+    else if (a.sch === 'abitur') {
+      np = 0; ABI.forEach(function (r) { if (np === 0 && pct >= r[1] - 1e-9) np = r[0]; });
+      z = zensur(np);
+    } else {
+      z = { z:gradeFromPct(pct, a).z }; z.t = ZNAME[z.z];
+      np = Math.max(0, Math.min(15, Math.round(ex)));
+    }
+    return { done:true, open:0, any:true, n:cr.length, ex:ex, np:np, z:z, pct:pct };
   }
   function sheetTitle(a) {
     var m = MOD[a.type];
@@ -919,14 +972,21 @@ var G_DESC = {
     var shs = shareList(cr);
     cr.forEach(function (k, ki) {
       var p = a.pts[k.id], has = (p !== undefined && p !== null), L = has ? LV[lvOf(p)] : null;
+      var units = a.calc === 'einheiten', M = maxU(a, k.id);
       h += '<div class="crit"><span class="cn">' + esc(k.n) + ' (' + shs[ki] + ' %)</span><span class="np">';
-      if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="-1" aria-label="Einen Punkt weniger"' + ((!has || p <= L.lo) ? ' disabled' : '') + '>−</button>';
-      h += '<b class="nv">' + (has ? p : '–') + '</b>';
-      if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="1" aria-label="Einen Punkt mehr"' + ((!has || p >= L.hi) ? ' disabled' : '') + '>+</button>';
-      h += '<span class="nl">NP</span></span></div>';
+      if (units) {
+        h += '<b class="nv">' + (has ? p : '–') + '</b>';
+        for (var u = 0; u <= M; u++) h += '<button class="st' + (has && p === u ? ' on' : '') + '" data-act="ue" data-i="' + k.id + '" data-u="' + u + '"' + (edit ? '' : ' disabled') + '>' + u + '</button>';
+        h += '<span class="nl">BE von ' + M + '</span></span></div>';
+      } else {
+        if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="-1" aria-label="Einen Punkt weniger"' + ((!has || p <= L.lo) ? ' disabled' : '') + '>−</button>';
+        h += '<b class="nv">' + (has ? p : '–') + '</b>';
+        if (edit) h += '<button class="st" data-act="st" data-i="' + k.id + '" data-d="1" aria-label="Einen Punkt mehr"' + ((!has || p >= L.hi) ? ' disabled' : '') + '>+</button>';
+        h += '<span class="nl">NP</span></span></div>';
+      }
       k.d.forEach(function (t, j) {
-        var hit = has && lvOf(p) === j;
-        h += '<div class="lv' + (hit ? ' hit' : '') + '"' + (edit ? ' role="button" tabindex="0" data-act="lv" data-i="' + k.id + '" data-k="' + j + '"' : '') + '>' + esc(t) + '</div>';
+        var hit = !units && has && lvOf(p) === j;
+        h += '<div class="lv' + (hit ? ' hit' : '') + '"' + (edit && !units ? ' role="button" tabindex="0" data-act="lv" data-i="' + k.id + '" data-k="' + j + '"' : '') + '>' + esc(t) + '</div>';
       });
     });
     h += '</div>';
@@ -952,12 +1012,16 @@ var G_DESC = {
     h += '<button class="primary" data-act="clsAdd">+ Neue Klasse</button></div>';
     if (!c) { h += '<p>Lege deine erste Klasse an.</p></div>'; return h; }
 
+    var cd = cdefOf(c.def);
     var faecherList = ['Deutsch', 'Geschichte', 'Politik und Gesellschaft', 'Spanisch', 'Theater', 'P-Seminar', 'W-Seminar', 'Andere Fächer'];
 
     h += '<h3>Einstellungen der Klasse</h3><div class="row">' +
          '<label>Name (z. B. Q11, 10a)<input type="text" data-cf="name" value="' + esc(c.name) + '"></label>' +
          '<label>Fach<select data-cf="fach">' + faecherList.map(function(f) { return '<option value="' + f + '"' + (c.fach === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label>' +
          '<label>Notenskala<select data-cf="skala"><option value="note"' + (c.skala === 'note' ? ' selected' : '') + '>Noten 1–6 (Mittelstufe)</option><option value="np"' + (c.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15 (Oberstufe)</option></select></label>' +
+         '<label>Standard: Berechnung<select data-cdef="calc"><option value="gewichtet"' + (cd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (cd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
+         '<label>Standard: Notenschlüssel<select data-cdef="sch">' + Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + (cd.sch === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('') + '</select></label>' +
+         '<label>Standard: max. BE<select data-cdef="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (cd.bmax === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
          '<button class="danger" data-act="clsDel">Klasse löschen</button></div>';
     h += '<h3>Schüler/innen (' + c.students.length + ')</h3>';
     if (c.students.length) {
@@ -1102,6 +1166,13 @@ var G_DESC = {
     h += '</select></label><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>';
     h += '<span class="sep"></span><button class="primary" data-act="printOne">Diese Seite drucken / PDF</button><button data-act="printAll">Alle Bögen drucken</button></div>';
 
+    var schOpts = Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + ((a.sch || 'legacy') === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('');
+    h += '<div class="panel" style="margin-top:0"><div class="row"><b>Berechnung:</b>' +
+         '<label>Bewertungsgrundlage<select data-set="calc"><option value="gewichtet"' + (a.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (a.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
+         '<label>Notenschlüssel<select data-set="sch">' + schOpts + '</select></label>' +
+         (a.sch === 'indiv' ? '<label>Grenze Note 4/5 (%)<input type="text" inputmode="decimal" data-set="t4" value="' + fmt(a.t4 || 50) + '" style="width:90px"></label><label>Grenze Note 5/6 (%)<input type="text" inputmode="decimal" data-set="t5" value="' + fmt(a.t5 || 33) + '" style="width:90px"></label>' : '') +
+         (a.calc === 'einheiten' ? '<label>Max. BE je Kriterium (Standard)<select data-set="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + ((a.bmax || 5) === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' : '') +
+         '</div>' + (a.sch === 'abitur' ? '<div class="hint warn">Die Abitur-Tabelle ist eine Vermutung. Bitte gegen die amtliche Tabelle prüfen, bevor Noten daraus übernommen werden.</div>' : '') + '</div>';
     if (type === 'abfrage') {
       h += '<div class="panel" style="margin-top:0"><div class="row">' +
            '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="preset"' + (a.swMode !== 'custom' ? ' checked' : '') + '> Nach Vorgabe</label>' +
@@ -1123,6 +1194,9 @@ var G_DESC = {
                items.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (act.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
                '</div></div>';
         });
+        var customs = (a.fz || []).filter(function (it) { return it.id.indexOf('x_') === 0; });
+        h += '<div class="row"><b>Eigene Kriterien:</b> ' + (customs.length ? customs.map(function (it) { return '<span class="chip on">' + esc(it.n) + ' <button class="chip" data-act="cDel" data-id="' + it.id + '" title="entfernen">✕</button></span>'; }).join(' ') : '<span class="muted">keine</span>') + '</div>';
+        h += '<div class="row"><label>Name des eigenen Kriteriums<input type="text" id="cName" style="width:260px"></label><button data-act="cAdd">Kriterium hinzufügen</button></div>';
         var musters = state.muster.filter(function (m) { return m.mk === mk && musterFits(m, c, type); });
         h += '<div class="row"><b>Muster für ' + esc(c.fach) + ':</b> ' + (musters.length ? musters.map(function (m) {
                return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
@@ -1157,11 +1231,11 @@ var G_DESC = {
     });
     var open = cur === 'eigen' || ui.wOpen[mk];
     h += '<button class="chip' + (cur === 'eigen' ? ' on' : '') + '" data-act="wOwn" data-mk="' + mk + '">Individuell …</button></div>';
-    if (open) {
-      h += '<table class="t" style="max-width:640px; margin-top:8px;"><tr><th>Kriterium</th><th class="c" style="width:120px">Gewicht (Zahl)</th><th class="c" style="width:110px">Anteil</th></tr>';
+    if (open || a.calc === 'einheiten') {
+      h += '<table class="t" style="max-width:640px; margin-top:8px;"><tr><th>Kriterium</th><th class="c" style="width:120px">Gewicht (Zahl)</th><th class="c" style="width:110px">Anteil</th>' + (a.calc === 'einheiten' ? '<th class="c" style="width:110px">Max. BE</th>' : '') + '</tr>';
       crs.forEach(function (k, i) {
         var key = mk + '/' + k.id, ov = state.w[key], raw = (ov !== undefined && ov !== null) ? ov : baseW(a, k.id);
-        h += '<tr><td>' + esc(k.n) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(raw) + '"></td><td class="c">' + shs[i] + ' %</td></tr>';
+        h += '<tr><td>' + esc(k.n) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-w="' + key + '" value="' + fmt(raw) + '"></td><td class="c">' + shs[i] + ' %</td>' + (a.calc === 'einheiten' ? '<td class="c"><select data-bmx="' + k.id + '">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (maxU(a, k.id) === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></td>' : '') + '</tr>';
       });
       h += '</table><div class="hint">Die Anteile werden aus den Zahlen berechnet und ergeben immer 100 %.</div>';
     }
@@ -1300,6 +1374,26 @@ var G_DESC = {
       var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
       var act = el.dataset.act, c = cls(), s = stu(), type = state.tab;
 
+      if (act === 'ue') {
+        var ue = curA(type); ensure(c, ue);
+        var uid2 = el.dataset.i, uu = +el.dataset.u;
+        if (ue.pts[uid2] === uu) delete ue.pts[uid2]; else ue.pts[uid2] = uu;
+        save(); render(); return;
+      }
+      if (act === 'cAdd') {
+        var cn = ($('cName') ? $('cName').value : '').trim();
+        if (!cn) { alert('Bitte einen Namen für das Kriterium eingeben.'); return; }
+        var ck = curA(type); ensure(c, ck);
+        var nid = uid('x_');
+        ck.fz = (ck.fz || []).concat([{ id:nid, n:cn, d:['', '', '', '', ''], w:10 }]);
+        ck.sel = (ck.sel || []).concat([nid]); save(); render(); return;
+      }
+      if (act === 'cDel') {
+        var cd2 = curA(type); ensure(c, cd2);
+        cd2.fz = (cd2.fz || []).filter(function (it) { return it.id !== el.dataset.id; });
+        cd2.sel = (cd2.sel || []).filter(function (id) { return id !== el.dataset.id; });
+        delete cd2.pts[el.dataset.id]; save(); render(); return;
+      }
       if (act === 'lv' || act === 'st') {
         var a = curA(type); ensure(c, a);
         if (act === 'lv') setLevel(a, el.dataset.i, +el.dataset.k); else stepPts(a, el.dataset.i, +el.dataset.d);
@@ -1376,7 +1470,7 @@ var G_DESC = {
         save(); render(); return;
       }
       if (act === 'clsPick') { state.cls = el.dataset.id; save(); render(); return; }
-      if (act === 'clsAdd') { var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:'note', students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
+      if (act === 'clsAdd') { var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:'note', def:cdefOf(null), students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
       if (act === 'clsDel') {
         if (!confirm('Klasse „' + c.name + '“ löschen?')) return;
         state.classes = state.classes.filter(function (x) { return x.id !== c.id; }); state.cls = state.classes[0] ? state.classes[0].id : null; save(); render(); return;
@@ -1421,6 +1515,25 @@ var G_DESC = {
 
     view.addEventListener('change', function (e) {
       var t = e.target, c = cls(); if (!c) return;
+      if (t.dataset.set !== undefined) {
+        var sa = curA(state.tab); if (!sa) return;
+        var key = t.dataset.set;
+        if (key === 'calc' && t.value !== (sa.calc || 'gewichtet') && Object.keys(sa.pts || {}).length) {
+          if (!confirm('Beim Wechsel der Bewertungsgrundlage werden die Punkte dieser Bewertung gelöscht. Fortfahren?')) { render(); return; }
+          sa = (ensure(c, sa), sa); sa.pts = {};
+        }
+        ensure(c, sa);
+        if (key === 't4' || key === 't5') sa[key] = num(t.value, key === 't4' ? 50 : 33);
+        else if (key === 'bmax') sa.bmax = +t.value;
+        else sa[key] = t.value;
+        save(); render(); return;
+      }
+      if (t.dataset.bmx !== undefined) { var sb = curA(state.tab); ensure(c, sb); sb.bmx = sb.bmx || {}; sb.bmx[t.dataset.bmx] = +t.value; save(); render(); return; }
+      if (t.dataset.cdef !== undefined) {
+        c.def = cdefOf(c.def); var dk = t.dataset.cdef;
+        if (dk === 'bmax') c.def.bmax = +t.value; else if (dk === 't4' || dk === 't5') c.def[dk] = num(t.value, 50); else c.def[dk] = t.value;
+        c.def = cdefOf(c.def); save(); render(); return;
+      }
       if (t.dataset.cf !== undefined) { c[t.dataset.cf] = t.value; save(); render(); return; }
       if (t.dataset.w !== undefined) {
         var wa = curA(state.tab), wid = t.dataset.w.split('/').pop();
@@ -1435,7 +1548,8 @@ var G_DESC = {
         var pool = POOL[a.type][poolKeyOf(a)] || [];
         var active = [];
         view.querySelectorAll('input[data-f="sel"]:checked').forEach(function(box) { active.push(box.value); });
-        a.sel = active; refreshFz(a); save(); render(); return;
+        a.sel = active.concat((a.sel || []).filter(function (id) { return id.indexOf('x_') === 0; }));
+        refreshFz(a); save(); render(); return;
       }
     });
 
