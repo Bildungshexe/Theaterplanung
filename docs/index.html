@@ -712,11 +712,17 @@ var G_DESC = {
   var KEY = 'muendliche_noten_tool_v6';
   var state = load() || fresh();
   var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} };
+  migrate();
 
   function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, muster:[], mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
   function save() { clearTimeout(tmr); tmr = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }, 300); }
+  function sanFz(fz) {
+    if (!Array.isArray(fz)) return undefined;
+    return fz.filter(function (it) { return it && typeof it.id === 'string' && typeof it.n === 'string' && Array.isArray(it.d) && typeof it.w === 'number' && isFinite(it.w); })
+      .map(function (it) { return { id:it.id, n:it.n, d:it.d.map(String), w:it.w }; });
+  }
   function sanitize(o) {
     if (!o || o.v !== 3 || !Array.isArray(o.classes)) return null;
     var f = fresh();
@@ -740,7 +746,7 @@ var G_DESC = {
                    crit:(Array.isArray(a.crit) ? a.crit.filter(function (k) { return ALLW[k] !== undefined; }) : []),
                    sel:(Array.isArray(a.sel) ? a.sel.filter(function (k) { return C[k]; }) : []),
                    date:String(a.date || todayISO()),
-                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)) };
+                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz) };
         }),
         manual:(Array.isArray(c.manual) ? c.manual : []).filter(function (m) { return ids[m.sid]; }).map(function (m) {
           return { id:String(m.id || uid('m')), sid:m.sid, date:String(m.date || todayISO()), source:String(m.source || ''), thema:String(m.thema || ''), value:num(m.value, null), gew:Math.max(0, num(m.gew, 1)) };
@@ -783,7 +789,34 @@ var G_DESC = {
       .slice(0, rest).forEach(function (p) { fl[p[1]]++; });
     return fl;
   }
+  function liveItems(a) { return critsLive(a).map(function (k) { return { id:k.id, n:k.n, d:k.d, w:k.w }; }); }
   function critsOf(a) {
+    if (a.fz) return a.fz.map(function (it) { return { id:it.id, n:it.n, d:it.d, w:it.w }; });
+    return critsLive(a);
+  }
+  /* Bei Auswahländerung: bereits gespeicherte Texte und Gewichte bleiben, nur neue Kriterien kommen dazu */
+  function refreshFz(a) {
+    var old = {}; (a.fz || []).forEach(function (it) { old[it.id] = it; });
+    a.fz = liveItems(a).map(function (it) {
+      var o = old[it.id];
+      return o ? { id:o.id, n:o.n, d:o.d, w:o.w } : it;
+    });
+  }
+  /* Einfrieren: Texte, Stufen und Gewichte werden mit der Bewertung gespeichert und ändern sich nicht mehr durch Updates */
+  function freezeA(a) {
+    if (a.fz) return;
+    if (a.type !== 'abfrage' && (!a.sel || !a.sel.length) && a.pts && Object.keys(a.pts).length) a.sel = Object.keys(a.pts);
+    a.fz = liveItems(a);
+    if (a.type !== 'abfrage') (a.sel || []).forEach(function (id) {
+      if (!a.fz.some(function (it) { return it.id === id; }) && C[id]) a.fz.push({ id:id, n:C[id].n, d:C[id].d, w:1 });
+    });
+  }
+  function migrate() {
+    var changed = false;
+    state.classes.forEach(function (c) { c.assessments.forEach(function (a) { if (!a.fz) { freezeA(a); changed = true; } }); });
+    if (changed) save();
+  }
+  function critsLive(a) {
     var mk = modKey(a), list = [], scale = 1;
     if (a.type === 'abfrage') {
       if (a.swMode === 'custom') {
@@ -841,7 +874,7 @@ var G_DESC = {
   function ensure(c, a) {
     if (a._draft) {
       var key = keyA(a);
-      delete a._draft; c.assessments.push(a);
+      delete a._draft; freezeA(a); c.assessments.push(a);
       delete ui.draft[key]; ui.cur[key] = a.id;
     }
   }
@@ -1134,20 +1167,24 @@ var G_DESC = {
   }
 
   function applyWPreset(a, id) {
-    var W = WG[a.type], mk = modKey(a), crs = critsOf(a);
-    Object.keys(state.w).forEach(function (k) { if (k.indexOf(mk + '/') === 0) delete state.w[k]; });
+    var W = WG[a.type], mk = modKey(a), crs = critsOf(a), nw = {};
     state.wp[mk] = id;
-    if (id === 'std') return;
-    var pr = null; W.p.forEach(function (p) { if (p[0] === id) pr = p; });
-    var cnt = {}; crs.forEach(function (k) { var g = wGroup(a.type, k.id); cnt[g] = (cnt[g] || 0) + 1; });
-    var tot = 0; Object.keys(cnt).forEach(function (g) { tot += pr ? (pr[2][g] || 0) : cnt[g]; });
-    if (!tot) tot = 1;
-    crs.forEach(function (k) {
-      var g = wGroup(a.type, k.id), share = pr ? (pr[2][g] || 0) / tot / cnt[g] : 1 / crs.length, w = Math.round(share * 1000) / 10;
-      state.w[mk + '/' + k.id] = w;
-    });
+    if (!a.fz) Object.keys(state.w).forEach(function (k) { if (k.indexOf(mk + '/') === 0) delete state.w[k]; });
+    if (id === 'std') {
+      if (a.fz) liveItems(a).forEach(function (it) { nw[it.id] = it.w; });
+    } else {
+      var pr = null; W.p.forEach(function (p) { if (p[0] === id) pr = p; });
+      var cnt = {}; crs.forEach(function (k) { var g = wGroup(a.type, k.id); cnt[g] = (cnt[g] || 0) + 1; });
+      var tot = 0; Object.keys(cnt).forEach(function (g) { tot += pr ? (pr[2][g] || 0) : cnt[g]; });
+      if (!tot) tot = 1;
+      crs.forEach(function (k) {
+        var g = wGroup(a.type, k.id), share = pr ? (pr[2][g] || 0) / tot / cnt[g] : 1 / crs.length;
+        nw[k.id] = Math.round(share * 1000) / 10;
+      });
+    }
+    if (a.fz) a.fz.forEach(function (it) { if (nw[it.id] !== undefined) it.w = nw[it.id]; });
+    else Object.keys(nw).forEach(function (k) { state.w[mk + '/' + k] = nw[k]; });
   }
-
   function vSettings() {
     var h = '<div class="panel"><h2>Einstellungen & Backup</h2>';
     h += '<p class="muted">Sichern Sie Ihre Daten regelmäßig als JSON-Datei, um Datenverlust bei Browser-Bereinigungen zu vermeiden.</p>';
@@ -1271,14 +1308,14 @@ var G_DESC = {
         if (!nm) { alert('Bitte einen Namen für das Muster eingeben.'); return; }
         var ca = curA(type); if (!ca.sel || !ca.sel.length) { alert('Bitte zuerst Kriterien wählen.'); return; }
         var mks = modKey(ca), wv = {};
-        ca.sel.forEach(function (id) { var ov = state.w[mks + '/' + id]; if (ov !== undefined && ov !== null) wv[id] = ov; });
+        critsOf(ca).forEach(function (it) { wv[it.id] = it.w; });
         state.muster.push({ id:uid('mu'), name:nm, mk:mks, sel:ca.sel.slice(), w:wv }); save(); render(); return;
       }
       if (act === 'mLoad') {
         var mu = null; state.muster.forEach(function (x) { if (x.id === el.dataset.id) mu = x; }); if (!mu) return;
         var la = curA(type); if (mu.mk !== modKey(la)) { alert('Dieses Muster gehört zu einer anderen Bewertungsart.'); return; }
-        ensure(c, la); la.sel = mu.sel.slice();
-        Object.keys(mu.w || {}).forEach(function (id) { state.w[mu.mk + '/' + id] = mu.w[id]; });
+        ensure(c, la); la.sel = mu.sel.slice(); refreshFz(la);
+        Object.keys(mu.w || {}).forEach(function (id) { if (la.fz) la.fz.forEach(function (it) { if (it.id === id) it.w = mu.w[id]; }); else state.w[mu.mk + '/' + id] = mu.w[id]; });
         ui.sOpen[mu.mk] = true; save(); render(); return;
       }
       if (act === 'mDel') {
@@ -1293,6 +1330,7 @@ var G_DESC = {
           if (stud.id === ka.sid) { ensure(c, ka); return; }
           var na = newA(c, type, stud.id); delete na._draft;
           na.variant = ka.variant; na.thema = ka.thema; na.sel = ka.sel.slice(); na.swMode = ka.swMode; na.sw = ka.sw.slice(); na.crit = ka.crit.slice();
+          na.fz = JSON.parse(JSON.stringify(ka.fz || liveItems(ka)));
           c.assessments.push(na);
         });
         save(); render(); alert('Klassenarbeit für ' + c.students.length + ' Schüler/innen angelegt. Das Datum können Sie je Schüler/in ändern.'); return;
@@ -1370,7 +1408,12 @@ var G_DESC = {
     view.addEventListener('change', function (e) {
       var t = e.target, c = cls(); if (!c) return;
       if (t.dataset.cf !== undefined) { c[t.dataset.cf] = t.value; save(); render(); return; }
-      if (t.dataset.w !== undefined) { state.w[t.dataset.w] = num(t.value, 0); state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); render(); return; }
+      if (t.dataset.w !== undefined) {
+        var wa = curA(state.tab), wid = t.dataset.w.split('/').pop();
+        if (wa && wa.fz) wa.fz.forEach(function (it) { if (it.id === wid) it.w = num(t.value, 0); });
+        else state.w[t.dataset.w] = num(t.value, 0);
+        state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); render(); return;
+      }
       if (t.dataset.sf !== undefined) { var st = stuById(c, t.dataset.sid); if (st) { st.name = t.value; save(); } return; }
       if (t.dataset.f === 'pickA') { var s = stu(); if (t.value !== '__draft') { ui.cur[state.tab + vk(state.tab) + '|' + s.id] = t.value; render(); } return; }
       if (t.dataset.f === 'sel') {
@@ -1378,7 +1421,7 @@ var G_DESC = {
         var pool = POOL[a.type][poolKeyOf(a)] || [];
         var active = [];
         view.querySelectorAll('input[data-f="sel"]:checked').forEach(function(box) { active.push(box.value); });
-        a.sel = active; save(); render(); return;
+        a.sel = active; refreshFz(a); save(); render(); return;
       }
     });
 
@@ -1389,7 +1432,7 @@ var G_DESC = {
         try {
           var o = sanitize(JSON.parse(r.result)); if (!o) throw new Error('leer');
           if (!confirm('Daten überschreiben?')) return;
-          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} }; save(); render();
+          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} }; migrate(); save(); render();
         } catch (err) { alert('Fehler beim Laden.'); }
       };
       r.readAsText(f); e.target.value = '';
