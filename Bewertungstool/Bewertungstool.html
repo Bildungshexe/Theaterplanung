@@ -123,6 +123,11 @@
   .rep th { background:var(--gray); font-weight:bold; }
   .rep td.c, .rep th.c { text-align:center; }
 
+  .clsdot { display:inline-block; width:14px; height:14px; border-radius:3px; margin-right:6px; vertical-align:middle; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .drawer { background:#fafafa; }
+  .drawer > button { font-weight:bold; }
+
   @page { size: A4 landscape; margin: 0; }
   @media print {
     body { background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -152,7 +157,7 @@
     <label>Bewertung <select id="modeSel"></select></label>
     <button class="tab" data-tab="bogen">Bogen</button>
     <span class="sep"></span>
-    <button class="tab" data-tab="student">Schüler/in</button>
+    <button class="tab" data-tab="student">Notenliste</button>
     <button class="tab" data-tab="klasse">Klassenübersicht</button>
     <span class="sep"></span>
     <button class="tab" data-tab="classes">Klassen</button>
@@ -509,7 +514,8 @@
                lists:{ de:[['tex',18],['spr',15],['vers',18],['sinn',18],['auft',16],['empa',15]], es:GED_FS, fs:GED_FS } },
     song:    { label:'Songvortrag Spanisch',    short:'Song',           src:'Songvortrag',    tt:'Song',   vars:null,
                lists:{ '-':[['s1',20],['s2',20],['s3',15],['s4',15],['s5',10],['inton',20]] } },
-    abfrage: { label:'Abfrage', short:'Abfrage',        src:'Abfrage',        tt:'Thema',  vars:null },
+    abfrage: { label:'Abfrage', short:'Abfrage', src:'Abfrage', tt:'Thema', vars:null,
+               lists:{ '-':[['f1',30],['f2',25],['f3',20],['f4',15],['f5',10],['v1',30],['v2',25],['v3',20],['v4',15],['v5',10],['g1',30],['g2',25],['g3',20],['g4',15],['g5',10],['t1',30],['t2',25],['t3',20],['t4',15],['t5',10],['dar',25]] } },
     unterricht: { label:'Unterrichtsbeitrag', short:'Unterricht', src:'Unterrichtsbeitrag', tt:'Zeitraum / Thema', vars:null,
                lists:{ '-':[['u1',14],['u2',20],['u3',16],['u4',12],['u5',12],['u7',10],['u8',16]] } },
 
@@ -574,6 +580,7 @@ var G_DESC = {
   };
 
   var POOL = {
+    abfrage: MOD.abfrage.lists,
     lesen:   { de:MOD.lesen.lists.de, es:MOD.lesen.lists.es, fs:MOD.lesen.lists.fs },
     gedicht: { de:MOD.gedicht.lists.de, es:MOD.gedicht.lists.es, fs:MOD.gedicht.lists.fs },
     song:    { '-':MOD.song.lists['-'] },
@@ -585,7 +592,7 @@ var G_DESC = {
   };
 
   var SW = {
-    fach: { n:'Fachwissen',            l:[['f1',30],['f2',25],['f3',20],['f4',15],['f5',10]] },
+    fach: { n:'Fachwissen / Stoff der letzten Stunde', l:[['f1',30],['f2',25],['f3',20],['f4',15],['f5',10]] },
     vok:  { n:'Vokabular',             l:[['v1',30],['v2',25],['v3',20],['v4',15],['v5',10]] },
     gram: { n:'Grammatik / Formen',    l:[['g1',30],['g2',25],['g3',20],['g4',15],['g5',10]] },
     text: { n:'Textkenntnis (Lektüre)', l:[['t1',30],['t2',25],['t3',20],['t4',15],['t5',10]] }
@@ -713,7 +720,7 @@ var G_DESC = {
   }
   var KEY = 'muendliche_noten_tool_v6';
   var state = load() || fresh();
-  var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} };
+  var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{}, drawer:{} };
   migrate();
 
   function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, muster:[], mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
@@ -754,7 +761,7 @@ var G_DESC = {
       var ids = {}; students.forEach(function (s) { ids[s.id] = 1; });
       return {
         id:String(c.id || uid('c')), name:String(c.name || ''), fach:String(c.fach || 'Deutsch'),
-        skala:c.skala === 'np' ? 'np' : 'note', def:cdefOf(c.def),
+        skala:c.skala === 'np' ? 'np' : 'note', def:cdefOf(c.def), color:/^#[0-9a-fA-F]{6}$/.test(c.color || '') ? c.color : '#8B1E2D',
         students:students, stu:(c.stu && ids[c.stu]) ? c.stu : (students[0] ? students[0].id : null),
         assessments:(Array.isArray(c.assessments) ? c.assessments : []).filter(function (a) { return ids[a.sid] && MOD[a.type]; }).map(function (a) {
           var pts = {}; if (a.pts && typeof a.pts === 'object') Object.keys(a.pts).forEach(function (k) { var n = Number(a.pts[k]); if (a.pts[k] !== null && !isNaN(n)) pts[k] = Math.max(0, Math.min(15, Math.round(n))); });
@@ -792,7 +799,7 @@ var G_DESC = {
   function findAny(c, id) { var a = findA(c, id); if (a) return a; Object.keys(ui.draft).forEach(function (k) { if (ui.draft[k].id === id) a = ui.draft[k]; }); return a; }
 
   function newA(c, type, sid) {
-    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel:[], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, calc:cdefOf(c.def).calc, gw:cdefOf(c.def).gw, sch:cdefOf(c.def).sch, bmax:cdefOf(c.def).bmax, t4:cdefOf(c.def).t4, t5:cdefOf(c.def).t5, bmx:{}, _draft:true };
+    return { id:uid('a'), sid:sid, type:type, variant:MOD[type].vars ? varOf(type) : 'de', sw:['fach'], swMode:'preset', crit:[], sel: type === 'abfrage' ? areaSel(['fach']) : [], date:todayISO(), thema:'', pts:{}, cmt:'', gew:1, calc:cdefOf(c.def).calc, gw:cdefOf(c.def).gw, sch:cdefOf(c.def).sch, bmax:cdefOf(c.def).bmax, t4:cdefOf(c.def).t4, t5:cdefOf(c.def).t5, bmx:{}, _draft:true };
   }
   function modKey(a) { return a.type === 'abfrage' ? 'abfrage' : a.type + ':' + (MOD[a.type].vars ? (a.variant === 'fs' && a.type !== 'referat' ? 'es' : a.variant) : '-'); }
   function poolKeyOf(a) { return MOD[a.type].vars ? a.variant : '-'; }
@@ -808,6 +815,13 @@ var G_DESC = {
     return fl;
   }
   function liveItems(a) { return critsLive(a).map(function (k) { return { id:k.id, n:k.n, d:k.d, w:k.w }; }); }
+  /* Kriterien eines Bereichs der Abfrage (Auswahl über die Bereiche) */
+  function areaSel(sw) {
+    var out = [];
+    (sw || []).forEach(function (k) { if (SW[k]) SW[k].l.forEach(function (p) { out.push(p[0]); }); });
+    out.push('dar');
+    return out;
+  }
   function critsOf(a) {
     if (a.fz) return a.fz.map(function (it) { return { id:it.id, n:it.n, d:it.d, w:it.w }; });
     return critsLive(a);
@@ -835,6 +849,7 @@ var G_DESC = {
     mergeMusters();
     state.classes.forEach(function (c) {
       c.assessments.forEach(function (a) {
+        if (a.type === 'abfrage' && (!a.sel || !a.sel.length)) { a.sel = areaSel(a.sw || ['fach']); changed = true; }
         if (!a.fz) { freezeA(a); changed = true; }
         if (a.sel && a.sel.indexOf('u6') >= 0) { a.sel = a.sel.filter(function (id) { return id !== 'u6'; }); changed = true; }
         if (a.pts && a.pts.u6 !== undefined) { delete a.pts.u6; changed = true; }
@@ -847,7 +862,7 @@ var G_DESC = {
   }
   function critsLive(a) {
     var mk = modKey(a), list = [], scale = 1;
-    if (a.type === 'abfrage') {
+    if (false) {
       if (a.swMode === 'custom') {
         (a.crit || []).forEach(function (id) { if (ALLW[id] !== undefined) list.push([id, ALLW[id]]); });
       } else {
@@ -1016,7 +1031,7 @@ var G_DESC = {
     var c = cls();
     var h = '<div class="panel"><h2>Klassen und Kurse</h2><div class="row">';
     state.classes.forEach(function (x) {
-      h += '<button class="chip' + (c && x.id === c.id ? ' on' : '') + '" data-act="clsPick" data-id="' + x.id + '">' + esc(x.name || '(ohne Namen)') + ' · ' + x.students.length + '</button>';
+      h += '<button class="chip' + (c && x.id === c.id ? ' on' : '') + '" style="border-left:8px solid ' + esc(x.color || '#8B1E2D') + '" data-act="clsPick" data-id="' + x.id + '">' + esc(x.name || '(ohne Namen)') + ' · ' + x.students.length + '</button>';
     });
     h += '<button class="primary" data-act="clsAdd">+ Neue Klasse</button></div>';
     if (!c) { h += '<p>Lege deine erste Klasse an.</p></div>'; return h; }
@@ -1026,6 +1041,7 @@ var G_DESC = {
 
     h += '<h3>Einstellungen der Klasse</h3><div class="row">' +
          '<label>Name (z. B. Q11, 10a)<input type="text" data-cf="name" value="' + esc(c.name) + '"></label>' +
+         '<label>Farbe<input type="color" data-cf="color" value="' + esc(c.color || '#8B1E2D') + '" style="width:70px;min-height:40px"></label>' +
          '<label>Fach<select data-cf="fach">' + faecherList.map(function(f) { return '<option value="' + f + '"' + (c.fach === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label>' +
          '<label>Notenskala<select data-cf="skala"><option value="note"' + (c.skala === 'note' ? ' selected' : '') + '>Noten 1–6 (Mittelstufe)</option><option value="np"' + (c.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15 (Oberstufe)</option></select></label>' +
          '<label>Standard: Berechnung<select data-cdef="calc"><option value="gewichtet"' + (cd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (cd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
@@ -1083,7 +1099,7 @@ var G_DESC = {
       h += '</table>';
       h += '<p>Ø (nach Gewicht): <b class="big">' + (av ? fmt(av.avg, 1) : '–') + '</b></p>';
     }
-    h += '<div class="row"><button class="primary" data-act="printStu">Übersicht drucken / PDF</button><button class="primary" data-act="printStuDetailed">Detaillierten Schülerbericht drucken (inkl. Kriterien & Punkten)</button></div></div>';
+    h += '<div class="row"><button class="primary" data-act="printStu">Liste drucken (Datum, Thema, Note)</button><button class="primary" data-act="printStuDetailed">Detaillierte Aufstellung drucken (alle Noten mit Kriterien)</button></div></div>';
     return h;
   }
 
@@ -1098,7 +1114,7 @@ var G_DESC = {
     });
     var totalGraded = Object.values(counts).reduce(function(a,b){return a+b;}, 0);
 
-    var h = '<section class="ov"><h1>Notenübersicht ' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' <span style="font-size:11pt;font-weight:normal;color:#444">(' + scaleLabel(c) + ')</span></h1>';
+    var h = '<section class="ov" style="border-top:8px solid ' + esc(c.color || '#8B1E2D') + '"><h1>Notenübersicht ' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' <span style="font-size:11pt;font-weight:normal;color:#444">(' + scaleLabel(c) + ')</span></h1>';
 
     if (totalGraded > 0) {
       h += '<p style="margin:4px 0 2px; font-weight:bold; font-size:10pt;">Leistungsspiegel:</p>';
@@ -1169,61 +1185,59 @@ var G_DESC = {
 
   function vModule(type) {
     var c = cls(), s = stu(); if (!c || !s) return noStu();
-    var a = curA(type), list = assessmentsOf(c, s.id, type);
-    var h = '<div class="panel modbar"><label>Bewertung <select data-f="pickA">';
+    var a = curA(type), list = assessmentsOf(c, s.id, type), mk = modKey(a), crs = critsOf(a), W = WG[type];
+    var open = ui.drawer[mk] !== undefined ? ui.drawer[mk] : crs.length === 0;
+    var h = '<div class="panel bar"><span class="clsdot" style="background:' + esc(c.color || '#8B1E2D') + '"></span><b>' + esc(sheetTitle(a)) + '</b>' +
+      '<label>Bewertung <select data-f="pickA">';
     if (a._draft) h += '<option value="__draft" selected>neu (heute, noch leer)</option>';
     list.forEach(function (x) { h += '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + fd(x.date) + ' – ' + esc(x.thema || 'ohne Thema') + '</option>'; });
-    h += '</select></label><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>';
-    h += '<span class="sep"></span><button class="primary" data-act="printOne">Diese Seite drucken / PDF</button><button data-act="printAll">Alle Bögen drucken</button></div>';
+    h += '</select></label><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>' +
+         '<button class="primary" data-act="printOne">Bogen drucken / PDF</button><button data-act="printAll">Alle Bögen drucken</button></div>';
 
-    var schOpts = Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + ((a.sch || 'legacy') === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('');
-    h += '<div class="panel" style="margin-top:0"><div class="row"><b>Berechnung:</b>' +
+    if (type !== 'abfrage' && POOL[type]) {
+      var musters = state.muster.filter(function (m) { return m.mk === mk && musterFits(m, c, type); });
+      h += '<div class="panel" style="margin-top:0"><div class="row"><b>Muster für ' + esc(c.fach) + ':</b> ' + (musters.length ? musters.map(function (m) {
+             return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
+           }).join(' ') : '<span class="muted">noch keine gespeichert</span>') + '</div></div>';
+    }
+
+    var summary = (crs.length ? crs.length + ' Kriterien' : 'noch keine Kriterien') + ' · ' + (a.calc === 'einheiten' ? 'Bewertungseinheiten' : 'gewichtete Noten') + ' · ' + SCH_LBL[a.sch || 'legacy'];
+    h += '<div class="panel drawer"><div class="row"><button data-act="drawer" data-mk="' + mk + '">' + (open ? '▲' : '▼') + ' Einstellungen dieser Bewertung</button><span class="muted">' + esc(summary) + '</span></div>';
+    if (open) {
+      var schOpts = Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + ((a.sch || 'legacy') === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('');
+      h += '<div class="row"><b>Berechnung:</b>' +
          '<label>Bewertungsgrundlage<select data-set="calc"><option value="gewichtet"' + (a.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (a.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
          '<label>Notenschlüssel<select data-set="sch">' + schOpts + '</select></label>' +
          (a.sch === 'indiv' ? '<label>Grenze Note 4/5 (%)<input type="text" inputmode="decimal" data-set="t4" value="' + fmt(a.t4 || 50) + '" style="width:90px"></label><label>Grenze Note 5/6 (%)<input type="text" inputmode="decimal" data-set="t5" value="' + fmt(a.t5 || 33) + '" style="width:90px"></label>' : '') +
-         (a.calc === 'einheiten' ? '<label>Gewichtung der Kriterien<select data-set="gw"><option value="prozent"' + (a.gw !== 'be' ? ' selected' : '') + '>in Prozent (Anteil je Kriterium)</option><option value="be"' + (a.gw === 'be' ? ' selected' : '') + '>über BE (jede BE zählt gleich)</option></select></label>' : '') +
-         (a.calc === 'einheiten' ? '<label>Max. BE je Kriterium (Standard)<select data-set="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + ((a.bmax || 5) === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' : '') +
-         '</div>' + (a.sch === 'abitur' ? '<div class="hint warn">Die Abitur-Tabelle ist eine Vermutung. Bitte gegen die amtliche Tabelle prüfen, bevor Noten daraus übernommen werden.</div>' : '') + '</div>';
-    if (type === 'abfrage') {
-      h += '<div class="panel" style="margin-top:0"><div class="row">' +
-           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="preset"' + (a.swMode !== 'custom' ? ' checked' : '') + '> Nach Vorgabe</label>' +
-           '<label class="chk"><input type="radio" name="swMode" data-f="swMode" value="custom"' + (a.swMode === 'custom' ? ' checked' : '') + '> Individuell</label>' +
-           '</div>';
-      if (a.swMode !== 'custom') {
-        h += '<div class="row"><span>Schwerpunkt(e): ' + Object.keys(SW).map(function (k) { return '<label class="chk"><input type="checkbox" data-f="sw" value="' + k + '"' + (a.sw.indexOf(k) >= 0 ? ' checked' : '') + '> ' + SW[k].n + '</label>'; }).join('') + '</span></div>';
-      }
-      h += '</div>';
-    } else if (POOL[type]) {
-      var mk = modKey(a), pool = POOL[type][poolKeyOf(a)] || [], act = a.sel || [], W = WG[type], open = !!ui.sOpen[mk];
-      h += '<div class="panel" style="margin-top:0"><div class="row"><button data-act="sOwn" data-mk="' + mk + '">Kriterien wählen ' + (open ? '▲' : '▼') + '</button>' +
-           '<span class="muted">' + (act.length ? act.length + ' Kriterien gewählt' : 'noch keine Kriterien gewählt') + '</span></div>';
-      var musters = state.muster.filter(function (m) { return m.mk === mk && musterFits(m, c, type); });
-      h += '<div class="row"><b>Muster für ' + esc(c.fach) + ':</b> ' + (musters.length ? musters.map(function (m) {
-             return '<button class="chip" data-act="mLoad" data-id="' + m.id + '">' + esc(m.name) + '</button><button class="chip" data-act="mDel" data-id="' + m.id + '" title="Muster löschen">✕</button>';
-           }).join(' ') : '<span class="muted">noch keine gespeichert</span>') + '</div>';
-      if (open) {
+         (a.calc === 'einheiten' ? '<label>Gewichtung der Kriterien<select data-set="gw"><option value="prozent"' + (a.gw !== 'be' ? ' selected' : '') + '>in Prozent</option><option value="be"' + (a.gw === 'be' ? ' selected' : '') + '>über BE</option></select></label>' +
+           '<label>Max. BE (Standard)<select data-set="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + ((a.bmax || 5) === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' : '') +
+         '</div>' + (a.sch === 'abitur' ? '<div class="hint warn">Die Abitur-Tabelle ist eine Vermutung. Bitte gegen die amtliche Tabelle prüfen, bevor Noten daraus übernommen werden.</div>' : '');
+
+      if (type === 'abfrage') {
+        h += '<div class="row"><b>Bereiche:</b> ' + Object.keys(SW).map(function (k) { return '<label class="chk"><input type="checkbox" data-f="sw" value="' + k + '"' + (a.sw.indexOf(k) >= 0 ? ' checked' : '') + '> ' + esc(SW[k].n) + '</label>'; }).join(' ') + '</div>';
+      } else if (POOL[type]) {
+        var mkk = mk, pool = POOL[type][poolKeyOf(a)] || [], act = a.sel || [];
+        h += '<div class="row"><b>Kriterien</b> <span class="muted">' + (act.length ? act.length + ' gewählt' : 'noch keine gewählt') + '</span></div>';
         Object.keys(W.g).forEach(function (g) {
           var items = pool.filter(function (p) { return wGroup(type, p[0]) === g; });
           if (!items.length) return;
-          h += '<div style="margin:8px 0"><b>' + esc(W.g[g]) + '</b> <span class="muted">' + esc(G_DESC[g]) + '</span><div class="row">' +
+          h += '<div style="margin:6px 0"><b>' + esc(W.g[g]) + '</b> <span class="muted">' + esc(G_DESC[g]) + '</span><div class="row">' +
                items.map(function (p) { return '<label class="chk"><input type="checkbox" data-f="sel" value="' + p[0] + '"' + (act.indexOf(p[0]) >= 0 ? ' checked' : '') + '> ' + esc(C[p[0]].n) + '</label>'; }).join('') +
                '</div></div>';
         });
         var customs = (a.fz || []).filter(function (it) { return it.id.indexOf('x_') === 0; });
         h += '<div class="row"><b>Eigene Kriterien:</b> ' + (customs.length ? customs.map(function (it) { return '<span class="chip on">' + esc(it.n) + ' <button class="chip" data-act="cDel" data-id="' + it.id + '" title="entfernen">✕</button></span>'; }).join(' ') : '<span class="muted">keine</span>') + '</div>';
         h += '<div class="row"><label>Name des eigenen Kriteriums<input type="text" id="cName" style="width:260px"></label><button data-act="cAdd">Kriterium hinzufügen</button></div>';
-        h += '<div class="row"><label>Neues Muster (z. B. „Referat 5. Klasse“)<input type="text" id="mName" style="width:260px"></label>' +
-             '<button data-act="mSave">Aktuelle Auswahl als Muster speichern</button></div>';
+        h += '<div class="row"><label>Muster speichern unter<input type="text" id="mName" style="width:260px" placeholder="z. B. Referat 5. Klasse"></label><button data-act="mSave">Aktuelle Einstellung als Muster speichern</button></div>';
         h += '<div class="row"><button class="primary" data-act="wApplyAll">Als Klassenarbeit für alle Schüler/innen anlegen</button></div>';
-        h += '<div class="hint">Alle bekommen dasselbe Thema und dieselben Kriterien. Jede Schüler/in hat eine eigene Bewertung, deren Datum Sie einzeln ändern können. Gelöschte Muster wirken sich nicht auf Noten aus.</div>';
+        h += '<div class="hint">Muster speichern Kriterien, Gewichtung, Berechnung und Notenschlüssel. Gelöschte Muster wirken sich nicht auf Noten aus.</div>';
       }
-      h += '</div>';
+      h += weightPanel(type, a);
     }
-    h += weightPanel(type, a);
+    h += '</div>';
     h += sheetHTML(c, s, a, true);
     return h;
   }
-
   function wGroup(type, id) { var W = WG[type]; return (W && W.m[id]) || Object.keys(W.g)[0]; }
 
   function weightPanel(type, a) {
@@ -1288,6 +1302,7 @@ var G_DESC = {
 
   function renderBar() {
     var c = cls(), cs = $('clsSel'), ss = $('stuSel');
+    cs.style.borderLeft = '8px solid ' + (c ? (c.color || '#8B1E2D') : '#8B1E2D');
     cs.innerHTML = state.classes.length ? state.classes.map(function (x) { return '<option value="' + x.id + '"' + (c && x.id === c.id ? ' selected' : '') + '>' + esc(x.name || '(ohne Namen)') + '</option>'; }).join('') : '<option value="">– keine Klasse –</option>';
     ss.innerHTML = (c && c.students.length) ? c.students.map(function (x, i) { return '<option value="' + x.id + '"' + (x.id === c.stu ? ' selected' : '') + '>' + (i + 1) + '. ' + esc(x.name || 'Schüler/in') + '</option>'; }).join('') : '<option value="">– keine Schüler/innen –</option>';
 
@@ -1421,6 +1436,11 @@ var G_DESC = {
         else { var ua = findA(c, el.dataset.id); if (ua) ua.ub = !ua.ub; }
         save(); render(); return;
       }
+      if (act === 'drawer') {
+        var dk = el.dataset.mk, dc = ui.drawer[dk];
+        if (dc === undefined) dc = critsOf(curA(type)).length === 0;
+        ui.drawer[dk] = !dc; render(); return;
+      }
       if (act === 'sOwn') { ui.sOpen[el.dataset.mk] = !ui.sOpen[el.dataset.mk]; render(); return; }
       if (act === 'mSave') {
         var nm = ($('mName') ? $('mName').value : '').trim();
@@ -1428,14 +1448,15 @@ var G_DESC = {
         var ca = curA(type); if (!ca.sel || !ca.sel.length) { alert('Bitte zuerst Kriterien wählen.'); return; }
         var mks = modKey(ca), wv = {};
         critsOf(ca).forEach(function (it) { wv[it.id] = it.w; });
-        state.muster.push({ id:uid('mu'), name:nm, mk:mks, fach:c.fach, cls:c.id, sel:ca.sel.slice(), w:wv }); save(); render(); return;
+        state.muster.push({ id:uid('mu'), name:nm, mk:mks, fach:c.fach, cls:c.id, sel:ca.sel.slice(), w:wv, calc:ca.calc, gw:ca.gw, sch:ca.sch, t4:ca.t4, t5:ca.t5, bmax:ca.bmax, bmx:ca.bmx || {} }); save(); render(); return;
       }
       if (act === 'mLoad') {
         var mu = null; state.muster.forEach(function (x) { if (x.id === el.dataset.id) mu = x; }); if (!mu) return;
         var la = curA(type); if (mu.mk !== modKey(la) || !musterFits(mu, c, type)) { alert('Dieses Muster gehört zu einem anderen Fach oder einer anderen Bewertungsart.'); return; }
         ensure(c, la); la.sel = mu.sel.slice(); refreshFz(la);
+        if (mu.calc) { la.calc = mu.calc; la.gw = mu.gw || 'prozent'; la.sch = mu.sch || 'legacy'; la.t4 = mu.t4; la.t5 = mu.t5; la.bmax = mu.bmax; la.bmx = mu.bmx || {}; }
         Object.keys(mu.w || {}).forEach(function (id) { if (la.fz) la.fz.forEach(function (it) { if (it.id === id) it.w = mu.w[id]; }); else state.w[mu.mk + '/' + id] = mu.w[id]; });
-        ui.sOpen[mu.mk] = true; save(); render(); return;
+        ui.sOpen[mu.mk] = true; ui.drawer[mu.mk] = true; save(); render(); return;
       }
       if (act === 'mDel') {
         if (!confirm('Dieses Muster löschen? Die Noten bleiben unverändert.')) return;
@@ -1481,7 +1502,7 @@ var G_DESC = {
         save(); render(); return;
       }
       if (act === 'clsPick') { state.cls = el.dataset.id; save(); render(); return; }
-      if (act === 'clsAdd') { var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:'note', def:cdefOf(null), students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
+      if (act === 'clsAdd') { var pal = ['#8B1E2D','#1f6f8b','#2e7d32','#b26a00','#6a1b9a','#00695c','#c2185b','#37474f']; var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:'note', color:pal[state.classes.length % pal.length], def:cdefOf(null), students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
       if (act === 'clsDel') {
         if (!confirm('Klasse „' + c.name + '“ löschen?')) return;
         state.classes = state.classes.filter(function (x) { return x.id !== c.id; }); state.cls = state.classes[0] ? state.classes[0].id : null; save(); render(); return;
@@ -1534,6 +1555,7 @@ var G_DESC = {
           sa = (ensure(c, sa), sa); sa.pts = {};
         }
         ensure(c, sa);
+        ui.drawer[modKey(sa)] = true;
         if (key === 't4' || key === 't5') sa[key] = num(t.value, key === 't4' ? 50 : 33);
         else if (key === 'bmax') sa.bmax = +t.value;
         else sa[key] = t.value;
@@ -1553,13 +1575,21 @@ var G_DESC = {
         state.wp[t.dataset.w.split('/')[0]] = 'eigen'; save(); render(); return;
       }
       if (t.dataset.sf !== undefined) { var st = stuById(c, t.dataset.sid); if (st) { st.name = t.value; save(); } return; }
+      if (t.dataset.f === 'sw') {
+        var sw0 = curA(state.tab); ensure(c, sw0);
+        var areas = [];
+        view.querySelectorAll('input[data-f="sw"]:checked').forEach(function (b2) { areas.push(b2.value); });
+        ui.drawer[modKey(sw0)] = true; sw0.sw = areas;
+        sw0.sel = areaSel(areas).concat((sw0.sel || []).filter(function (id) { return id.indexOf('x_') === 0; }));
+        refreshFz(sw0); save(); render(); return;
+      }
       if (t.dataset.f === 'pickA') { var s = stu(); if (t.value !== '__draft') { ui.cur[state.tab + vk(state.tab) + '|' + s.id] = t.value; render(); } return; }
       if (t.dataset.f === 'sel') {
         var a = curA(state.tab); ensure(c, a);
         var pool = POOL[a.type][poolKeyOf(a)] || [];
         var active = [];
         view.querySelectorAll('input[data-f="sel"]:checked').forEach(function(box) { active.push(box.value); });
-        a.sel = active.concat((a.sel || []).filter(function (id) { return id.indexOf('x_') === 0; }));
+        ui.drawer[modKey(a)] = true; a.sel = active.concat((a.sel || []).filter(function (id) { return id.indexOf('x_') === 0; }));
         refreshFz(a); save(); render(); return;
       }
     });
@@ -1571,7 +1601,7 @@ var G_DESC = {
         try {
           var o = sanitize(JSON.parse(r.result)); if (!o) throw new Error('leer');
           if (!confirm('Daten überschreiben?')) return;
-          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{} }; migrate(); save(); render();
+          state = o; ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{}, drawer:{} }; migrate(); save(); render();
         } catch (err) { alert('Fehler beim Laden.'); }
       };
       r.readAsText(f); e.target.value = '';
