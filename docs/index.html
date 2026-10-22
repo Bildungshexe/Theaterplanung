@@ -751,10 +751,10 @@ var G_DESC = {
                    crit:(Array.isArray(a.crit) ? a.crit.filter(function (k) { return ALLW[k] !== undefined; }) : []),
                    sel:(Array.isArray(a.sel) ? a.sel.filter(function (k) { return C[k]; }) : []),
                    date:String(a.date || todayISO()),
-                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz) };
+                   thema:String(a.thema || ''), pts:pts, cmt:String(a.cmt || ''), gew:Math.max(0, num(a.gew, 1)), fz:sanFz(a.fz), ub:!!a.ub };
         }),
         manual:(Array.isArray(c.manual) ? c.manual : []).filter(function (m) { return ids[m.sid]; }).map(function (m) {
-          return { id:String(m.id || uid('m')), sid:m.sid, date:String(m.date || todayISO()), source:String(m.source || ''), thema:String(m.thema || ''), value:num(m.value, null), gew:Math.max(0, num(m.gew, 1)) };
+          return { id:String(m.id || uid('m')), sid:m.sid, date:String(m.date || todayISO()), source:String(m.source || ''), thema:String(m.thema || ''), value:num(m.value, null), gew:Math.max(0, num(m.gew, 1)), ub:!!m.ub };
         })
       };
     });
@@ -893,9 +893,9 @@ var G_DESC = {
     c.assessments.forEach(function (a) {
       if (a.sid !== sid) return;
       var r = calcA(a);
-      out.push({ k:'a', id:a.id, type:a.type, date:a.date, source:sourceOf(a), thema:a.thema, value:r.done ? valueOf(c, r) : null, open:r.done ? 0 : r.open, gew:a.gew, assessmentObj:a });
+      out.push({ k:'a', id:a.id, type:a.type, date:a.date, source:sourceOf(a), thema:a.thema, value:r.done ? valueOf(c, r) : null, open:r.done ? 0 : r.open, gew:a.gew, ub:!!a.ub, assessmentObj:a });
     });
-    c.manual.forEach(function (m) { if (m.sid === sid) out.push({ k:'m', id:m.id, date:m.date, source:m.source, thema:m.thema, value:m.value, gew:m.gew }); });
+    c.manual.forEach(function (m) { if (m.sid === sid) out.push({ k:'m', id:m.id, date:m.date, source:m.source, thema:m.thema, value:m.value, gew:m.gew, ub:!!m.ub }); });
     out.sort(function (x, y) { return x.date < y.date ? -1 : x.date > y.date ? 1 : 0; });
     return out;
   }
@@ -987,9 +987,9 @@ var G_DESC = {
     h += '<h3>Alle Noten</h3>';
     if (!es.length) h += '<p class="muted">Noch keine Noten.</p>';
     else {
-      h += '<table class="t"><tr><th style="width:150px">Datum</th><th>Quelle</th><th>Thema</th><th class="c" style="width:90px">' + (c.skala === 'np' ? 'NP' : 'Note') + '</th><th class="c" style="width:80px">Gewicht</th><th style="width:170px"></th></tr>';
+      h += '<table class="t"><tr><th style="width:150px">Datum</th><th>Quelle</th><th>Thema</th><th class="c" style="width:90px">' + (c.skala === 'np' ? 'NP' : 'Note') + '</th><th class="c" style="width:80px">Gewicht</th><th class="c" style="width:90px">Übertragen</th><th style="width:170px"></th></tr>';
       es.forEach(function (e) {
-        h += '<tr>';
+        h += '<tr style="color:' + (e.ub ? '#111' : '#c62828') + '">';
         if (e.k === 'm') {
           h += '<td><input type="date" data-ef="date" data-id="' + e.id + '" value="' + esc(e.date) + '"></td>' +
                '<td><input type="text" list="srcList" data-ef="source" data-id="' + e.id + '" value="' + esc(e.source) + '"></td>' +
@@ -1003,6 +1003,7 @@ var G_DESC = {
                '<td class="c"><input class="g" type="text" inputmode="decimal" data-ef="gew" data-k="a" data-id="' + e.id + '" value="' + fmt(e.gew) + '"></td>' +
                '<td class="c"><button data-act="openE" data-type="' + e.type + '" data-id="' + e.id + '">Öffnen</button> <button class="danger" data-act="delE" data-k="a" data-id="' + e.id + '">Löschen</button></td>';
         }
+        h += '<td class="c"><input type="checkbox" data-act="ub" data-k="' + e.k + '" data-id="' + e.id + '"' + (e.ub ? ' checked' : '') + '></td>';
         h += '</tr>';
       });
       h += '</table>';
@@ -1012,7 +1013,7 @@ var G_DESC = {
     return h;
   }
 
-  function classOverviewHTML(c) {
+  function classOverviewHTML(c, edit) {
     var counts = {};
     c.students.forEach(function(s) {
       var av = average(entriesOf(c, s.id));
@@ -1045,15 +1046,18 @@ var G_DESC = {
     c.students.forEach(function (s, i) {
       var es = entriesOf(c, s.id), av = average(es);
       h += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(s.name) + '</td><td>' + es.map(function (e) {
-        return '<div style="white-space:nowrap">' + fds(e.date) + ' ' + esc(e.source) + (e.thema ? ' (' + esc(e.thema) + ')' : '') + ': <b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b>' + (e.gew !== 1 ? ' ×' + fmt(e.gew) : '') + '</div>';
+        return '<div style="white-space:nowrap;color:' + (e.ub ? '#111' : '#c62828') + '">' + (edit ? '<input type="checkbox" data-act="ub" data-k="' + e.k + '" data-id="' + e.id + '"' + (e.ub ? ' checked' : '') + '> ' : '') + fds(e.date) + ' ' + esc(e.source) + (e.thema ? ' (' + esc(e.thema) + ')' : '') + ': <b>' + (e.value === null ? 'offen' : fmt(e.value)) + '</b>' + (e.gew !== 1 ? ' ×' + fmt(e.gew) : '') + '</div>';
       }).join('') + '</td><td class="c"><b>' + (av ? fmt(av.avg, 1) : '–') + '</b></td></tr>';
     });
     return h + '</table></section>';
   }
 
+  function countOpen(c) {
+    var n = 0; c.students.forEach(function (s) { entriesOf(c, s.id).forEach(function (e) { if (!e.ub) n++; }); }); return n;
+  }
   function vClass() {
     var c = cls(); if (!c) return noStu();
-    return '<div class="panel"><h2>Klassenübersicht <span class="sub">' + esc(c.name) + '</span></h2><div class="row"><button class="primary" data-act="printCls">Übersicht drucken / PDF</button><button data-act="csv">Als CSV exportieren</button></div></div>' + classOverviewHTML(c);
+    return '<div class="panel"><h2>Klassenübersicht <span class="sub">' + esc(c.name) + '</span></h2><div class="row"><button class="primary" data-act="printCls">Übersicht drucken / PDF</button><button data-act="csv">Als CSV exportieren</button></div><p class="muted">Rot: noch nicht ins Notenprogramm übertragen (' + countOpen(c) + (countOpen(c) === 1 ? ' Note' : ' Noten') + '). Schwarz: übertragen.</p></div>' + classOverviewHTML(c, true);
   }
 
   function studentOverviewHTML(c, s) {
@@ -1306,6 +1310,11 @@ var G_DESC = {
         var a2 = curA(type); if (a2._draft) return;
         if (!confirm('Diese Bewertung wirklich löschen?')) return;
         c.assessments = c.assessments.filter(function (x) { return x.id !== a2.id; }); delete ui.cur[type + vk(type) + '|' + s.id]; save(); render(); return;
+      }
+      if (act === 'ub') {
+        if (el.dataset.k === 'm') c.manual.forEach(function (m) { if (m.id === el.dataset.id) m.ub = !m.ub; });
+        else { var ua = findA(c, el.dataset.id); if (ua) ua.ub = !ua.ub; }
+        save(); render(); return;
       }
       if (act === 'sOwn') { ui.sOpen[el.dataset.mk] = !ui.sOpen[el.dataset.mk]; render(); return; }
       if (act === 'mSave') {
