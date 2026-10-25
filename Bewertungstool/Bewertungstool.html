@@ -123,8 +123,15 @@
   .rep th { background:var(--gray); font-weight:bold; }
   .rep td.c, .rep th.c { text-align:center; }
 
-  .toolbar { transition: background .2s; }
-  .toolbar label { background:#fff; color:#111; padding:6px 10px; border-radius:6px; }
+  .toolbar { transition: background .2s; flex-wrap:nowrap; font-size:11pt; gap:6px; padding:6px 8px; overflow-x:auto; }
+  .toolbar > * { flex:0 0 auto; }
+  .toolbar button, .toolbar select { padding:6px 8px; min-height:38px; }
+  .toolbar label { background:#fff; color:#111; padding:4px 8px; border-radius:6px; }
+  .toolbar label select { min-height:30px; padding:4px 6px; }
+  #clsSel { max-width:100px; } #stuSel { max-width:130px; } #modeSel { max-width:200px; }
+  .toolbar .sep { display:none; }
+  #backupWarnContainer:empty { display:none; }
+  #backupWarnContainer .backup-alert { display:inline-flex; }
   .toolbar .tab { background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.6); }
   .toolbar .tab.on { background:#fff; color:#111; border-color:#fff; }
   .clsdot { display:inline-block; width:14px; height:14px; border-radius:3px; margin-right:6px; vertical-align:middle; }
@@ -162,12 +169,12 @@
     <button class="tab" data-tab="bogen">Bogen</button>
     <span class="sep"></span>
     <button class="tab" data-tab="student">Notenliste</button>
-    <button class="tab" data-tab="klasse">Klassenübersicht</button>
+    <button class="tab" data-tab="klasse">Übersicht</button>
     <span class="sep"></span>
     <button class="tab" data-tab="classes">Klassen</button>
     <button class="tab" data-tab="settings">Einstellungen</button>
-    <span id="backupWarnContainer"></span>
   </div>
+  <div id="backupWarnContainer" style="padding:4px 8px"></div>
   <div class="stage" id="view"></div>
 </div>
 <div id="printArea"></div>
