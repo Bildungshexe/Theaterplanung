@@ -132,6 +132,10 @@
   .rep th { background:var(--gray); font-weight:bold; }
   .rep td.c, .rep th.c { text-align:center; }
 
+  .toolbar { transition: background .2s; }
+  .toolbar label { background:#fff; color:#111; padding:6px 10px; border-radius:6px; }
+  .toolbar .tab { background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.6); }
+  .toolbar .tab.on { background:#fff; color:#111; border-color:#fff; }
   .clsdot { display:inline-block; width:14px; height:14px; border-radius:3px; margin-right:6px; vertical-align:middle; }
   .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
   .drawer { background:#fafafa; }
@@ -1123,7 +1127,7 @@ var G_DESC = {
     });
     var totalGraded = Object.values(counts).reduce(function(a,b){return a+b;}, 0);
 
-    var h = '<section class="ov" style="border-top:8px solid ' + esc(c.color || '#8B1E2D') + '"><h1>Notenübersicht ' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' <span style="font-size:11pt;font-weight:normal;color:#444">(' + scaleLabel(c) + ')</span></h1>';
+    var h = '<section class="ov"><div style="background:' + esc(c.color || '#8B1E2D') + ';color:#fff;padding:6px 10px;border-radius:6px;margin-bottom:6px"><h1 style="color:#fff;margin:0">Notenübersicht ' + esc(c.name) + (c.fach ? ' · ' + esc(c.fach) : '') + ' <span style="font-size:11pt;font-weight:normal">(' + scaleLabel(c) + ')</span></h1></div>';
 
     if (totalGraded > 0) {
       h += '<p style="margin:4px 0 2px; font-weight:bold; font-size:10pt;">Leistungsspiegel:</p>';
@@ -1196,7 +1200,7 @@ var G_DESC = {
     var c = cls(), s = stu(); if (!c || !s) return noStu();
     var a = curA(type), list = assessmentsOf(c, s.id, type), mk = modKey(a), crs = critsOf(a), W = WG[type];
     var open = ui.drawer[mk] !== undefined ? ui.drawer[mk] : crs.length === 0;
-    var h = '<div class="panel bar"><span class="clsdot" style="background:' + esc(c.color || '#8B1E2D') + '"></span><b>' + esc(sheetTitle(a)) + '</b>' +
+    var h = '<div class="panel bar" style="border-left:16px solid ' + esc(c.color || '#8B1E2D') + '"><b>' + esc(sheetTitle(a)) + '</b>' +
       '<label>Bewertung <select data-f="pickA">';
     if (a._draft) h += '<option value="__draft" selected>neu (heute, noch leer)</option>';
     list.forEach(function (x) { h += '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + fd(x.date) + ' – ' + esc(x.thema || 'ohne Thema') + '</option>'; });
@@ -1311,7 +1315,8 @@ var G_DESC = {
 
   function renderBar() {
     var c = cls(), cs = $('clsSel'), ss = $('stuSel');
-    cs.style.borderLeft = '8px solid ' + (c ? (c.color || '#8B1E2D') : '#8B1E2D');
+    cs.style.borderLeft = '';
+    document.getElementById('toolbar').style.background = c ? (c.color || '#8B1E2D') : '#2b2b2b';
     cs.innerHTML = state.classes.length ? state.classes.map(function (x) { return '<option value="' + x.id + '"' + (c && x.id === c.id ? ' selected' : '') + '>' + esc(x.name || '(ohne Namen)') + '</option>'; }).join('') : '<option value="">– keine Klasse –</option>';
     ss.innerHTML = (c && c.students.length) ? c.students.map(function (x, i) { return '<option value="' + x.id + '"' + (x.id === c.stu ? ' selected' : '') + '>' + (i + 1) + '. ' + esc(x.name || 'Schüler/in') + '</option>'; }).join('') : '<option value="">– keine Schüler/innen –</option>';
 
