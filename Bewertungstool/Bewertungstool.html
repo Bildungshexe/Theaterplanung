@@ -671,8 +671,10 @@ var G_DESC = {
   };
 
   function getModesForClass(c) {
-    if (!c || !c.fach) return FACH_MODES['Deutsch'];
-    return FACH_MODES[c.fach] || FACH_MODES['Andere Fächer'];
+    var fach = (!c || !c.fach) ? 'Deutsch' : (FACH_MODES[c.fach] ? c.fach : 'Andere Fächer');
+    var all = FACH_MODES[fach], hid = (state.hideModes || {})[fach] || [];
+    var shown = all.filter(function (m) { return hid.indexOf(m[0]) < 0; });
+    return shown.length ? shown : all;
   }
 
   var TABS = ['student','klasse','lesen','gedicht','abfrage','song','unterricht','theater','pseminar','wseminar','referat','classes','settings'];
@@ -729,12 +731,18 @@ var G_DESC = {
     return { calc: x.calc === 'einheiten' ? 'einheiten' : 'gewichtet', gw: x.gw === 'be' ? 'be' : 'prozent', sch: SCH_LBL[x.sch] ? x.sch : 'legacy',
              bmax: [3,4,5].indexOf(+x.bmax) >= 0 ? +x.bmax : 5, t4: num(x.t4, 50), t5: num(x.t5, 33) };
   }
+  var ABI_PCT = [95,90,85,80,75,70,65,60,55,50,45,40,33,27,20,0]; /* Vermutung, NP 15..0 */
+  var PALETTE = ['#8B1E2D','#1f6f8b','#2e7d32','#b26a00','#6a1b9a','#00695c','#c2185b','#37474f'];
+  function getAbiPairs() {
+    var v = state.abi && state.abi.length === 16 ? state.abi : ABI_PCT;
+    return v.map(function (p, i) { return [15 - i, p / 100]; });
+  }
   var KEY = 'muendliche_noten_tool_v6';
   var state = load() || fresh();
   var ui = { draft:{}, cur:{}, fresh:{}, wOpen:{}, sOpen:{}, drawer:{} };
   migrate();
 
-  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, muster:[], mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
+  function fresh() { return { v:3, cls:null, tab:'classes', vr:'de', vrRef:'de', vt:{}, muster:[], std:{ skala:'note', def:cdefOf(null) }, abi:null, palette:PALETTE.slice(), backupDays:7, hideModes:{}, mt:'deutsch', lastBackup: null, w:{}, wp:{}, classes:[] }; }
   function load() { try { var t = localStorage.getItem(KEY); return t ? sanitize(JSON.parse(t)) : null; } catch (e) { return null; } }
   var tmr = null;
   /* sofort speichern, damit nichts verloren geht, wenn die App gleich geschlossen wird */
@@ -766,6 +774,11 @@ var G_DESC = {
     f.w = (o.w && typeof o.w === 'object') ? o.w : {};
     f.tab = TABS.indexOf(o.tab) >= 0 ? o.tab : 'student';
     f.vt = (o.vt && typeof o.vt === 'object') ? o.vt : {};
+    if (o.std && typeof o.std === 'object') f.std = { skala:o.std.skala === 'np' ? 'np' : 'note', def:cdefOf(o.std.def) };
+    f.abi = (Array.isArray(o.abi) && o.abi.length === 16 && o.abi.every(function (x) { return typeof x === 'number' && isFinite(x); })) ? o.abi : null;
+    f.palette = (Array.isArray(o.palette) && o.palette.length && o.palette.every(function (x) { return /^#[0-9a-fA-F]{6}$/.test(x); })) ? o.palette : PALETTE.slice();
+    f.backupDays = (typeof o.backupDays === 'number' && isFinite(o.backupDays) && o.backupDays >= 0) ? o.backupDays : 7;
+    f.hideModes = (o.hideModes && typeof o.hideModes === 'object') ? o.hideModes : {};
     f.muster = (Array.isArray(o.muster) ? o.muster : []).filter(function (m) { return m && typeof m.name === 'string' && typeof m.mk === 'string' && Array.isArray(m.sel); });
     f.classes = o.classes.map(function (c) {
       var students = (Array.isArray(c.students) ? c.students : []).map(function (s) { return { id:String(s.id || uid('s')), name:String(s.name || '') }; });
@@ -928,7 +941,7 @@ var G_DESC = {
     var pct = (units && a.gw === 'be') ? sumBE / (denBE || 1) : sum / (sw || 1), ex = pct * 15, np, z;
     if (!a.sch || a.sch === 'legacy') { np = Math.floor(ex + 0.5 + 1e-9); z = zensur(np); }
     else if (a.sch === 'abitur') {
-      np = 0; ABI.forEach(function (r) { if (np === 0 && pct >= r[1] - 1e-9) np = r[0]; });
+      np = 0; getAbiPairs().forEach(function (r) { if (np === 0 && pct >= r[1] - 1e-9) np = r[0]; });
       z = zensur(np);
     } else {
       z = { z:gradeFromPct(pct, a).z }; z.t = ZNAME[z.z];
@@ -1055,10 +1068,10 @@ var G_DESC = {
          '<label>Farbe<input type="color" data-cf="color" value="' + esc(c.color || '#8B1E2D') + '" style="width:70px;min-height:40px"></label>' +
          '<label>Fach<select data-cf="fach">' + faecherList.map(function(f) { return '<option value="' + f + '"' + (c.fach === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></label>' +
          '<label>Notenskala<select data-cf="skala"><option value="note"' + (c.skala === 'note' ? ' selected' : '') + '>Noten 1–6 (Mittelstufe)</option><option value="np"' + (c.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15 (Oberstufe)</option></select></label>' +
-         '<label>Standard: Berechnung<select data-cdef="calc"><option value="gewichtet"' + (cd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (cd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
-         '<label>Standard: Notenschlüssel<select data-cdef="sch">' + Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + (cd.sch === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('') + '</select></label>' +
-         '<label>Standard: Gewichtung<select data-cdef="gw"><option value="prozent"' + (cd.gw !== 'be' ? ' selected' : '') + '>in Prozent</option><option value="be"' + (cd.gw === 'be' ? ' selected' : '') + '>über BE</option></select></label>' +
-         '<label>Standard: max. BE<select data-cdef="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (cd.bmax === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
+         '<label>Vorgabe dieser Klasse: Berechnung<select data-cdef="calc"><option value="gewichtet"' + (cd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (cd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
+         '<label>Vorgabe dieser Klasse: Notenschlüssel<select data-cdef="sch">' + Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + (cd.sch === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('') + '</select></label>' +
+         '<label>Vorgabe dieser Klasse: Gewichtung<select data-cdef="gw"><option value="prozent"' + (cd.gw !== 'be' ? ' selected' : '') + '>in Prozent</option><option value="be"' + (cd.gw === 'be' ? ' selected' : '') + '>über BE</option></select></label>' +
+         '<label>Vorgabe dieser Klasse: max. BE<select data-cdef="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (cd.bmax === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
          '<button class="danger" data-act="clsDel">Klasse löschen</button></div>';
     h += '<h3>Schüler/innen (' + c.students.length + ')</h3>';
     if (c.students.length) {
@@ -1305,12 +1318,44 @@ var G_DESC = {
     else Object.keys(nw).forEach(function (k) { state.w[mk + '/' + k] = nw[k]; });
   }
   function vSettings() {
-    var h = '<div class="panel"><h2>Einstellungen & Backup</h2>';
-    h += '<p class="muted">Sichern Sie Ihre Daten regelmäßig als JSON-Datei, um Datenverlust bei Browser-Bereinigungen zu vermeiden.</p>';
-    h += '<div class="row"><button class="primary" data-act="exp">Alle Daten sichern (JSON)</button><button data-act="imp">Sicherung laden</button></div></div>';
+    var std = state.std, sd = std.def, h = '';
+    var nClass = state.classes.length, nStu = 0, nA = 0, nM = 0;
+    state.classes.forEach(function (c) { nStu += c.students.length; nA += c.assessments.length; nM += c.manual.length; });
+    var kb = Math.round(JSON.stringify(state).length / 1024);
+    h += '<div class="panel"><h2>Standard für neue Klassen</h2>' +
+         '<div class="row"><label>Notenskala<select data-std="skala"><option value="note"' + (std.skala !== 'np' ? ' selected' : '') + '>Noten 1–6</option><option value="np"' + (std.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15</option></select></label>' +
+         '<label>Berechnung<select data-stddef="calc"><option value="gewichtet"' + (sd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (sd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
+         '<label>Notenschlüssel<select data-stddef="sch">' + Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + (sd.sch === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('') + '</select></label>' +
+         '<label>Gewichtung<select data-stddef="gw"><option value="prozent"' + (sd.gw !== 'be' ? ' selected' : '') + '>in Prozent</option><option value="be"' + (sd.gw === 'be' ? ' selected' : '') + '>über BE</option></select></label>' +
+         '<label>Max. BE<select data-stddef="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (sd.bmax === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label></div>' +
+         '<p class="muted">Gilt für neu angelegte Klassen. Bestehende Klassen behalten ihre Vorgaben.</p></div>';
+
+    var abi = state.abi && state.abi.length === 16 ? state.abi : ABI_PCT;
+    h += '<div class="panel"><h2>Abitur-Tabelle</h2><p class="muted">Vermutung: bitte gegen die amtliche Tabelle prüfen und die Werte anpassen. Angegeben ist der Mindestanteil in Prozent, ab dem es die Notenpunkte gibt.</p>' +
+         '<table class="t" style="max-width:420px"><tr><th class="c">Notenpunkte</th><th class="c">ab Prozent</th></tr>' +
+         abi.map(function (p, i) { return '<tr><td class="c">' + (15 - i) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-abi="' + i + '" value="' + fmt(p) + '"></td></tr>'; }).join('') +
+         '</table><div class="row"><button data-act="abiReset">Auf Vermutung zurücksetzen</button></div></div>';
+
+    h += '<div class="panel"><h2>Farbpalette für Klassen</h2><p class="muted">Neue Klassen bekommen der Reihe nach eine Farbe aus dieser Palette.</p><div class="row">' +
+         state.palette.map(function (col, i) { return '<label>' + (i + 1) + '<input type="color" data-pal="' + i + '" value="' + esc(col) + '" style="width:60px;min-height:40px"></label>'; }).join('') +
+         '</div><div class="row"><button data-act="palReset">Palette zurücksetzen</button></div></div>';
+
+    h += '<div class="panel"><h2>Notenarten je Fach</h2><p class="muted">Abgewählte Notenarten erscheinen nicht mehr in der Auswahl. Vorhandene Bewertungen bleiben erhalten.</p>' +
+         Object.keys(FACH_MODES).map(function (fach) {
+           var hid = (state.hideModes || {})[fach] || [];
+           return '<div style="margin:6px 0"><b>' + esc(fach) + '</b><div class="row">' +
+             FACH_MODES[fach].map(function (m) { return '<label class="chk"><input type="checkbox" data-hide="' + esc(fach) + '|' + esc(m[0]) + '"' + (hid.indexOf(m[0]) < 0 ? ' checked' : '') + '> ' + esc(m[1]) + '</label>'; }).join('') +
+             '</div></div>';
+         }).join('') + '</div>';
+
+    h += '<div class="panel"><h2>Backup-Erinnerung</h2><div class="row"><label>Erinnern nach (Tage, 0 = aus)<input type="text" inputmode="numeric" data-bgdays value="' + state.backupDays + '" style="width:90px"></label></div></div>';
+
+    h += '<div class="panel"><h2>Daten</h2><p>Klassen: ' + nClass + ' · Schüler/innen: ' + nStu + ' · Bewertungen: ' + nA + ' · Einzelnoten: ' + nM + ' · Muster: ' + state.muster.length + ' · Größe ca. ' + kb + ' KB</p></div>';
+
+    h += '<div class="panel"><h2>Sicherung</h2><p class="muted">Sichern Sie Ihre Daten regelmäßig als JSON-Datei, um Datenverlust bei Browser-Bereinigungen zu vermeiden.</p>' +
+         '<div class="row"><button class="primary" data-act="exp">Alle Daten sichern (JSON)</button><button data-act="imp">Sicherung laden</button></div></div>';
     return h;
   }
-
   function renderBar() {
     var c = cls(), cs = $('clsSel'), ss = $('stuSel');
     cs.style.borderLeft = '';
@@ -1335,13 +1380,13 @@ var G_DESC = {
     var warnBox = $('backupWarnContainer');
     var showWarn = false;
     if (!state.lastBackup) {
-      showWarn = true;
+      showWarn = state.backupDays > 0;
     } else {
       var diffDays = (Date.now() - new Date(state.lastBackup).getTime()) / (1000 * 3600 * 24);
-      if (diffDays > 7) showWarn = true;
+      if (state.backupDays > 0 && diffDays > state.backupDays) showWarn = true;
     }
     if (showWarn) {
-      warnBox.innerHTML = '<div class="backup-alert"><span>⚠️ Backup-Hinweis (> 7 Tage)</span><button data-act="exp">Jetzt sichern</button></div>';
+      warnBox.innerHTML = '<div class="backup-alert"><span>⚠️ Backup-Hinweis (&gt; ' + state.backupDays + ' Tage)</span><button data-act="exp">Jetzt sichern</button></div>';
     } else {
       warnBox.innerHTML = '';
     }
@@ -1448,6 +1493,8 @@ var G_DESC = {
         else { var ua = findA(c, el.dataset.id); if (ua) ua.ub = !ua.ub; }
         save(); render(); return;
       }
+      if (act === 'abiReset') { state.abi = null; save(); render(); return; }
+      if (act === 'palReset') { state.palette = PALETTE.slice(); save(); render(); return; }
       if (act === 'drawer') {
         var dk = el.dataset.mk, dc = ui.drawer[dk];
         if (dc === undefined) dc = critsOf(curA(type)).length === 0;
@@ -1514,7 +1561,7 @@ var G_DESC = {
         save(); render(); return;
       }
       if (act === 'clsPick') { state.cls = el.dataset.id; save(); render(); return; }
-      if (act === 'clsAdd') { var pal = ['#8B1E2D','#1f6f8b','#2e7d32','#b26a00','#6a1b9a','#00695c','#c2185b','#37474f']; var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:'note', color:pal[state.classes.length % pal.length], def:cdefOf(null), students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
+      if (act === 'clsAdd') { var pal = state.palette; var nc = { id:uid('c'), name:'Neue Klasse', fach:'Deutsch', skala:state.std.skala, color:pal[state.classes.length % pal.length], def:cdefOf(state.std.def), students:[], stu:null, assessments:[], manual:[] }; state.classes.push(nc); state.cls = nc.id; save(); render(); return; }
       if (act === 'clsDel') {
         if (!confirm('Klasse „' + c.name + '“ löschen?')) return;
         state.classes = state.classes.filter(function (x) { return x.id !== c.id; }); state.cls = state.classes[0] ? state.classes[0].id : null; save(); render(); return;
@@ -1558,7 +1605,13 @@ var G_DESC = {
     });
 
     view.addEventListener('change', function (e) {
-      var t = e.target, c = cls(); if (!c) return;
+      var t = e.target, c = cls();
+      if (t.dataset.std !== undefined) { state.std.skala = t.value; save(); render(); return; }
+      if (t.dataset.stddef !== undefined) { var nd = {}; Object.keys(state.std.def).forEach(function (k) { nd[k] = state.std.def[k]; }); nd[t.dataset.stddef] = t.dataset.stddef === 'bmax' ? +t.value : t.value; state.std.def = cdefOf(nd); save(); render(); return; }
+      if (t.dataset.abi !== undefined) { state.abi = (state.abi && state.abi.length === 16) ? state.abi : ABI_PCT.slice(); state.abi[+t.dataset.abi] = num(t.value, 0); save(); render(); return; }
+      if (t.dataset.pal !== undefined) { state.palette[+t.dataset.pal] = t.value; save(); render(); return; }
+      if (t.dataset.bgdays !== undefined) { state.backupDays = Math.max(0, num(t.value, 7)); save(); render(); return; }
+      if (!c) return;
       if (t.dataset.set !== undefined) {
         var sa = curA(state.tab); if (!sa) return;
         var key = t.dataset.set;
@@ -1578,6 +1631,12 @@ var G_DESC = {
         c.def = cdefOf(c.def); var dk = t.dataset.cdef;
         if (dk === 'bmax') c.def.bmax = +t.value; else if (dk === 't4' || dk === 't5') c.def[dk] = num(t.value, 50); else c.def[dk] = t.value;
         c.def = cdefOf(c.def); save(); render(); return;
+      }
+      if (t.dataset.hide !== undefined) {
+        var hp = t.dataset.hide.split('|'), hf = hp[0], hm = hp[1];
+        state.hideModes = state.hideModes || {}; var hl = (state.hideModes[hf] || []).filter(function (x) { return x !== hm; });
+        if (!t.checked) hl.push(hm);
+        state.hideModes[hf] = hl; save(); render(); return;
       }
       if (t.dataset.cf !== undefined) { c[t.dataset.cf] = t.value; save(); render(); return; }
       if (t.dataset.w !== undefined) {
