@@ -169,12 +169,12 @@
 <body>
 <div id="app">
   <div class="toolbar" id="toolbar">
-    <label>Klasse <select id="clsSel"></select></label>
+    <select id="clsSel" aria-label="Klasse"></select>
     <button id="stuPrev" title="Vorherige/r">◀</button>
     <select id="stuSel"></select>
     <button id="stuNext" title="Nächste/r">▶</button>
     <span class="sep"></span>
-    <label>Bewertung <select id="modeSel"></select></label>
+    <select id="modeSel" aria-label="Bewertung"></select>
     <button class="tab" data-tab="bogen">Bogen</button>
     <span class="sep"></span>
     <button class="tab" data-tab="student">Notenliste</button>
@@ -1208,10 +1208,10 @@ var G_DESC = {
     var a = curA(type), list = assessmentsOf(c, s.id, type), mk = modKey(a), crs = critsOf(a), W = WG[type];
     var open = ui.drawer[mk] !== undefined ? ui.drawer[mk] : crs.length === 0;
     var h = '<div class="panel bar" style="border-left:16px solid ' + esc(c.color || '#8B1E2D') + '"><b>' + esc(sheetTitle(a)) + '</b>' +
-      '<label>Bewertung <select data-f="pickA">';
+      '<select data-f="pickA" aria-label="Bewertung">';
     if (a._draft) h += '<option value="__draft" selected>neu (heute, noch leer)</option>';
     list.forEach(function (x) { h += '<option value="' + x.id + '"' + (x.id === a.id ? ' selected' : '') + '>' + fd(x.date) + ' – ' + esc(x.thema || 'ohne Thema') + '</option>'; });
-    h += '</select></label><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>' +
+    h += '</select><button data-act="newA">+ Neue Bewertung</button><button class="danger" data-act="delA"' + (a._draft ? ' disabled' : '') + '>Löschen</button>' +
          '<button class="primary" data-act="printOne">Bogen drucken / PDF</button><button data-act="printAll">Alle Bögen drucken</button></div>';
 
     if (type !== 'abfrage' && POOL[type]) {
