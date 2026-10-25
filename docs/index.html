@@ -1327,23 +1327,21 @@ var G_DESC = {
     else Object.keys(nw).forEach(function (k) { state.w[mk + '/' + k] = nw[k]; });
   }
   function vSettings() {
-    var std = state.std, sd = std.def, h = '';
-    var nClass = state.classes.length, nStu = 0, nA = 0, nM = 0;
+    var h = '', nClass = state.classes.length, nStu = 0, nA = 0, nM = 0;
     state.classes.forEach(function (c) { nStu += c.students.length; nA += c.assessments.length; nM += c.manual.length; });
     var kb = Math.round(JSON.stringify(state).length / 1024);
-    h += '<div class="panel"><h2>Standard für neue Klassen</h2>' +
-         '<div class="row"><label>Notenskala<select data-std="skala"><option value="note"' + (std.skala !== 'np' ? ' selected' : '') + '>Noten 1–6</option><option value="np"' + (std.skala === 'np' ? ' selected' : '') + '>Notenpunkte 0–15</option></select></label>' +
-         '<label>Berechnung<select data-stddef="calc"><option value="gewichtet"' + (sd.calc !== 'einheiten' ? ' selected' : '') + '>Gewichtete Noten</option><option value="einheiten"' + (sd.calc === 'einheiten' ? ' selected' : '') + '>Bewertungseinheiten</option></select></label>' +
-         '<label>Notenschlüssel<select data-stddef="sch">' + Object.keys(SCH_LBL).map(function (k) { return '<option value="' + k + '"' + (sd.sch === k ? ' selected' : '') + '>' + esc(SCH_LBL[k]) + '</option>'; }).join('') + '</select></label>' +
-         '<label>Gewichtung<select data-stddef="gw"><option value="prozent"' + (sd.gw !== 'be' ? ' selected' : '') + '>in Prozent</option><option value="be"' + (sd.gw === 'be' ? ' selected' : '') + '>über BE</option></select></label>' +
-         '<label>Max. BE<select data-stddef="bmax">' + [3,4,5].map(function (n) { return '<option value="' + n + '"' + (sd.bmax === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label></div>' +
-         '<p class="muted">Gilt für neu angelegte Klassen. Bestehende Klassen behalten ihre Vorgaben.</p></div>';
+    h += '<div class="panel"><h2>Sicherung</h2><p class="muted">Sichern Sie Ihre Daten regelmäßig als JSON-Datei, um Datenverlust bei Browser-Bereinigungen zu vermeiden.</p>' +
+         '<div class="row"><button class="primary" data-act="exp">Alle Daten sichern (JSON)</button><button data-act="imp">Sicherung laden</button></div></div>';
 
-    var abi = state.abi && state.abi.length === 16 ? state.abi : ABI_PCT;
-    h += '<div class="panel"><h2>Abitur-Tabelle</h2><p class="muted">Vermutung: bitte gegen die amtliche Tabelle prüfen und die Werte anpassen. Angegeben ist der Mindestanteil in Prozent, ab dem es die Notenpunkte gibt.</p>' +
+    h += '<div class="panel"><div class="row"><button data-act="abiToggle">' + (ui.abiOpen ? '▲' : '▼') + ' Abitur-Tabelle</button><span class="muted">Vermutung, bitte prüfen</span></div>';
+    if (ui.abiOpen) {
+      var abi = state.abi && state.abi.length === 16 ? state.abi : ABI_PCT;
+      h += '<p class="muted">Angegeben ist der Mindestanteil in Prozent, ab dem es die Notenpunkte gibt. Bitte gegen die amtliche Tabelle prüfen und die Werte anpassen.</p>' +
          '<table class="t" style="max-width:420px"><tr><th class="c">Notenpunkte</th><th class="c">ab Prozent</th></tr>' +
          abi.map(function (p, i) { return '<tr><td class="c">' + (15 - i) + '</td><td class="c"><input class="n" type="text" inputmode="decimal" data-abi="' + i + '" value="' + fmt(p) + '"></td></tr>'; }).join('') +
-         '</table><div class="row"><button data-act="abiReset">Auf Vermutung zurücksetzen</button></div></div>';
+         '</table><div class="row"><button data-act="abiReset">Auf Vermutung zurücksetzen</button></div>';
+    }
+    h += '</div>';
 
     h += '<div class="panel"><h2>Farbpalette für Klassen</h2><p class="muted">Neue Klassen bekommen der Reihe nach eine Farbe aus dieser Palette.</p><div class="row">' +
          state.palette.map(function (col, i) { return '<label>' + (i + 1) + '<input type="color" data-pal="' + i + '" value="' + esc(col) + '" style="width:60px;min-height:40px"></label>'; }).join('') +
@@ -1360,9 +1358,6 @@ var G_DESC = {
     h += '<div class="panel"><h2>Backup-Erinnerung</h2><div class="row"><label>Erinnern nach (Tage, 0 = aus)<input type="text" inputmode="numeric" data-bgdays value="' + state.backupDays + '" style="width:90px"></label></div></div>';
 
     h += '<div class="panel"><h2>Daten</h2><p>Klassen: ' + nClass + ' · Schüler/innen: ' + nStu + ' · Bewertungen: ' + nA + ' · Einzelnoten: ' + nM + ' · Muster: ' + state.muster.length + ' · Größe ca. ' + kb + ' KB</p></div>';
-
-    h += '<div class="panel"><h2>Sicherung</h2><p class="muted">Sichern Sie Ihre Daten regelmäßig als JSON-Datei, um Datenverlust bei Browser-Bereinigungen zu vermeiden.</p>' +
-         '<div class="row"><button class="primary" data-act="exp">Alle Daten sichern (JSON)</button><button data-act="imp">Sicherung laden</button></div></div>';
     return h;
   }
   function renderBar() {
@@ -1502,6 +1497,7 @@ var G_DESC = {
         else { var ua = findA(c, el.dataset.id); if (ua) ua.ub = !ua.ub; }
         save(); render(); return;
       }
+      if (act === 'abiToggle') { ui.abiOpen = !ui.abiOpen; render(); return; }
       if (act === 'abiReset') { state.abi = null; save(); render(); return; }
       if (act === 'palReset') { state.palette = PALETTE.slice(); save(); render(); return; }
       if (act === 'drawer') {
